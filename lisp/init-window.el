@@ -23,9 +23,9 @@
 ;;
 (use-package windmove
   :ensure nil
-  :config
   ;; We bind the navigation commands to `Super` + arrow keys.
-  (windmove-default-keybindings 'super))
+  :hook (after-init . (lambda ()
+                        (windmove-default-keybindings 'super))))
 
 
 ;;----------------------------------------------------------------------------
@@ -89,7 +89,13 @@ new window, and then returns it."
           compilation-mode
           "\\*quickrun\\*$"
           ;; Regex for various terminal-like buffers
-          "^\\*.*\\(eat\\|eshell\\|shell\\|terminal\\|vterm\\).*-*\\*.*$"))
+          "^\\*.*\\(eat\\|eshell\\|shell\\|terminal\\|vterm\\).*-*\\*.*$"
+          ;; REPLs
+          "\\*sml\\*$"
+          "\\*racket\\*$"
+          "\\*python3\\*$"
+          inferior-scheme-mode
+          comint-mode))
 
   ;; Your custom function to fit window height.
   (defun my-popper-fit-window-height (win)
