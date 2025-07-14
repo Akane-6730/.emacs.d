@@ -39,17 +39,6 @@
 ;;----------------------------------------------------------------------------
 
 ;;
-;; These keybindings use the `Super` key (Cmd on macOS, Win on Windows/Linux)
-;; to provide a familiar, system-wide feel for common actions.
-;;
-
-;; Text Scaling: `Super` + `-`, `=`, `0`
-(global-set-key (kbd "s-=") #'text-scale-increase)
-(global-set-key (kbd "s-+") #'text-scale-increase) ; Also bind s-Shift-=
-(global-set-key (kbd "s--") #'text-scale-decrease)
-(global-set-key (kbd "s-0") #'text-scale-set)
-
-;;
 ;; macOS-like editing commands.
 ;;
 
