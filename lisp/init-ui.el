@@ -1,32 +1,40 @@
 ;;; init-ui.el --- User Interface and Appearance -*- lexical-binding: t; -*-
 
+
+;;; Commentary:
 ;;
 ;; This file configures the visual aspects of Emacs, including the theme,
-;; fonts, modeline, line numbers, and icons. The goal is a clean, modern,
-;; and functional appearance.
+;; fonts, modeline, line numbers, and icons.
 ;;
+
+;;; Code:
 
 ;;----------------------------------------------------------------------------
 ;; Fonts
 ;;----------------------------------------------------------------------------
 
 ;; Set the global font family and size.
+(when window-system
+  (defun my-find-first-available-font (font-list)
+    "Find the first installed font from FONT-LIST."
+    (cl-find-if (lambda (font-name) (find-font (font-spec :family font-name)))
+                font-list))
+  ;; 1. Setup English / Monospace font with fallback
+  (let* ((preferred-mono-fonts '("Monaco" "Menlo" "Consolas" "SF Mono" "Courier New" "Monego"))
+         (installed-font (my-find-first-available-font preferred-mono-fonts)))
+    ;; Only set the font if one from our preferred list is found.
+    ;; Otherwise, do nothing and let Emacs use its system default.
+    (when installed-font
+      (set-face-attribute 'default nil :family installed-font :height 180)))
 
-;; Helper function to find the first available font from a list.
-(defun find-first-available-font (font-list)
-  "Return the first installed font from FONT-LIST."
-  ;; This now works because `font-installed-p` is pre-loaded from `utils.el`.
-  (cl-find-if #'font-installed-p font-list))
+  ;; 2. Setup Chinese / Han script font with fallback
+  (let* ((preferred-han-fonts '("LXGW WenKai Mono GB Screen" "PingFang SC"))
+         (installed-font (my-find-first-available-font preferred-han-fonts)))
+    ;; Same logic for Chinese fonts.
+    (when installed-font
+      (set-fontset-font t 'han (font-spec :family installed-font)))))
 
-;; Set the default font for English and code.
-(let ((preferred-english-fonts '("Monaco" "Monego" "Consolas" "SF Mono")))
-  (when-let ((font (find-first-available-font preferred-english-fonts)))
-    (set-face-attribute 'default nil :family font :height 140)))
 
-;; Set the font for Chinese characters (han script).
-(let ((preferred-chinese-fonts '("霞鹜文楷" "LXGW WenKai" "PingFang SC")))
-  (when-let ((font (find-first-available-font preferred-chinese-fonts)))
-    (set-fontset-font t 'han (font-spec :family font))))
 ;; On macOS, use thinner font smoothing for a sharper look.
 (when (eq system-type 'darwin)
   (setq ns-use-thin-smoothing t))
@@ -43,17 +51,27 @@
   (doom-themes-enable-bold nil)
   (doom-themes-enable-italic nil)
   :config
-  ;; Set your preferred theme.
-  (load-theme 'doom-monokai-octagon t)
-
-  ;; Make the visual bell flash the modeline instead of beeping.
+  ;; Enable flashing mode-line on errors to avoid getting the yellow warning triangle on MacOS.
   (doom-themes-visual-bell-config)
-
   :hook (after-init . (lambda ()
-                        (load-theme 'doom-monokai-octagon t)
-                        ;; For macOS, we also sync the title bar inside the hook.
-                        (when (eq system-type 'darwin)
-                          (doom-themes-sync-macos-title-bar-theme)))))
+                        (if window-system
+                            (load-theme 'doom-solarized-light t)
+                          (load-theme 'doom-monokai-pro t))
+                        ;;; TODO
+                        (defun my-enable-fancy-fonts-in-org-mode ()
+                          "Enable bold and italic fonts for Org mode."
+                          (setq doom-themes-enable-bold t)
+                          (setq doom-themes-enable-italic t)
+                          (load-theme (car custom-enabled-themes) t))
+
+                        (defun my-disable-fancy-fonts-in-prog-mode ()
+                          "Disable bold and italic fonts for programming modes."
+                          (setq doom-themes-enable-bold nil)
+                          (setq doom-themes-enable-italic nil)
+                          (load-theme (car custom-enabled-themes) t))
+
+                        (add-hook 'org-mode-hook #'my-enable-fancy-fonts-in-org-mode)
+                        (add-hook 'prog-mode-hook #'my-disable-fancy-fonts-in-prog-mode))))
 
 
 ;;----------------------------------------------------------------------------
@@ -63,7 +81,6 @@
 ;; `nerd-icons` provides a vast collection of icons used by other UI packages
 ;; like `doom-modeline`.
 (use-package nerd-icons
-  :ensure t
   :demand t)
 
 
@@ -72,25 +89,21 @@
 ;;----------------------------------------------------------------------------
 
 ;; `doom-modeline` is a high-performance, good-looking modeline.
-(setq doom-modeline-time-icon t)
-(setq find-file-visit-truename t)
 (use-package doom-modeline
-  :ensure t
   :hook (after-init . doom-modeline-mode))
 
 
-
 ;; `minions` integrates with the modeline to provide a clean menu for minor modes.
-(use-package minions
-  :ensure t
-  :hook (doom-modeline-mode . minions-mode))
+;; (use-package minions
+;;   :ensure t
+;;   :hook (doom-modeline-mode . minions-mode))
 
 
 ;;----------------------------------------------------------------------------
-;; Core UI Elements
+;; Misc
 ;;----------------------------------------------------------------------------
 
-;; Display line numbers in programming and configuration modes.
+;; Display line numbers in prog-mode
 (use-package display-line-numbers
   :ensure nil ; Built-in package.
   :hook (prog-mode . display-line-numbers-mode)
@@ -98,28 +111,49 @@
   ;; This makes the line number column adjust its width automatically.
   (setq display-line-numbers-width-start t))
 
-;; Highlight the current line to improve focus.
-(global-hl-line-mode 1)
+(setq-default cursor-in-non-selected-windows nil)
 
-;; Make the cursor a steady bar instead of a blinking block.
-(setq cursor-type 'bar)
-(blink-cursor-mode 0)
-
-;; Add a visual divider between vertical window splits.
+;; Maximize window to full Screen
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
 (add-hook 'window-setup-hook #'window-divider-mode)
-(setq window-divider-default-places t
-      window-divider-default-right-width 1)
+
+;; ;; TODO
+;; (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+;; (add-to-list 'default-frame-alist '(ns-appearance . dark))
+
+(setq
+ ;; --- Scrolling Behavior ---
+ ;; Configure the mouse wheel to scroll one line at a time.
+ mouse-wheel-scroll-amount '(1 ((shift) . hscroll))
+ mouse-wheel-progressive-speed nil
+ scroll-conservatively 101
+ fast-but-imprecise-scrolling t
+ ;; make scrolling smoother by avoiding unnecessary fontification.
+ redisplay-skip-fontification-on-input t
 
 
-;;----------------------------------------------------------------------------
-;; Scrolling
-;;----------------------------------------------------------------------------
+ ;; --- GUI Behavior & Clean Startup ---
+ ;; Prevent Emacs from using native OS dialogs for files and prompts.
+ use-file-dialog nil
+ use-dialog-box nil
+ ;; Disable the splash screen and customize startup messages for a minimal launch.
+ inhibit-startup-screen t
+ inhibit-startup-echo-area-message user-login-name
+ inhibit-default-init t
+ initial-scratch-message nil
 
-;; Configure mouse wheel to scroll smoothly, one line at a time.
-(setq mouse-wheel-scroll-amount '(1 ((shift) . hscroll))
-      mouse-wheel-progressive-speed nil
-      scroll-conservatively 101) ; Avoids recentering the screen on scroll.
+ ;; --- Window Divider Appearance ---
+ ;; Enable and configure visual dividers between split windows.
+ window-divider-default-places t
+ window-divider-default-bottom-width 1 ; Solve the problem of the modeline being too wide
+ window-divider-default-right-width 1)
 
+;; Display ugly ^L page breaks as tidy horizontal lines
+(use-package page-break-lines
+  :diminish
+  :hook (after-init . global-page-break-lines-mode)
+  :config (dolist (mode '(dashboard-mode emacs-news-mode))
+            (add-to-list 'page-break-lines-modes mode)))
 
 (provide 'init-ui)
 ;;; init-ui.el ends here
