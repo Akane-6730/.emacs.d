@@ -32,7 +32,13 @@
          (installed-font (my-find-first-available-font preferred-han-fonts)))
     ;; Same logic for Chinese fonts.
     (when installed-font
-      (set-fontset-font t 'han (font-spec :family installed-font)))))
+      (set-fontset-font t 'han (font-spec :family installed-font))))
+
+  ;; 3. Setup Japanese / Kana script font to use the same fallback list
+  (let* ((preferred-kana '("LXGW WenKai Mono GB Screen" "PingFang SC"))
+         (font (my-find-first-available-font preferred-kana)))
+    (when font
+      (set-fontset-font t 'kana (font-spec :family font)))))
 
 
 ;; On macOS, use thinner font smoothing for a sharper look.
