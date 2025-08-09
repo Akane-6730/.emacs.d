@@ -20,6 +20,27 @@
   ;; `--group-directories-first` is especially useful.
   (setq dired-listing-switches "-alh --group-directories-first")
 
+  ;; Always delete and copy recursively
+  (setq dired-recursive-deletes 'always
+        dired-recursive-copies 'always)
+
+  ;; --- macOS Compatibility Fix ---
+  ;; The default `ls` on macOS is BSD-based and lacks features of GNU `ls`,
+  ;; which can cause errors with dired. This setup checks for `gls` (GNU ls,
+  ;; typically installed via Homebrew's `coreutils`) and uses it if available.
+  ;; If not, it falls back to a compatible mode for the native BSD `ls`.
+  (when (eq system-type 'darwin)
+    (if (executable-find "gls")
+        (progn
+          ;; Use GNU ls as `gls' from `coreutils' if available.
+          (setq insert-directory-program "gls")
+          ;; Using `insert-directory-program'
+          (setq ls-lisp-use-insert-directory-program t))
+      (progn
+        ;; Suppress the warning: `ls does not support --dired'.
+        (setq dired-use-ls-dired nil)
+        (setq dired-listing-switches "-alh"))))
+
   ;; This ensures that dired buffers are automatically refreshed when the
   ;; underlying directory changes on disk.
   (add-hook 'dired-mode-hook #'auto-revert-mode))
