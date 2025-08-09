@@ -21,12 +21,12 @@
   :hook (after-init . vertico-mode)
   :custom (vertico-count 15)
   :bind (:map vertico-map
-         ("RET" . vertico-directory-enter)
-         ("DEL" . vertico-directory-delete-char)
-         ("M-DEL" . vertico-directory-delete-word)))
+              ("RET" . vertico-directory-enter)
+              ("DEL" . vertico-directory-delete-char)
+              ("M-DEL" . vertico-directory-delete-word)))
 
 (use-package nerd-icons-completion
-  :hook (vertico-mode . nerd-icons-completion-mode))
+  :hook (marginalia-mode . nerd-icons-completion-marginalia-setup))
 
 ;;
 ;; Package: orderless
@@ -69,8 +69,9 @@
   :hook (after-init . global-corfu-mode)
   :custom
   (corfu-auto t)
+  (corfu-auto-prefix 2)
   (corfu-auto-delay 0.05)
-  (corfu-cycle t) ; Enable cycling for our smart-tab to use
+  (corfu-cycle t)
   :config
   (defun my-corfu-smart-tab ()
     "A smart TAB command for Corfu.
@@ -87,9 +88,21 @@
         ;; If no snippet was expanded, we fallback to Corfu's first candidate.
         (corfu-insert))))
   ;; We now directly modify `corfu-map` using `define-key`.
-  (define-key corfu-map (kbd "RET") #'corfu-insert)
+  (define-key corfu-map (kbd "RET") #'completion-at-point)
   ;; Bind TAB to our new smart function.
-  (define-key corfu-map (kbd "TAB") #'my-corfu-smart-tab))
+  (define-key corfu-map (kbd "TAB") #'my-corfu-smart-tab)
+  (add-hook 'eshell-mode-hook (lambda ()
+                                (setq-local corfu-auto nil)
+                                (corfu-mode))))
+
+(unless (display-graphic-p)
+  (use-package corfu-terminal
+    :hook (global-corfu-mode . corfu-terminal-mode)))
+
+(use-package nerd-icons-corfu
+  :autoload nerd-icons-corfu-formatter
+  :after corfu
+  :init (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 
 
 ;;
@@ -107,7 +120,10 @@
   (add-to-list 'completion-at-point-functions #'cape-keyword)
   (add-to-list 'completion-at-point-functions #'cape-abbrev)
 
-  (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster))
+  (advice-add 'comint-completion-at-point :around #'cape-wrap-nonexclusive)
+  (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
+  (advice-add 'eglot-completion-at-point :around #'cape-wrap-nonexclusive)
+  (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-nonexclusive))
 
 
 ;;----------------------------------------------------------------------------
@@ -123,35 +139,35 @@
 (use-package consult
   :ensure t
   :bind ( ;; C-x prefix bindings
-          ("C-x b"   . consult-buffer)                ;; Better `switch-to-buffer`
-          ("C-x 4 b" . consult-buffer-other-window)
-          ("C-x 5 b" . consult-buffer-other-frame)
-          ;; M-g (goto) prefix bindings
-          ("M-g g" . consult-goto-line)              ;; Better `goto-line`
-          ("M-g o" . consult-outline)
-          ("M-g m" . consult-mark)
-          ("M-g k" . consult-global-mark)
-          ("M-g f" . consult-flymake)                ;; For built-in error checking
-          ("M-g i" . consult-imenu)
-          ("M-g I" . consult-imenu-multi)
-          ;; M-s (search) prefix bindings
-          ("M-s s" . consult-line)                   ;; Better `isearch` (replaces C-s)
-          ("M-s g" . consult-grep)
-          ("M-s G" . consult-git-grep)
-          ("M-s r" . consult-ripgrep)
-          ("M-s l" . consult-line)                   ;; Alternative for `consult-line`
-          ("M-s L" . consult-line-multi)
-          ;; C-c prefix bindings (user-level commands)
-          ("C-."   . consult-imenu))
-          ("C-c h" . consult-history)
-          ("C-c k" . consult-kmacro)
-          ("C-c r" . consult-ripgrep)                ;; Alternative for ripgrep
-          ("C-c T" . consult-theme)
-          ("C-c m"   . consult-man)
+         ("C-x b"   . consult-buffer)                ;; Better `switch-to-buffer`
+         ("C-x 4 b" . consult-buffer-other-window)
+         ("C-x 5 b" . consult-buffer-other-frame)
+         ;; M-g (goto) prefix bindings
+         ("M-g g" . consult-goto-line)              ;; Better `goto-line`
+         ("M-g o" . consult-outline)
+         ("M-g m" . consult-mark)
+         ("M-g k" . consult-global-mark)
+         ("M-g f" . consult-flymake)                ;; For built-in error checking
+         ("M-g i" . consult-imenu)
+         ("M-g I" . consult-imenu-multi)
+         ;; M-s (search) prefix bindings
+         ("M-s s" . consult-line)                   ;; Better `isearch` (replaces C-s)
+         ("M-s g" . consult-grep)
+         ("M-s G" . consult-git-grep)
+         ("M-s r" . consult-ripgrep)
+         ("M-s l" . consult-line)                   ;; Alternative for `consult-line`
+         ("M-s L" . consult-line-multi)
+         ;; C-c prefix bindings (user-level commands)
+         ("C-."   . consult-imenu))
+  ("C-c h" . consult-history)
+  ("C-c k" . consult-kmacro)
+  ("C-c r" . consult-ripgrep)                ;; Alternative for ripgrep
+  ("C-c T" . consult-theme)
+  ("C-c m"   . consult-man)
 
-          ([remap Info-search]        . consult-info)
-          ([remap isearch-forward]    . consult-line)
-          ([remap recentf-open-files] . consult-recent-file)
+  ([remap Info-search]        . consult-info)
+  ([remap isearch-forward]    . consult-line)
+  ([remap recentf-open-files] . consult-recent-file)
 
   ;; The :init block runs before the package is loaded.
   :init
