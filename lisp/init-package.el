@@ -1,16 +1,20 @@
 ;;; init-package.el --- Package management configuration -*- lexical-binding: t; -*-
 
+;;; Commentary:
 ;;
 ;; This file configures the Emacs package management system.
 ;; It defines package repositories and bootstraps `use-package`.
 ;;
+
+;;; Code:
 
 ;;----------------------------------------------------------------------------
 ;; Package Archives
 ;;----------------------------------------------------------------------------
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("org"   . "https://orgmode.org/elpa/")
-                         ("elpa"  . "https://elpa.gnu.org/packages/")))
+                         ("elpa"  . "https://elpa.gnu.org/packages/")
+                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
 
 
 ;;----------------------------------------------------------------------------
