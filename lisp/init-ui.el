@@ -52,7 +52,6 @@
 
 ;; `doom-themes` is a package containing a collection of beautifully crafted themes.
 (use-package doom-themes
-  :ensure t
   :custom
   (doom-themes-enable-bold nil)
   (doom-themes-enable-italic nil)
@@ -94,9 +93,20 @@
 ;; Modeline
 ;;----------------------------------------------------------------------------
 
-;; `doom-modeline` is a high-performance, good-looking modeline.
+(use-package time
+  :init (setq display-time-default-load-average nil
+              display-time-format "%H:%M"))
+
 (use-package doom-modeline
-  :hook (after-init . doom-modeline-mode))
+  :hook (after-init . doom-modeline-mode)
+  :init
+  (display-time-mode t)
+  (display-battery-mode t)
+  :config
+  (setq doom-modeline-height 18)
+  (setq doom-modeline-battery t)
+  (setq doom-modeline-time-icon t)
+  (setq doom-modeline-time-clock-size 1.0))
 
 
 ;; `minions` integrates with the modeline to provide a clean menu for minor modes.
@@ -111,7 +121,7 @@
 
 ;; Display line numbers in prog-mode
 (use-package display-line-numbers
-  :ensure nil ; Built-in package.
+  :ensure nil
   :hook (prog-mode . display-line-numbers-mode)
   :config
   ;; This makes the line number column adjust its width automatically.
