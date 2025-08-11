@@ -1,17 +1,19 @@
 ;;; init-c.el --- Configurations for C/C++ development -*- lexical-binding: t; -*-
 
+;;; Commentary:
 ;;
 ;; This file configures a complete development environment for C and C++.
 ;; It enforces a consistent indentation style, provides a smart compilation
 ;; command, and sets up language-specific keybindings.
 ;;
+;;; Code:
 
 ;;----------------------------------------------------------------------------
 ;; Customizable Compilation Variables
 ;;----------------------------------------------------------------------------
 (defvar my-c-common-flags "-Wall -Wextra" "Common compiler flags for C/C++.")
-(defvar my-c-std-version "" "The C standard to use (e.g., 'c99', 'c11').")
-(defvar my-cpp-std-version "" "The C++ standard to use (e.g., 'c++14', 'c++17').")
+(defvar my-c-std-version "" "The C standard to use (e.g., `c99`, `c11`).")
+(defvar my-cpp-std-version "" "The C++ standard to use (e.g., `c++14`, `c++17`).")
 (defvar my-c-debug-flags "-g" "Flags for including debug information.")
 
 
@@ -26,7 +28,7 @@
   ;; This single variable controls indentation for both c-ts-mode and
   ;; c++-ts-mode, as the latter inherits from the former.
   (setq-local c-ts-mode-indent-style 'k&r)
-  (setq c-ts-mode-indent-offset 4)
+  (setq-local c-ts-mode-indent-offset 4)
   (setq-default c-basic-offset 4)
 
   ;; 2. Setup Smart Compile Command
@@ -56,6 +58,12 @@
 (add-hook 'c-ts-mode-hook #'my-c-ts-mode-setup)
 (add-hook 'c++-ts-mode-hook #'my-c-ts-mode-setup)
 
+;; Associate CUDA files with C++ modes
+(add-to-list 'auto-mode-alist '("\\.cu\\'" . c++-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.cuh\\'" . c++-mode))
+
+;; Associate CMakeLists.txt with cmake-ts-mode
+(add-to-list 'auto-mode-alist '("CMakeLists\\.txt\\'" . cmake-ts-mode))
 
 (provide 'init-c)
 ;;; init-c.el ends here
