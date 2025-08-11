@@ -39,8 +39,9 @@ correction keys, without affecting programming modes."
 ;;----------------------------------------------------------------------------
 
 (use-package flyspell
-  :ensure nil ; Built-in, no installation needed.
-  :if (executable-find "aspell") ; Only load if the `aspell` command exists.
+  :ensure nil
+  :diminish
+  :if (executable-find "aspell")
   :hook ((prog-mode . flyspell-prog-mode)
          ;; This hook runs in ALL flyspell modes and removes all conflicting keys.
          (flyspell-mode . my-spell--unbind-all-conflicting-keys))
@@ -48,7 +49,12 @@ correction keys, without affecting programming modes."
   ;; Use `aspell` as the backend and provide args for better suggestions.
   (setq ispell-program-name "aspell"
         ispell-extra-args '("--sug-mode=ultra" "--lang=en_US" "--run-together")
-        flyspell-issue-message-flag nil)) ; Suppress startup messages.
+        flyspell-issue-message-flag nil)  ; Suppress startup messages.
+  (add-hook 'flyspell-mode-hook
+            (lambda ()
+              (setq-local completion-at-point-functions
+                          (remove #'ispell-completion-at-point
+                                  completion-at-point-functions)))))
 
 ;; For each text-centric mode, enable `flyspell-mode` and then add back
 ;; the specific keybindings we want for those modes.
