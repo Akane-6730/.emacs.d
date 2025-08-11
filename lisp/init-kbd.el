@@ -44,7 +44,7 @@
 
 (global-set-key (kbd "s-a") #'mark-whole-buffer)  ; Cmd-a -> Select All
 (global-set-key (kbd "s-c") #'kill-ring-save)     ; Cmd-c -> Copy
-(global-set-key (kbd "s-v") #'yank)               ; Cmd-v -> Paste
+;; (global-set-key (kbd "s-v") #'yank)               ; Cmd-v -> Paste
 
 
 ;;----------------------------------------------------------------------------
@@ -64,10 +64,7 @@
   ;; 2. Execute `newline-and-indent` to create a new, indented line.
   (newline-and-indent))
 
-;;
-;; We bind `C-j` globally to our new, more powerful command.
-;;
-(global-set-key (kbd "C-j") #'my-kbd-open-line-below)
+(global-set-key (kbd "C-<return>") #'my-kbd-open-line-below)
 
 ;;----------------------------------------------------------------------------
 ;; The Ultimate "Smart Format" Command

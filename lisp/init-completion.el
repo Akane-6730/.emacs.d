@@ -1,23 +1,18 @@
 ;;; init-completion.el --- The completion framework -*- lexical-binding: t; -*-
 
+;;; Commentary:
 ;;
 ;; This file configures the entire completion system. It uses a modern stack
 ;; based on Vertico for the minibuffer UI, Corfu for in-buffer completion,
 ;; and Consult for powerful search and navigation commands.
 ;;
+;;; Code:
 
 ;;----------------------------------------------------------------------------
 ;; Minibuffer Completion UI (The Vertico Stack)
 ;;----------------------------------------------------------------------------
 
-;;
-;; Package: vertico
-;; Replaces the default completion UI with a performant vertical display.
-;; It provides the interactive list of candidates in the minibuffer for
-;; commands like M-x and C-x b.
-;;
 (use-package vertico
-  :ensure t
   :hook (after-init . vertico-mode)
   :custom (vertico-count 15)
   :bind (:map vertico-map
@@ -28,41 +23,20 @@
 (use-package nerd-icons-completion
   :hook (marginalia-mode . nerd-icons-completion-marginalia-setup))
 
-;;
-;; Package: orderless
-;; A powerful completion style that allows matching items out of order.
-;; Instead of typing a precise substring, you can type space-separated
-;; keywords to filter candidates efficiently.
-;;
 (use-package orderless
-  :ensure t
   :custom
   (completion-styles '(orderless basic))
   (completion-category-overrides '((file (styles . (partial-completion)))))
   (orderless-component-separator #'orderless-escapable-split-on-space))
 
-;;
-;; Package: marginalia
 ;; Adds rich, contextual annotations to completion candidates in the minibuffer.
-;; For example, it shows function signatures, variable values, or file details
-;; right next to the candidate name.
-;;
 (use-package marginalia
-  :ensure t
   :after vertico
   :hook (vertico-mode . marginalia-mode))
-
 
 ;;----------------------------------------------------------------------------
 ;; In-Buffer Completion (The Corfu Stack)
 ;;----------------------------------------------------------------------------
-
-;;
-;; Package: corfu
-;; Provides a clean, unobtrusive pop-up for in-buffer auto-completion.
-;; It displays completion suggestions directly at the cursor as you type,
-;; similar to modern IDEs.
-;;
 
 (use-package corfu
   :ensure t
@@ -72,25 +46,23 @@
   (corfu-auto-prefix 2)
   (corfu-auto-delay 0.05)
   (corfu-cycle t)
+  :bind (:map corfu-map
+              ("TAB" . my-corfu-smart-tab)
+              ;; Custom binding to quit Corfu and move to the next line
+              ("C-j" . my-corfu-quit-and-next-line))
   :config
+  ;; helper functions
   (defun my-corfu-smart-tab ()
-    "A smart TAB command for Corfu.
-     If a yasnippet can be expanded, expand it. Otherwise, cycle
-     to the next Corfu completion candidate."
+    "Smarter TAB for Corfu. Expands yasnippet, or inserts Corfu completion."
     (interactive)
-    ;; We use a special variable to tell yasnippet not to fallback
-    ;; to any other completion function, just to try expanding.
-    (let ((yas-fallback-behavior 'return-nil))
-      (if (yas-expand)
-          ;; If yas-expand returns `t` (meaning a snippet was expanded),
-          ;; we do nothing further.
-          (progn)
-        ;; If no snippet was expanded, we fallback to Corfu's first candidate.
-        (corfu-insert))))
-  ;; We now directly modify `corfu-map` using `define-key`.
-  (define-key corfu-map (kbd "RET") #'completion-at-point)
-  ;; Bind TAB to our new smart function.
-  (define-key corfu-map (kbd "TAB") #'my-corfu-smart-tab)
+    (or (yas-expand)
+        (corfu-insert)))
+  (defun my-corfu-quit-and-next-line ()
+    "Quit Corfu and then move to the next line."
+    (interactive)
+    (corfu-quit)
+    (forward-line))
+  ;; In eshell, disable auto-completion to prevent triggering on every space.
   (add-hook 'eshell-mode-hook (lambda ()
                                 (setq-local corfu-auto nil)
                                 (corfu-mode))))
@@ -108,18 +80,21 @@
 ;;
 ;; Package: cape
 ;; Provides various "Completion At Point Extensions" (backends) for Corfu.
-;; This package acts as a source for completion candidates, enabling Corfu
-;; to complete things like file paths, words from other buffers, and more.
 ;;
-;; Add extensions
 (use-package cape
+  :commands (cape-file cape-elisp-block cape-keyword)
+  :autoload (cape-wrap-noninterruptible cape-wrap-nonexclusive cape-wrap-buster)
+  :autoload (cape-wrap-silent cape-wrap-purify)
   :init
-  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  ;; (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   (add-to-list 'completion-at-point-functions #'cape-file)
   (add-to-list 'completion-at-point-functions #'cape-elisp-block)
   (add-to-list 'completion-at-point-functions #'cape-keyword)
-  (add-to-list 'completion-at-point-functions #'cape-abbrev)
+  ;; (add-to-list 'completion-at-point-functions #'cape-abbrev)
 
+  ;; Make these capfs composable.
+  (advice-add 'lsp-completion-at-point :around #'cape-wrap-noninterruptible)
+  (advice-add 'lsp-completion-at-point :around #'cape-wrap-nonexclusive)
   (advice-add 'comint-completion-at-point :around #'cape-wrap-nonexclusive)
   (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
   (advice-add 'eglot-completion-at-point :around #'cape-wrap-nonexclusive)
@@ -137,7 +112,6 @@
 ;; like `switch-to-buffer` and introduces new ones like `consult-ripgrep`.
 ;;
 (use-package consult
-  :ensure t
   :bind ( ;; C-x prefix bindings
          ("C-x b"   . consult-buffer)                ;; Better `switch-to-buffer`
          ("C-x 4 b" . consult-buffer-other-window)
