@@ -1,27 +1,54 @@
-;;; init-utils.el --- Custom utility functions for our configuration -*- lexical-binding: t; -*-
+;;; init-utils.el --- Initialize utilities -*- lexical-binding: t; -*-
 
+;;; Commentary:
 ;;
-;; This file is our personal "toolbox". It contains custom helper functions
-;; that are used by other modules in our configuration. It should be loaded
-;; very early by `init.el`.
+;; Some useful Utilities.
 ;;
 
-;; This is the function definition for `font-installed-p`, taken from
-;; the Centaur source and simplified for Emacs 29+. It checks if a font
-;; with the given name is available on your system.
-(defun font-installed-p (font-name)
-  "Check if a font with FONT-NAME is available on the system.
-This is a custom utility function."
-  (when (stringp font-name)
-    ;; `find-font` is the standard way to check for a font's existence.
-    (find-font (font-spec :family font-name))))
+;;; Code:
 
-(defcustom logo (expand-file-name
-                 "banner.txt"
-                 user-emacs-directory)
-  "Set LOGO.."
-  :type 'string)
+;;;----------------------------------------------------------------------------
+;;; Keybinding Hints
+;;;----------------------------------------------------------------------------
 
-;; This makes the functions in this file available to other files that `require` it.
+(use-package which-key
+  :ensure nil
+  :hook (after-init . which-key-mode))
+
+;;;----------------------------------------------------------------------------
+;;; Search Tool Enhancement
+;;;----------------------------------------------------------------------------
+
+;; Replace the standard `grep` command with the much faster `ripgrep` (rg)
+;; if it is available on the system.
+(use-package grep
+  :ensure nil
+  :autoload grep-apply-setting
+  :init
+  (when (executable-find "rg")
+    (grep-apply-setting
+     'grep-command "rg --color=auto --null -nH --no-heading -e ")
+    (grep-apply-setting
+     'grep-template "rg --color=auto --null --no-heading -g '!*/' -e <R> <D>")
+    (grep-apply-setting
+     'grep-find-command '("rg --color=auto --null -nH --no-heading -e ''" . 38))
+    (grep-apply-setting
+     'grep-find-template "rg --color=auto --null -nH --no-heading -e <R> <D>")))
+
+
+;;;----------------------------------------------------------------------------
+;;; Auto-compile Personal Elisp Files on Save
+;;;----------------------------------------------------------------------------
+
+(defun auto-recompile-file-maybe ()
+  (when (and (fboundp 'vc-root-dir)
+             (string= (vc-root-dir) user-emacs-directory))
+    (byte-compile-file buffer-file-name)))
+
+(defun add-after-save-hook ()
+  (add-hook 'after-save-hook 'auto-recompile-file-maybe nil t))
+
+(add-hook 'emacs-lisp-mode-hook #'add-after-save-hook)
+
 (provide 'init-utils)
 ;;; init-utils.el ends here
