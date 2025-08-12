@@ -1,10 +1,11 @@
 ;;; init-prog.el --- Base configurations for programming -*- lexical-binding: t; -*-
 
+;;; Commentary:
 ;;
-;; This file sets up functionalities that are useful across most programming
-;; languages. It includes modern syntax parsing with Tree-sitter, visual aids
-;; like rainbow delimiters, and essential utilities like project-aware settings.
+;; General programming configurations.
 ;;
+
+;;; Code:
 
 ;;----------------------------------------------------------------------------
 ;; Tree-sitter Foundation
@@ -12,36 +13,16 @@
 
 ;;
 ;; Package: treesit-auto
-;; Tree-sitter is a modern parsing framework that provides faster and more
-;; accurate syntax highlighting and code analysis. `treesit-auto` will
 ;; automatically download and install the required Tree-sitter grammar
 ;; for any major mode that supports it, upon your confirmation.
 ;;
 
 (use-package treesit-auto
-  :ensure t
   :hook (after-init . global-treesit-auto-mode)
   :config
   ;; When a new grammar is needed, always ask for confirmation before installing.
   (setq treesit-auto-install 'prompt)
   (setq treesit-font-lock-level 4))
-
-
-;;
-;; Feature: Prettify Symbols
-;; This built-in mode can replace certain sequences of characters with a
-;; single, more readable symbol. For example, it can display "lambda" as "λ"
-;; This is a purely visual enhancement.
-;;
-
-(use-package prog-mode
-  :ensure nil
-  :hook (prog-mode . prettify-symbols-mode)
-  :config
-  ;; We define a small, sensible list of symbols to prettify.
-  ;; You can add more pairs here as you see fit.
-  (setq prettify-symbols-alist
-        '(("lambda" . ?λ))))
 
 
 ;;----------------------------------------------------------------------------
@@ -57,7 +38,7 @@
 ;;
 
 (use-package eldoc
-  :ensure nil ; Built-in package
+  :ensure nil
   :hook (prog-mode . eldoc-mode))
 
 ;;
@@ -80,17 +61,10 @@
 ;;----------------------------------------------------------------------------
 ;; Quick Code Execution
 ;;----------------------------------------------------------------------------
-;;
-;; Package: quickrun
-;; Provides a single, unified command to quickly run the code in the current
-;; buffer, regardless of the programming language. It's incredibly useful for
-;; testing small scripts or single files without a complex build setup.
-;;
 
 (use-package quickrun
-  :ensure t
-  ;; We bind it to `C-c X`, a convenient, namespaced key.
-  :bind (("C-c X" . quickrun)
+  :bind (("C-c x" . quickrun)
+         ("C-c s" . quickrun-shell)
          ("<f5>". quickrun)))
 
 ;;----------------------------------------------------------------------------
@@ -106,16 +80,9 @@
 ;;
 
 (use-package editorconfig
-  :ensure t
-  :hook (prog-mode . editorconfig-mode))
+  :diminish
+  :hook (after-init . editorconfig-mode))
 
-;;----------------------------------------------------------------------------
-;; UI Settings
-;;----------------------------------------------------------------------------
-
-;; Highlight brackets according to their depth
-(use-package rainbow-delimiters
-  :hook (prog-mode . rainbow-delimiters-mode))
 
 ;;----------------------------------------------------------------------------
 ;; Format on Save
