@@ -237,14 +237,14 @@ Can be an integer to determine the exact padding."
    ;;(php-return-type-colon                        :foreground red)
    ;;(php-function-keyword                         :foreground blue :italic italic)
    ;;;; rainbow-delimiters
-   (rainbow-delimiters-depth-1-face              :foreground red)
-   (rainbow-delimiters-depth-2-face              :foreground orange)
-   (rainbow-delimiters-depth-3-face              :foreground green)
-   (rainbow-delimiters-depth-4-face              :foreground cyan)
-   (rainbow-delimiters-depth-5-face              :foreground red)
-   (rainbow-delimiters-depth-6-face              :foreground orange)
-   (rainbow-delimiters-depth-7-face              :foreground green)
-   ;;;; show-paren-mode
+   (rainbow-delimiters-depth-1-face :foreground violet)
+   (rainbow-delimiters-depth-2-face :foreground blue)
+   (rainbow-delimiters-depth-3-face :foreground orange)
+   (rainbow-delimiters-depth-4-face :foreground green)
+   (rainbow-delimiters-depth-5-face :foreground violet)
+   (rainbow-delimiters-depth-6-face :foreground yellow)
+   (rainbow-delimiters-depth-7-face :foreground blue)
+;;;; show-paren-mode
    (show-paren-match                             :weight 'normal :foreground green)
    (show-paren-mismatch                          :weight 'normal :foreground red)
    ;;;; swiper
