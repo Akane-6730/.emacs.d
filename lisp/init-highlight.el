@@ -15,12 +15,12 @@
 ;; `hl-line-mode` highlights the current line, making it easy to see where
 ;; the cursor is vertically. It's a fundamental UI enhancement.
 
-(use-package hl-line
-  :hook ((after-init . global-hl-line-mode)
-         ;; We disable hl-line in specific modes where it can be distracting
-         ;; or visually unhelpful, like terminals or the dashboard.
-         ((dashboard-mode eshell-mode shell-mode term-mode vterm-mode) .
-          (lambda () (setq-local global-hl-line-mode nil)))))
+;; (use-package hl-line
+;;   :hook ((after-init . global-hl-line-mode)
+;;          ;; We disable hl-line in specific modes where it can be distracting
+;;          ;; or visually unhelpful, like terminals or the dashboard.
+;;          ((dashboard-mode eshell-mode shell-mode term-mode vterm-mode) .
+;;           (lambda () (setq-local global-hl-line-mode nil)))))
 
 
 ;;----------------------------------------------------------------------------
