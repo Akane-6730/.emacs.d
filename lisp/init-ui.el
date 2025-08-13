@@ -58,25 +58,27 @@
   :config
   ;; Enable flashing mode-line on errors to avoid getting the yellow warning triangle on MacOS.
   (doom-themes-visual-bell-config)
+  (doom-themes-org-config)
   :hook (after-init . (lambda ()
-                        (if window-system
-                            (load-theme 'doom-solarized-light t)
-                          (load-theme 'doom-monokai-pro t))
-                        ;;; TODO
-                        (defun my-enable-fancy-fonts-in-org-mode ()
-                          "Enable bold and italic fonts for Org mode."
-                          (setq doom-themes-enable-bold t)
-                          (setq doom-themes-enable-italic t)
-                          (load-theme (car custom-enabled-themes) t))
+                        (load-theme 'my-dark t))))
 
-                        (defun my-disable-fancy-fonts-in-prog-mode ()
-                          "Disable bold and italic fonts for programming modes."
-                          (setq doom-themes-enable-bold nil)
-                          (setq doom-themes-enable-italic nil)
-                          (load-theme (car custom-enabled-themes) t))
 
-                        (add-hook 'org-mode-hook #'my-enable-fancy-fonts-in-org-mode)
-                        (add-hook 'prog-mode-hook #'my-disable-fancy-fonts-in-prog-mode))))
+;;;----------------------------------------------------------------------------
+;;; Robust Theme Loading
+;;;----------------------------------------------------------------------------
+;; This ensures that whenever a new theme is loaded, all previously enabled
+;; themes are completely disabled first. This prevents visual artifacts and
+;; "style residue" from the old theme.
+
+(defun my-theme-load-wrapper (original-fn theme &rest args)
+  "A wrapper for `load-theme' that disables old themes first."
+  ;; 1. Disable all currently enabled themes.
+  (mapc #'disable-theme custom-enabled-themes)
+  ;; 2. Call the original `load-theme' function with its arguments.
+  (apply original-fn theme args))
+
+;; Advise the core `load-theme' function to use our wrapper.
+(advice-add 'load-theme :around #'my-theme-load-wrapper)
 
 
 ;;----------------------------------------------------------------------------
@@ -133,9 +135,13 @@
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 (add-hook 'window-setup-hook #'window-divider-mode)
 
-;; ;; TODO
-;; (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
-;; (add-to-list 'default-frame-alist '(ns-appearance . dark))
+
+(add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+(add-to-list 'default-frame-alist '(ns-appearance . dark))
+
+;; set transparency
+(set-frame-parameter nil 'alpha 95)
+
 
 (setq
  ;; --- Scrolling Behavior ---
