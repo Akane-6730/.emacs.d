@@ -1,9 +1,12 @@
 ;;; init-kbd.el --- Global keybinding configurations -*- lexical-binding: t; -*-
 
+;;; Commentary:
 ;;
 ;; This file defines a set of global and mode-specific keybindings to
 ;; enhance productivity and provide a more intuitive user experience.
 ;;
+
+;;; Code:
 
 ;;----------------------------------------------------------------------------
 ;; Vim-like j/k Navigation in Read-only Buffers
@@ -101,6 +104,28 @@ entire buffer and cleaning up all extraneous whitespace."
 
 ;; F6: Smart Format Buffer
 (global-set-key (kbd "<f6>") #'my-format-buffer-smart)
+
+;;----------------------------------------------------------------------------
+;; Enable Built-in Commands
+;;----------------------------------------------------------------------------
+
+;; Ensure the `narrow-to-region` command is always available.
+;; Emacs sometimes disables it by default.
+(put 'narrow-to-region 'disabled nil)
+
+;;----------------------------------------------------------------------------
+;; Smart Save with Whitespace Cleanup
+;;----------------------------------------------------------------------------
+(defun my-cleanup-and-save ()
+  "Run `whitespace-cleanup` and then save the buffer."
+  (interactive)
+  (whitespace-cleanup)
+  (save-buffer))
+
+;; Remap the default save command to our new, smarter version.
+(use-package simple
+  :ensure nil
+  :bind ([remap save-buffer] . my-cleanup-and-save))
 
 (provide 'init-kbd)
 ;;; init-kbd.el ends here

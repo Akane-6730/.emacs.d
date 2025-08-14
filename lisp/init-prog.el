@@ -83,30 +83,5 @@
   :diminish
   :hook (after-init . editorconfig-mode))
 
-
-;;----------------------------------------------------------------------------
-;; Format on Save
-;;----------------------------------------------------------------------------
-;;
-;; This section enables the "format on save" feature. It uses the powerful
-;; `my-format-buffer-smart` command (defined in `init-kbd.el`) to automatically
-;; format the buffer right before it's saved.
-;;
-
-(defun my-prog-mode-setup-format-on-save ()
-  "A helper function to enable format-on-save for the current buffer."
-  ;; Add the smart formatting function to the `before-save-hook`.
-  ;; This hook runs just before a buffer is written to its file.
-  ;; We make the hook buffer-local to ensure this behavior only applies
-  ;; to the current programming buffer and doesn't affect other modes.
-  (add-hook 'before-save-hook #'my-format-buffer-smart nil 'local))
-
-;;
-;; We add our setup function to `prog-mode-hook`. This means that
-;; whenever you enter a major mode for programming (like `c-mode`, `python-mode`, etc.),
-;; the format-on-save behavior will be automatically activated for that buffer.
-;;
-(add-hook 'prog-mode-hook #'my-prog-mode-setup-format-on-save)
-
 (provide 'init-prog)
 ;;; init-prog.el ends here
