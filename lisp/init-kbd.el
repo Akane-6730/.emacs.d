@@ -36,6 +36,7 @@
 (add-hook 'Info-mode-hook #'my-jk-navigation-mode)
 (add-hook 'fundamental-mode-hook #'my-jk-navigation-mode)
 (add-hook 'flymake-diagnostics-buffer-mode-hook #'my-jk-navigation-mode)
+(add-hook 'view-mode-hook #'my-jk-navigation-mode)
 
 ;;----------------------------------------------------------------------------
 ;; Super-key based Bindings (macOS-like & Text Scaling)
