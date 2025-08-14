@@ -120,11 +120,11 @@ Can be an integer to determine the exact padding."
                                                  :box (if -modeline-pad `(:line-width ,-modeline-pad :color red)))
 
    ;;;; centaur-tabs
-   (centaur-tabs-selected-modified               :inherit 'centaur-tabs-selected :foreground yellow)
-   (centaur-tabs-unselected-modified             :inherit 'centaur-tabs-unselected :foreground yellow)
-   (centaur-tabs-active-bar-face                 :background yellow)
-   (centaur-tabs-modified-marker-selected        :inherit 'centaur-tabs-selected :foreground fg)
-   (centaur-tabs-modified-marker-unselected      :inherit 'centaur-tabs-unselected :foreground fg)
+   ;; (centaur-tabs-selected-modified               :inherit 'centaur-tabs-selected :foreground yellow)
+   ;; (centaur-tabs-unselected-modified             :inherit 'centaur-tabs-unselected :foreground yellow)
+   ;; (centaur-tabs-active-bar-face                 :background yellow)
+   ;; (centaur-tabs-modified-marker-selected        :inherit 'centaur-tabs-selected :foreground fg)
+   ;; (centaur-tabs-modified-marker-unselected      :inherit 'centaur-tabs-unselected :foreground fg)
    ;;;; css-mode <built-in> / scss-mode
    (css-proprietary-property                     :foreground keywords)
    ;;;; deadgrep
@@ -282,14 +282,14 @@ Can be an integer to determine the exact padding."
    (web-mode-html-attr-equal-face               :inherit 'web-mode-html-tag-bracket-face)
    ;; Apparently web-mode has no face for values of css properties.
    (web-mode-css-selector-face                  :foreground green)
-   (web-mode-css-property-name-face             :foreground base7))
+   (web-mode-css-property-name-face             :foreground base7)
 
-  ;;;; Base theme variable overrides
-  ;; ()
-  (
+   ;; Override the theme's default color for operators.
    (font-lock-operator-face :foreground red)
    )
 
+  ;;;; Base theme variable overrides
+  ;; ()
   )
 
 (provide 'my-dark-theme)
