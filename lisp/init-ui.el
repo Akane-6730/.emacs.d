@@ -131,13 +131,14 @@
 
 (setq-default cursor-in-non-selected-windows nil)
 
-;; Maximize window to full Screen
-(add-to-list 'default-frame-alist '(fullscreen . maximized))
 (add-hook 'window-setup-hook #'window-divider-mode)
 
 
-(add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
-(add-to-list 'default-frame-alist '(ns-appearance . dark))
+;; Automatically sets the titlebar color on macOS to match the theme
+(use-package ns-auto-titlebar
+  :if (eq system-type 'darwin)
+  :defer nil
+  :init (ns-auto-titlebar-mode))
 
 ;; set transparency
 (set-frame-parameter nil 'alpha 95)
