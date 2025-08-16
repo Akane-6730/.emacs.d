@@ -133,12 +133,26 @@
 
 (add-hook 'window-setup-hook #'window-divider-mode)
 
-
 ;; Automatically sets the titlebar color on macOS to match the theme
-(use-package ns-auto-titlebar
-  :if (eq system-type 'darwin)
-  :defer nil
-  :init (ns-auto-titlebar-mode))
+(when (and (eq system-type 'darwin) (display-graphic-p))
+  (defun my/ns-set-frame-titlebar (frame &rest _)
+    "Set transparent titlebar for FRAME to match theme's background mode."
+    (when (display-graphic-p frame)
+      (let ((mode (frame-parameter frame 'background-mode)))
+        (modify-frame-parameters
+         frame
+         `((ns-transparent-titlebar . t)
+           (ns-appearance . ,mode))))))
+
+  (defun my/ns-set-all-titlebars (&rest _)
+    "Apply titlebar settings to all existing frames."
+    (mapc #'my/ns-set-frame-titlebar (frame-list)))
+
+  (add-hook 'after-init-hook #'my/ns-set-all-titlebars)
+  (add-hook 'after-make-frame-functions #'my/ns-set-frame-titlebar)
+  (advice-add 'frame-set-background-mode :after #'my/ns-set-frame-titlebar)
+
+  (my/ns-set-frame-titlebar (selected-frame)))
 
 ;; set transparency
 (set-frame-parameter nil 'alpha 95)
