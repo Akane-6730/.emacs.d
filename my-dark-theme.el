@@ -285,7 +285,7 @@ Can be an integer to determine the exact padding."
    (web-mode-css-property-name-face             :foreground base7)
 
    ;; Override the theme's default color for operators.
-   (font-lock-operator-face :foreground red)
+   (font-lock-operator-face :foreground magenta)
    )
 
   ;;;; Base theme variable overrides
