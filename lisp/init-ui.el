@@ -158,32 +158,46 @@
 (set-frame-parameter nil 'alpha 95)
 
 
-(setq
- ;; --- Scrolling Behavior ---
- ;; Configure the mouse wheel to scroll one line at a time.
- mouse-wheel-scroll-amount '(1 ((shift) . hscroll))
- mouse-wheel-progressive-speed nil
- scroll-conservatively 101
- fast-but-imprecise-scrolling t
- ;; make scrolling smoother by avoiding unnecessary fontification.
- redisplay-skip-fontification-on-input t
+;; --- Scrolling Behavior ---
+(setq mouse-wheel-scroll-amount '(1 ((shift) . hscroll))
+      mouse-wheel-progressive-speed nil
+      scroll-conservatively 101
+      fast-but-imprecise-scrolling t
+      pixel-scroll-precision-interpolate-page t
+      ;; make scrolling smoother by avoiding unnecessary fontification.
+      redisplay-skip-fontification-on-input t)
 
+(pixel-scroll-precision-mode 1)
+(defun +pixel-scroll-interpolate-down (&optional lines)
+  (interactive)
+  (if lines
+      (pixel-scroll-precision-interpolate (* -1 lines (pixel-line-height)))
+    (pixel-scroll-interpolate-down)))
 
- ;; --- GUI Behavior & Clean Startup ---
- ;; Prevent Emacs from using native OS dialogs for files and prompts.
- use-file-dialog nil
- use-dialog-box nil
- ;; Disable the splash screen and customize startup messages for a minimal launch.
- inhibit-startup-screen t
- inhibit-startup-echo-area-message user-login-name
- inhibit-default-init t
- initial-scratch-message nil
+(defun +pixel-scroll-interpolate-up (&optional lines)
+  (interactive)
+  (if lines
+      (pixel-scroll-precision-interpolate (* lines (pixel-line-height))))
+  (pixel-scroll-interpolate-up))
 
- ;; --- Window Divider Appearance ---
- ;; Enable and configure visual dividers between split windows.
- window-divider-default-places t
- window-divider-default-bottom-width 1 ; Solve the problem of the modeline being too wide
- window-divider-default-right-width 1)
+(defalias 'scroll-up-command '+pixel-scroll-interpolate-down)
+(defalias 'scroll-down-command '+pixel-scroll-interpolate-up)
+
+;; --- GUI Behavior & Clean Startup ---
+;; Prevent Emacs from using native OS dialogs for files and prompts.
+(setq use-file-dialog nil
+      use-dialog-box nil
+      ;; Disable the splash screen and customize startup messages for a minimal launch.
+      inhibit-startup-screen t
+      inhibit-startup-echo-area-message user-login-name
+      inhibit-default-init t
+      initial-scratch-message nil)
+
+;; --- Window Divider Appearance ---
+;; Enable and configure visual dividers between split windows.
+(setq window-divider-default-places t
+      window-divider-default-bottom-width 1 ; Solve the problem of the modeline being too wide
+      window-divider-default-right-width 1)
 
 ;; Display ugly ^L page breaks as tidy horizontal lines
 (use-package page-break-lines
