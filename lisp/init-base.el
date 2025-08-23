@@ -3,7 +3,7 @@
 ;;
 ;; This file establishes the fundamental behavior of the editor. It includes
 ;; personal information, system-specific tweaks (macOS/Linux), encoding,
-;  file history, and other essential defaults.
+;; file history, and other essential defaults.
 ;;
 
 ;;----------------------------------------------------------------------------
@@ -11,30 +11,35 @@
 ;;----------------------------------------------------------------------------
 
 ;; Set your personal details. These are used in file headers, email, etc.
-(setq user-full-name      "Akane"
+(setq user-full-name    "Akane"
       user-mail-address "710105188@qq.com")
 
+;; Garbage Collector Magic Hack
+(use-package gcmh
+  :diminish
+  :hook (emacs-startup . gcmh-mode)
+  :init
+  (setq gcmh-idle-delay 'auto
+        gcmh-auto-idle-delay-factor 10
+        gcmh-high-cons-threshold #x1000000)) ; 16MB
 
 ;;----------------------------------------------------------------------------
 ;; System-Specific Configuration (macOS & Linux)
 ;;----------------------------------------------------------------------------
 
 ;; macOS Keyboard Configuration
-;; This makes the Command key act as Super and Option key as Meta.
-;; This is the standard convention for a better experience on macOS.
+;; This makes the Command key act as Meta and Option key as Super.
 (when (eq system-type 'darwin)
-  (setq mac-command-modifier 'super)
-  (setq mac-option-modifier  'meta))
+  (setq mac-command-modifier 'meta)
+  (setq mac-option-modifier  'super))
 
 ;; Ensure Emacs inherits the shell's environment variables (like $PATH).
 ;; This is crucial for external tools, especially LSP servers, to work correctly.
-(use-package exec-path-from-shell
-  :ensure t
-  :config
-  ;; We only need to run this for graphical sessions.
-  ;; Terminal Emacs (-nw) already inherits the shell's environment.
-  (when (display-graphic-p)
-    (exec-path-from-shell-initialize)))
+(when (or (memq window-system '(mac ns x)) (daemonp))
+  (use-package exec-path-from-shell
+    :commands exec-path-from-shell-initialize
+    :custom (exec-path-from-shell-arguments '("-l"))
+    :init (exec-path-from-shell-initialize)))
 
 
 ;;----------------------------------------------------------------------------
@@ -45,7 +50,8 @@
 ;; and prevents a wide range of issues with international characters.
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
-
+(set-keyboard-coding-system 'utf-8-unix)
+(set-terminal-coding-system 'utf-8-unix)
 
 ;;----------------------------------------------------------------------------
 ;; Core Editor Behavior
