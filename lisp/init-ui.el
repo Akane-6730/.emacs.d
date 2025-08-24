@@ -168,20 +168,15 @@
       redisplay-skip-fontification-on-input t)
 
 (pixel-scroll-precision-mode 1)
-(defun +pixel-scroll-interpolate-down (&optional lines)
-  (interactive)
-  (if lines
-      (pixel-scroll-precision-interpolate (* -1 lines (pixel-line-height)))
-    (pixel-scroll-interpolate-down)))
 
-(defun +pixel-scroll-interpolate-up (&optional lines)
-  (interactive)
-  (if lines
-      (pixel-scroll-precision-interpolate (* lines (pixel-line-height))))
-  (pixel-scroll-interpolate-up))
+(use-package ultra-scroll
+  :hook (after-init . ultra-scroll-mode))
 
-(defalias 'scroll-up-command '+pixel-scroll-interpolate-down)
-(defalias 'scroll-down-command '+pixel-scroll-interpolate-up)
+(setq pixel-scroll-precision-interpolate-page t)
+
+(global-set-key (kbd "C-v") #'pixel-scroll-interpolate-down)
+(global-set-key (kbd "M-v") #'pixel-scroll-interpolate-up)
+
 
 ;; --- GUI Behavior & Clean Startup ---
 ;; Prevent Emacs from using native OS dialogs for files and prompts.
