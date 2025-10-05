@@ -9,27 +9,10 @@
 ;;; Code:
 
 ;;----------------------------------------------------------------------------
-;; Current Line Highlighting
-;;----------------------------------------------------------------------------
-
-;; `hl-line-mode` highlights the current line, making it easy to see where
-;; the cursor is vertically. It's a fundamental UI enhancement.
-
-;; (use-package hl-line
-;;   :hook ((after-init . global-hl-line-mode)
-;;          ;; We disable hl-line in specific modes where it can be distracting
-;;          ;; or visually unhelpful, like terminals or the dashboard.
-;;          ((dashboard-mode eshell-mode shell-mode term-mode vterm-mode) .
-;;           (lambda () (setq-local global-hl-line-mode nil)))))
-
-
-;;----------------------------------------------------------------------------
 ;; Matching Parentheses Highlighting
 ;;----------------------------------------------------------------------------
 
 ;; `show-paren-mode` is a built-in mode that highlights matching delimiters
-;; (parentheses, brackets, etc.). This is crucial for navigating nested code.
-
 (use-package paren
   :ensure nil
   :hook (after-init . show-paren-mode)
@@ -49,11 +32,9 @@
 ;;----------------------------------------------------------------------------
 ;; Symbol Occurrences Highlighting
 ;;----------------------------------------------------------------------------
-;;
+
 ;; `symbol-overlay` highlights all occurrences of the symbol at the current
-;; cursor position. It's extremely useful for quickly seeing where a variable
-;; or function is used within the visible buffer.
-;;
+;; cursor position.
 (use-package symbol-overlay
   :diminish
   :hook (prog-mode . symbol-overlay-mode)
@@ -77,10 +58,6 @@
 ;;----------------------------------------------------------------------------
 ;; VCS Changes Highlighting
 ;;----------------------------------------------------------------------------
-
-;; `diff-hl` shows uncommitted Git changes directly in the fringe (the margin
-;; on the left or right of the window), indicating added, modified, or
-;; deleted lines. This provides immediate feedback on your work.
 
 (use-package diff-hl
   :autoload diff-hl-flydiff-mode

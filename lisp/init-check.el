@@ -1,10 +1,14 @@
 ;;; init-check.el --- On-the-fly syntax checking configuration -*- lexical-binding: t; -*-
 
+;;; Commentary:
+
 ;;
 ;; This file configures the framework for on-the-fly syntax checking.
 ;; We use Flymake, the modern, built-in checker available in Emacs 29+.
 ;; It automatically checks your code as you type and highlights errors.
 ;;
+
+;;; Code:
 
 (use-package flymake
   :ensure nil ; This is a built-in package.

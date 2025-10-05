@@ -1,9 +1,13 @@
 ;;; init-shell.el --- Shell and terminal emulator configurations -*- lexical-binding: t; -*-
 
-;;; eshell configurations
+;;; Commentary:
+;;
+;; eshell configurations
+
+;;; Code:
 
 (use-package eshell
-  :ensure nil ; This is a built-in package.
+  :ensure nil
   :config
   ;; Sensible defaults for a better user experience.
   (setq eshell-history-size 10000
@@ -13,5 +17,4 @@
   :hook (eshell-mode . (lambda () (completion-preview-mode 1))))
 
 (provide 'init-shell)
-
 ;;; init-shell.el ends here

@@ -155,7 +155,7 @@
   (my/ns-set-frame-titlebar (selected-frame)))
 
 ;; set transparency
-(set-frame-parameter nil 'alpha 95)
+;; (set-frame-parameter nil 'alpha 95)
 
 
 ;; --- Scrolling Behavior ---
@@ -170,6 +170,7 @@
 (pixel-scroll-precision-mode 1)
 
 (use-package ultra-scroll
+  :ensure t
   :hook (after-init . ultra-scroll-mode))
 
 (setq pixel-scroll-precision-interpolate-page t)
