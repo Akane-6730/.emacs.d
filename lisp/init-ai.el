@@ -20,5 +20,23 @@
 (use-package gptel-magit
   :hook (magit-mode . gptel-magit-install))
 
+;; GitHub Copilot for code completion
+(use-package copilot
+  :hook ((org-mode . copilot-mode)
+         (markdown-mode . copilot-mode))
+  :init (setq copilot--indent-warning-printed-p t
+              copilot-indent-offset-warning-disable t)
+  :config
+  (with-no-warnings
+    (defun my-copilot-get-source-suppress-warning (original-function &rest args)
+      "Advice to suppress display-warning in copilot--get-source."
+      (cl-letf (((symbol-function 'display-warning) (lambda (&rest args) nil)))
+        (apply original-function args))))
+  (advice-add 'copilot--get-source :around #'my-copilot-get-source-suppress-warning)
+  :bind (:map copilot-mode-map
+              ("<tab>" . copilot-accept-completion)
+              ("M-<right>" . copilot-accept-completion-by-word)))
+
+
 (provide 'init-ai)
 ;;; init-ai.el ends here
