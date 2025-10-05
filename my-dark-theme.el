@@ -119,12 +119,6 @@ Can be an integer to determine the exact padding."
    (mode-line-inactive                           :background bg :foreground fg
                                                  :box (if -modeline-pad `(:line-width ,-modeline-pad :color red)))
 
-   ;;;; centaur-tabs
-   ;; (centaur-tabs-selected-modified               :inherit 'centaur-tabs-selected :foreground yellow)
-   ;; (centaur-tabs-unselected-modified             :inherit 'centaur-tabs-unselected :foreground yellow)
-   ;; (centaur-tabs-active-bar-face                 :background yellow)
-   ;; (centaur-tabs-modified-marker-selected        :inherit 'centaur-tabs-selected :foreground fg)
-   ;; (centaur-tabs-modified-marker-unselected      :inherit 'centaur-tabs-unselected :foreground fg)
    ;;;; css-mode <built-in> / scss-mode
    (css-proprietary-property                     :foreground keywords)
    ;;;; deadgrep
@@ -136,29 +130,8 @@ Can be an integer to determine the exact padding."
    (doom-modeline-buffer-path                    :inherit 'normal :foreground green)
    (doom-modeline-buffer-project-root            :foreground green :weight 'normal)
    (doom-modeline-buffer-modified                :inherit 'normal :foreground orange)
-   ;;;; doom-emacs
-   ;; (doom-dashboard-menu-title                    :foreground yellow)
    ;;;; ediff <built-in>
    (ediff-fine-diff-A                            :background (doom-blend red bg 0.3) :weight 'normal)
-   ;;;; flycheck
-   ;; ((flycheck-error &override)                   :background base3)
-   ;; ((flycheck-warning &override)                 :background base3)
-   ;; ((flycheck-info &override)                    :background base3)
-   ;;;; helm
-   ;; (helm-swoop-target-line-face                  :foreground red :inverse-video t)
-   ;;;; lsp-mode
-   ;; (lsp-face-highlight-read                     :background base3)
-   ;; (lsp-face-highlight-textual                  :background base3)
-   ;; (lsp-face-highlight-write                    :background base4)
-   ;;;; lsp-ui
-   ;; HIGHLY recommended: (setq lsp-ui-peek-fontify 'always)
-   ;; (lsp-ui-peek-header                          :foreground fg :background base5)
-   ;; (lsp-ui-peek-footer                          :inherit 'lsp-ui-peek-header)
-   ;; (lsp-ui-peek-selection                       :foreground bg :background yellow)
-   ;; (lsp-ui-peek-list                            :background base3)
-   ;; (lsp-ui-peek-peek                            :inherit 'lsp-ui-peek-list)
-   ;; (lsp-ui-peek-highlight                       :inherit 'isearch)
-   ;; (lsp-ui-peek-filename                        :foreground base8 :weight 'normal)
    ;;;; markdown-mode
    (markdown-blockquote-face                     :inherit 'italic :foreground dark-blue)
    (markdown-list-face                           :foreground red)
@@ -186,56 +159,6 @@ Can be an integer to determine the exact padding."
    ((org-block &override) :background base2)
    ((org-block-background &override) :background base2)
    ((org-block-begin-line &override) :background base2)
-   ;;;;;; php-mode
-   (php-php-tag                                  :foreground orange)
-   (php-function-name                            :foreground green)
-   (php-function-call                            :foreground green)
-   (php-string                                   :foreground yellow)
-   (php-keyword                                  :foreground blue)
-   (php-builtin                                  :foreground violet)
-   (php-method-call                              :foreground green)
-   (php-static-method-call                       :foreground green)
-   (php-variable-name                            :foreground fg)
-   (php-property-name                            :foreground fg)
-   (php-variable-sigil                           :foreground base8)
-   (php-operator                                 :foreground red)
-   (php-paamayim-nekudotayim                     :foreground red)
-   (php-type                                     :foreground blue :italic italic)
-   (php-class                                    :foreground red)
-   (php-constant                                 :foreground violet)
-   (php-constant-assign                          :foreground blue)
-   (php-magical-constant                         :foreground violet)
-   (php-$this                                    :foreground base8 :italic italic)
-   (php-$this-sigil                              :foreground base8 :italic italic)
-   (php-errorcontrol-op                          :foreground red)
-   (php-doc-annotation-tag                       :foreground blue)
-   (php-doc-variable-sigil                       :foreground base6)
-   (php-doc-$this                                :foreground base6)
-   (php-doc-$this-sigil                          :foreground base6)
-   (php-doc-class-name                           :foreground base6)
-   ;; As soon as https://github.com/emacs-php/php-mode/pull/606
-   ;; is merged these can be uncommented.
-   ;;(php-class-declaration-spec                   :foreground red)
-   ;;(php-class-modifier                           :foreground red)
-   ;;(php-namespace-declaration                    :foreground red)
-   ;;(php-import-declaration                       :foreground red)
-   ;;(php-method-modifier                          :foreground red :italic italic)
-   ;;(php-method-access                            :foreground red :italic italic)
-   ;;(php-method-static                            :foreground red :italic italic)
-   ;;(php-property-access                          :foreground red :italic italic)
-   ;;(php-property-const                           :foreground red :italic italic)
-   ;;(php-property-static                          :foreground red :italic italic)
-   ;;(php-block-delimiter                          :foreground base7)
-   ;;(php-flow-control-statement                   :foreground red)
-   ;;(php-block-statement                          :foreground red)
-   ;;(php-include-statement                        :foreground green)
-   ;;(php-constant-keyword                         :foreground violet)
-   ;;(php-number                                   :foreground violet)
-   ;;(php-string-quote                             :foreground base7)
-   ;;(php-type-operator                            :foreground red)
-   ;;(php-print-statement                          :foreground green)
-   ;;(php-return-type-colon                        :foreground red)
-   ;;(php-function-keyword                         :foreground blue :italic italic)
    ;;;; rainbow-delimiters
    (rainbow-delimiters-depth-1-face :foreground violet)
    (rainbow-delimiters-depth-2-face :foreground blue)
@@ -244,7 +167,7 @@ Can be an integer to determine the exact padding."
    (rainbow-delimiters-depth-5-face :foreground violet)
    (rainbow-delimiters-depth-6-face :foreground yellow)
    (rainbow-delimiters-depth-7-face :foreground blue)
-;;;; show-paren-mode
+   ;;;; show-paren-mode
    (show-paren-match                             :weight 'normal :foreground green)
    (show-paren-mismatch                          :weight 'normal :foreground red)
    ;;;; swiper
