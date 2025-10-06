@@ -4,7 +4,6 @@
 ;;
 ;; Some useful Utilities.
 ;;
-
 ;;; Code:
 
 ;;;----------------------------------------------------------------------------
@@ -24,7 +23,7 @@
 (use-package grep
   :ensure nil
   :autoload grep-apply-setting
-  :init
+  :config
   (when (executable-find "rg")
     (grep-apply-setting
      'grep-command "rg --color=auto --null -nH --no-heading -e ")
@@ -34,21 +33,6 @@
      'grep-find-command '("rg --color=auto --null -nH --no-heading -e ''" . 38))
     (grep-apply-setting
      'grep-find-template "rg --color=auto --null -nH --no-heading -e <R> <D>")))
-
-
-;;;----------------------------------------------------------------------------
-;;; Auto-compile Personal Elisp Files on Save
-;;;----------------------------------------------------------------------------
-
-(defun auto-recompile-file-maybe ()
-  (when (and (fboundp 'vc-root-dir)
-             (string= (vc-root-dir) user-emacs-directory))
-    (byte-compile-file buffer-file-name)))
-
-(defun add-after-save-hook ()
-  (add-hook 'after-save-hook 'auto-recompile-file-maybe nil t))
-
-(add-hook 'emacs-lisp-mode-hook #'add-after-save-hook)
 
 (provide 'init-utils)
 ;;; init-utils.el ends here
