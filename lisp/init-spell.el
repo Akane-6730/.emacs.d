@@ -50,20 +50,14 @@ correction keys, without affecting programming modes."
   (setq ispell-program-name "aspell"
         ispell-extra-args '("--sug-mode=ultra" "--lang=en_US" "--run-together")
         flyspell-issue-message-flag nil)  ; Suppress startup messages.
-  (add-hook 'flyspell-mode-hook
-            (lambda ()
-              (setq-local completion-at-point-functions
-                          (remove #'ispell-completion-at-point
-                                  completion-at-point-functions)))))
-
-;; For each text-centric mode, enable `flyspell-mode` and then add back
-;; the specific keybindings we want for those modes.
-(dolist (hook '(text-mode-hook
-                org-mode-hook
-                markdown-mode-hook
-                git-commit-mode-hook))
-  (add-hook hook #'flyspell-mode)
-  (add-hook hook #'my-spell--rebind-correction-keys-for-text))
+  :init
+  ;; For each text-centric mode, enable `flyspell-mode` and then add back
+  ;; the specific keybindings we want for those modes.
+  (dolist (hook '(text-mode-hook
+                  org-mode-hook
+                  markdown-mode-hook))
+    (add-hook hook #'flyspell-mode)
+    (add-hook hook #'my-spell--rebind-correction-keys-for-text)))
 
 (provide 'init-spell)
 ;;; init-spell.el ends here
