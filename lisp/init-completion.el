@@ -2,14 +2,14 @@
 
 ;;; Commentary:
 ;;
-;; This file configures the entire completion system. It uses a modern stack
-;; based on Vertico for the minibuffer UI, Corfu for in-buffer completion,
+;; This file configures the entire completion system. It uses
+;; Vertico for the minibuffer UI, Corfu for in-buffer completion,
 ;; and Consult for powerful search and navigation commands.
 ;;
 ;;; Code:
 
 ;;----------------------------------------------------------------------------
-;; Minibuffer Completion UI (The Vertico Stack)
+;; Minibuffer Completion UI
 ;;----------------------------------------------------------------------------
 
 (use-package vertico
@@ -35,7 +35,7 @@
   :hook (vertico-mode . marginalia-mode))
 
 ;;----------------------------------------------------------------------------
-;; In-Buffer Completion (The Corfu Stack)
+;; In-Buffer Completion
 ;;----------------------------------------------------------------------------
 
 (use-package corfu
@@ -46,6 +46,8 @@
   (corfu-auto-prefix 2)
   (corfu-auto-delay 0.05)
   (corfu-cycle t)
+  :custom-face
+  (corfu-border ((t (:inherit region :background unspecified))))
   :bind (:map corfu-map
               ("TAB" . my-corfu-smart-tab)
               ;; Custom binding to quit Corfu and move to the next line
@@ -77,10 +79,7 @@
   :init (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 
 
-;;
-;; Package: cape
 ;; Provides various "Completion At Point Extensions" (backends) for Corfu.
-;;
 (use-package cape
   :commands (cape-file cape-elisp-block cape-keyword)
   :autoload (cape-wrap-noninterruptible cape-wrap-nonexclusive cape-wrap-buster)
@@ -102,15 +101,10 @@
 
 
 ;;----------------------------------------------------------------------------
-;; Enhanced Commands & Search (Consult)
+;; Enhanced Commands & Search
 ;;----------------------------------------------------------------------------
 
-;;
-;; Package: consult
 ;; A suite of enhanced commands for search, navigation, and narrowing.
-;; It provides powerful, preview-enabled replacements for built-in commands
-;; like `switch-to-buffer` and introduces new ones like `consult-ripgrep`.
-;;
 (use-package consult
   :bind ( ;; C-x prefix bindings
          ("C-x b"   . consult-buffer)                ;; Better `switch-to-buffer`
@@ -142,18 +136,12 @@
   ([remap Info-search]        . consult-info)
   ([remap isearch-forward]    . consult-line)
   ([remap recentf-open-files] . consult-recent-file)
-
-  ;; The :init block runs before the package is loaded.
   :init
   ;; Use Consult's richer UI for `xref` (e.g., find references/definitions).
   ;; This is a major improvement over the default xref display.
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
-  ;; The :config block runs after the package has been loaded.
   :config
-  ;; Configure how previews are triggered in Consult.
-  ;; This setup enables preview for most commands with a slight debounce
-  ;; to avoid being overwhelming.
   (consult-customize
    consult-line consult-line-multi :preview-key 'any
    consult-buffer consult-recent-file consult-theme :preview-key '(:debounce 0.2 any)
@@ -167,16 +155,15 @@
 ;; Configuration for Built-in Emacs Completion Settings
 ;;----------------------------------------------------------------------------
 
-;;
-;; Fine-tunes Emacs's built-in completion behavior to better integrate
-;; with our modern completion framework.
-;;
 (use-package emacs
   :ensure nil
-  :init
+  :custom
   ;; (setq-default tab-always-indent 'complete)
   ;; Clean up M-x by hiding commands not meant for direct user interaction.
-  (setq read-extended-command-predicate #'command-completion-default-include-p))
+  (setq read-extended-command-predicate #'command-completion-default-include-p)
+  ;; Emacs 30 and newer: Disable Ispell completion function. As an alternative,
+  ;; try `cape-dict'.
+  (text-mode-ispell-word-completion nil))
 
 
 (provide 'init-completion)
