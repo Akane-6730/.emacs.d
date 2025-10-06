@@ -1,0 +1,19 @@
+* My Emacs Configuration
+** Dependencies
+*** Emacs Version
+This configuration is developed and tested with *Emacs 30+*.
+
+*** Operating System
+Primarily developed and tested on *macOS* and *Linux*.
+*** External Packages (Optional but Recommended)
+- =ripgrep (rg)=: Required by =init-completion.el=
+- =aspell=: Required by =init-spell.el=
+- =codelldb=: Required by =init-dape.el=
+** Installation
+#+BEGIN_SRC shell
+mv ~/.emacs.d ~/.emacs.d.bak
+git clone --depth 1 https://github.com/Akane-6730/.emacs.d.git ~/.emacs.d
+#+END_SRC
+
+** Screenshots
+[[./screenshots/dashboard.png]]
