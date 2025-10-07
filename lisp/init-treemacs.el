@@ -21,9 +21,9 @@
          ("C-x t b"   . treemacs-bookmark)
          ("C-x t C-t" . treemacs-find-file)
          ("C-x t M-t" . treemacs-find-tag)
+         :map treemacs-mode-map
          ("j"         . treemacs-next-line)
          ("k"         . treemacs-previous-line)
-         :map treemacs-mode-map
          ([mouse-1]   . treemacs-single-click-expand-action))
   :config
   (setq treemacs-collapse-dirs           (if treemacs-python-executable 3 0)
