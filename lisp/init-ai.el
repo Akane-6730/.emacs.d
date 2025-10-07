@@ -10,6 +10,7 @@
 ;; Interact with ChatGPT or other LLMs
 (use-package gptel
   :functions gptel-make-openai
+  :bind ("C-c g" . gptel-menu)
   :config
   (setq gptel-default-mode 'org-mode)
   (setq gptel-model 'gpt-4.1)
@@ -22,8 +23,7 @@
 
 ;; GitHub Copilot for code completion
 (use-package copilot
-  :hook ((org-mode . copilot-mode)
-         (markdown-mode . copilot-mode))
+  :hook ((markdown-mode latex-mode) . copilot-mode)
   :init (setq copilot--indent-warning-printed-p t
               copilot-indent-offset-warning-disable t)
   :config
@@ -36,7 +36,6 @@
   :bind (:map copilot-mode-map
               ("<tab>" . copilot-accept-completion)
               ("M-<right>" . copilot-accept-completion-by-word)))
-
 
 (provide 'init-ai)
 ;;; init-ai.el ends here
