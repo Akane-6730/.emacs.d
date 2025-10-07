@@ -87,7 +87,7 @@ Can be an integer to determine the exact padding."
    (error          red)
    (warning        orange)
    (success        green)
-   (vc-modified    orange)
+   (vc-modified    blue)
    (vc-added       green)
    (vc-deleted     red)
 
@@ -193,9 +193,9 @@ Can be an integer to determine the exact padding."
    (treemacs-git-added-face                     :foreground green)
    (treemacs-git-conflict-face                  :foreground red)
    (treemacs-git-ignored-face                   :foreground base6)
-   (treemacs-git-modified-face                  :foreground violet)
+   (treemacs-git-modified-face                  :foreground blue)
    (treemacs-git-renamed-face                   :foreground orange)
-   (treemacs-git-untracked-face                 :inherit 'treemacs-git-renamed-face)
+   (treemacs-git-untracked-face                 :foreground yellow)
    (treemacs-on-failure-pulse-face              :foreground base0 :background red)
    (treemacs-on-success-pulse-face              :foreground base0 :background green)
    ;;;; web-mode
