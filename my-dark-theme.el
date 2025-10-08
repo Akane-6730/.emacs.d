@@ -206,6 +206,42 @@ Can be an integer to determine the exact padding."
    ;; Apparently web-mode has no face for values of css properties.
    (web-mode-css-selector-face                  :foreground green)
    (web-mode-css-property-name-face             :foreground base7)
+   ;; Rime
+   (rime-highlight-candidate-face               :foreground green)
+   ;; Tab bar
+   (tab-bar                                     :background bg)
+   (tab-bar-tab
+    :background bg
+    :foreground fg
+    :box nil
+    :underline `(:color ,blue :position -2))
+   (tab-bar-tab-inactive
+    :background bg
+    :foreground fg-alt
+    :box nil
+    :underline nil)
+   ;; Tab line
+   (tab-line                                    :background bg)
+   (tab-line-tab
+    :background bg
+    :foreground fg
+    :box nil
+    :underline `(:color ,blue :position -2))
+   (tab-line-tab-current
+    :background bg
+    :foreground fg
+    :box nil
+    :underline `(:color ,blue :position -2))
+   (tab-line-tab-inactive
+    :background bg
+    :foreground fg-alt
+    :box nil
+    :underline nil)
+   ;; Magit
+   (magit-header-line
+    :background base3
+    :foreground fg
+    :box nil)
 
    ;; Override the theme's default color for operators.
    (font-lock-operator-face :foreground magenta)
