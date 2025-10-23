@@ -20,7 +20,7 @@
                         :endpoint "/v1/chat/completions"
                         :key gptel-api-key
                         :stream t
-                        :models '(gpt-5 gpt-5-codex gpt-5-high
+                        :models '(gpt-5 gpt-5-codex
                                         claude-4.5-sonnet claude-opus-4
                                         gemini-2.5-pro gemini-2.5-flash
                                         qwen3-max)))
