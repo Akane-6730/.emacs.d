@@ -134,6 +134,14 @@ respecting any narrowing (`C-x n n`)."
               hungry-delete-except-modes
               '(help-mode minibuffer-mode minibuffer-inactive-mode calc-mode)))
 
+;; Drag stuff (lines, words, region, etc...) around
+(use-package drag-stuff
+  :diminish
+  :autoload drag-stuff-define-keys
+  :hook (after-init . drag-stuff-global-mode)
+  :config
+  (add-to-list 'drag-stuff-except-modes 'org-mode)
+  (drag-stuff-define-keys))
 
 ;;----------------------------------------------------------------------------
 ;; Undo Tree
