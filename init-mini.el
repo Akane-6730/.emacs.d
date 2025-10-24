@@ -2,24 +2,14 @@
 
 ;;; Commentary:
 ;;
-;; A minimal, modern, and personal configuration for fast startup and debugging.
-;; It uses only built-in Emacs features (no external packages) and is
-;; targeted for Emacs 29+.
+;; A minimal configuration for fast startup and debugging.
 ;;
-;; To use it, run: emacs -q -l /path/to/your/init-mini.el
-;;
-
 ;;; Code:
 
-;;----------------------------------------------------------------------------
 ;; Core Setup & Better Defaults
-;;----------------------------------------------------------------------------
 
-;; Explicitly set the prefered coding systems to avoid annoying prompt
-;; from emacs (especially on Microsoft Windows)
 (prefer-coding-system 'utf-8)
 
-;; Better defaults
 ;; (setq initial-scratch-message nil)
 (setq inhibit-splash-screen t)
 (setq uniquify-buffer-name-style 'post-forward-angle-brackets) ; Show path if names are same
@@ -112,22 +102,6 @@
         (message "Aborting")))
     (global-set-key (kbd "C-x C-r") 'ido-recentf-open)))
 
-;; Key Modifiers
-(cond
- ((eq system-type 'windows-nt)
-  ;; make PC keyboard's Win key or other to type Super or Hyper
-  ;; (setq w32-pass-lwindow-to-system nil)
-  (setq w32-lwindow-modifier 'super     ; Left Windows key
-        w32-apps-modifier 'hyper)       ; Menu/App key
-  (w32-register-hot-key [s-t]))
- ((eq window-system 'mac)
-  (global-set-key [(super a)] #'mark-whole-buffer)
-  (global-set-key [(super v)] #'yank)
-  (global-set-key [(super c)] #'kill-ring-save)
-  (global-set-key [(super s)] #'save-buffer)
-  (global-set-key [(super l)] #'goto-line)
-  (global-set-key [(super w)] #'delete-frame)
-  (global-set-key [(super z)] #'undo)))
 
 ;; Keybindings
 (defun revert-current-buffer ()
@@ -145,13 +119,15 @@
             (local-set-key (kbd "C-c C-c") #'eval-defun)
             (local-set-key (kbd "C-c C-b") #'eval-buffer)))
 
+;; On macOS, use thinner font smoothing for a sharper look.
+(when (eq system-type 'darwin)
+  (setq mac-command-modifier 'meta)
+  (setq mac-option-modifier  'super))
+
 ;; Maximize window to full Screen
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
-
-;;----------------------------------------------------------------------------
 ;; Font Setup
-;;----------------------------------------------------------------------------
 (when window-system
   (defun my-find-first-available-font (font-list)
     "Find the first installed font from FONT-LIST."
@@ -168,22 +144,9 @@
     (when font
       (set-fontset-font t 'han font))))
 
-
-;; On macOS, use thinner font smoothing for a sharper look.
-(when (eq system-type 'darwin)
-  (setq ns-use-thin-smoothing t)
-  (setq mac-command-modifier 'meta)
-  (setq mac-option-modifier  'super))
-
-;; (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
-;; (require 'init-window)
-
-;;----------------------------------------------------------------------------
 ;; Window Management
-;;----------------------------------------------------------------------------
 (use-package windmove
   :ensure nil
-  ;; We bind the navigation commands to `Super` + arrow keys.
   :hook (after-init . (lambda ()
                         (windmove-default-keybindings 'super))))
 
@@ -192,7 +155,6 @@
   :hook (after-init . winner-mode)
   :bind (("C-c <left>"  . winner-undo)
          ("C-c <right>" . winner-redo)))
-
 
 ;; Auto-focus on New Window After Split
 (defun my-window--select-new-window-after-split (orig-fn &rest args)
@@ -207,6 +169,4 @@ new window, and then returns it."
 (advice-add 'split-window-right :around #'my-window--select-new-window-after-split)
 (advice-add 'split-window-below :around #'my-window--select-new-window-after-split)
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Init-mini.el ends here
+;;; init-mini.el ends here
