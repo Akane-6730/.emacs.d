@@ -14,16 +14,21 @@
   :custom (gptel-default-mode 'org-mode)
   :config
   (setq gptel-model 'gpt-5
-        gptel-backend (gptel-make-openai "DoneHub"
-                        :host "donehub.darstib.cn"
-                        :protocol "http"
-                        :endpoint "/v1/chat/completions"
+        gptel-backend (gptel-make-openai "KXY"
+                        :host "api.kkyyxx.xyz"
                         :key gptel-api-key
                         :stream t
                         :models '(gpt-5 gpt-5-codex
-                                        claude-4.5-sonnet claude-opus-4
-                                        gemini-2.5-pro gemini-2.5-flash
-                                        qwen3-max)))
+                                        claude-4.5-sonnet claude-4-opus claude-4.1-opus)))
+
+  (gptel-make-openai "DoneHub"
+                        :host "donehub.darstib.cn"
+                        :protocol "http"
+                        :key gptel-api-key
+                        :stream t
+                        :models '(gpt-5 gpt-5-codex
+                                        claude-4.5-sonnet claude-opus-4 claude-sonnet-4-think claude-haiku-4-5-20251001
+                                        gemini-2.5-pro gemini-2.5-flash))
 
   (gptel-make-gh-copilot "Copilot" :stream t)
 
@@ -34,8 +39,6 @@
 
   (gptel-make-openai "DeepSeek V3.1"
     :host "api.freeserve.top"
-    :protocol "https"
-    :endpoint "/v1/chat/completions"
     :key gptel-api-key
     :stream t
     :models '(deepseek-v3.1)))
