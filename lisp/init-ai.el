@@ -43,7 +43,8 @@
     :stream t
     :models '(deepseek/deepseek-v3.2-exp
               qwen/qwen3-coder-plus
-              qwen/qwen3-coder)))
+              qwen/qwen3-coder
+              qwen/qwen3-max)))
 
 ;; Generate commit messages for magit
 (use-package gptel-magit
