@@ -61,7 +61,7 @@ Can be an integer to determine the exact padding."
    (yellow     '("#ffed72" "#f0e68c" "yellow"       ))
    (violet     '("#baa0f8" "#9370db" "magenta"      ))
    (cyan       '("#7cd5f1" "#40e0d0" "brightcyan"   ))
-   (magenta    '("#FF6188" "#FF6188" "violet"))
+   (magenta    '("#FF6188" "#FF6188" "violet"       ))
    (blue        cyan)
    (dark-blue   cyan)
    (teal        cyan)
@@ -195,7 +195,7 @@ Can be an integer to determine the exact padding."
    (treemacs-git-ignored-face                   :foreground base6)
    (treemacs-git-modified-face                  :foreground blue)
    (treemacs-git-renamed-face                   :foreground orange)
-   (treemacs-git-untracked-face                 :foreground yellow)
+   (treemacs-git-untracked-face                 :foreground (doom-darken yellow 0.3))
    (treemacs-on-failure-pulse-face              :foreground base0 :background red)
    (treemacs-on-success-pulse-face              :foreground base0 :background green)
    ;;;; web-mode
