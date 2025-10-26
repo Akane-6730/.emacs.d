@@ -41,7 +41,9 @@
     :host "api.anannas.ai"
     :key gptel-api-key
     :stream t
-    :models '(deepseek/deepseek-v3.2-exp)))
+    :models '(deepseek/deepseek-v3.2-exp
+              qwen/qwen3-coder-plus
+              qwen/qwen3-coder)))
 
 ;; Generate commit messages for magit
 (use-package gptel-magit
