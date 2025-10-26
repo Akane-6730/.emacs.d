@@ -22,13 +22,13 @@
                                         claude-4.5-sonnet claude-4-opus claude-4.1-opus)))
 
   (gptel-make-openai "DoneHub"
-                        :host "donehub.darstib.cn"
-                        :protocol "http"
-                        :key gptel-api-key
-                        :stream t
-                        :models '(gpt-5 gpt-5-codex
-                                        claude-4.5-sonnet claude-opus-4 claude-sonnet-4-think claude-haiku-4-5-20251001
-                                        gemini-2.5-pro gemini-2.5-flash))
+    :host "donehub.darstib.cn"
+    :protocol "http"
+    :key gptel-api-key
+    :stream t
+    :models '(gpt-5 gpt-5-codex
+                    claude-4.5-sonnet claude-opus-4 claude-sonnet-4-think claude-haiku-4-5-20251001
+                    gemini-2.5-pro gemini-2.5-flash))
 
   (gptel-make-gh-copilot "Copilot" :stream t)
 
@@ -37,11 +37,11 @@
     :stream t
     :models '(gemini-2.5-pro gemini-2.5-flash))
 
-  (gptel-make-openai "DeepSeek V3.1"
-    :host "api.freeserve.top"
+  (gptel-make-openai "Anannas"
+    :host "api.anannas.ai"
     :key gptel-api-key
     :stream t
-    :models '(deepseek-v3.1)))
+    :models '(deepseek/deepseek-v3.2-exp)))
 
 ;; Generate commit messages for magit
 (use-package gptel-magit
