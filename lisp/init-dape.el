@@ -28,8 +28,13 @@
                  :request "launch"
                  :name "Codelldb: Launch current file"
                  :cwd "."
-                 :program (lambda () (file-name-sans-extension
-                                      (file-name-nondirectory (buffer-file-name))))
+                 :program (lambda ()
+                            (let* ((source-file (buffer-file-name))
+                                   (dir (file-name-directory source-file))
+                                   (name (file-name-sans-extension
+                                          (file-name-nondirectory source-file))))
+                              (concat dir name)))
+
                  :args []
                  :stopOnEntry nil)))
 
