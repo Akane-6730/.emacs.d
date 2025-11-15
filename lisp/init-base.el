@@ -1,10 +1,12 @@
 ;;; init-base.el --- Core editor settings and behaviors -*- lexical-binding: t; -*-
 
+;;; Commentary:
 ;;
 ;; This file establishes the fundamental behavior of the editor. It includes
 ;; personal information, system-specific tweaks (macOS/Linux), encoding,
 ;; file history, and other essential defaults.
 ;;
+;;; Code:
 
 ;;----------------------------------------------------------------------------
 ;; Personal Information
@@ -14,14 +16,13 @@
 (setq user-full-name    "Akane"
       user-mail-address "710105188@qq.com")
 
-;; Garbage Collector Magic Hack
+;; Use garbage collector magic hack to improve performance.
 (use-package gcmh
   :diminish
   :hook (emacs-startup . gcmh-mode)
-  :init
-  (setq gcmh-idle-delay 'auto
-        gcmh-auto-idle-delay-factor 10
-        gcmh-high-cons-threshold #x1000000)) ; 16MB
+  :init (setq gcmh-idle-delay 'auto
+              gcmh-auto-idle-delay-factor 10
+              gcmh-high-cons-threshold #x1000000)) ; 16MB
 
 ;;----------------------------------------------------------------------------
 ;; System-Specific Configuration (macOS & Linux)
@@ -33,14 +34,25 @@
   (setq mac-command-modifier 'meta)
   (setq mac-option-modifier  'super))
 
-;; Ensure Emacs inherits the shell's environment variables (like $PATH).
-;; This is crucial for external tools, especially LSP servers, to work correctly.
+;; Manually load PATH from ~/.path for better performance.
+;; NOTE: When PATH is changed, run the following command
+;; $ sh -c 'printf "%s" "$PATH"' > .path
 (when (or (memq window-system '(mac ns x)) (daemonp))
-  (use-package exec-path-from-shell
-    :commands exec-path-from-shell-initialize
-    :custom (exec-path-from-shell-arguments '("-l"))
-    :init (exec-path-from-shell-initialize)))
+  (condition-case err
+      (let ((path (with-temp-buffer
+                    (insert-file-contents-literally "~/.path")
+                    (buffer-string))))
+        (setenv "PATH" path)
+        (setq exec-path (append (parse-colon-path path) (list exec-directory))))
+    (error (warn "%s" (error-message-string err)))))
 
+;; Disable `exec-path-from-shell` for bad performance on startup.
+;; (use-package exec-path-from-shell
+;;   :if (or (memq window-system '(mac ns x)) (daemonp))
+;;   :commands exec-path-from-shell-initialize
+;;   :custom (setq exec-path-from-shell-arguments '("-l"))
+;;   :init
+;;   (exec-path-from-shell-initialize))
 
 ;;----------------------------------------------------------------------------
 ;; Encoding
@@ -64,84 +76,115 @@
  ;; Indentation: Use spaces instead of tabs, with a width of 4 spaces.
  indent-tabs-mode nil
  tab-width 4
-
  ;; Set the default width for wrapping text.
  fill-column 80
-
  ;; Default to text-mode for new, unrecognized files.
  major-mode 'text-mode)
 
 (setq
- ;; Don't create backup files (`#foo#`). We use version control (Git) instead.
  make-backup-files nil
- ;; Disable auto-save files (`#foo#`). It can be distracting.
  auto-save-default nil
-
- ;; When deleting a file, move it to the system trash instead of deleting forever.
- delete-by-moving-to-trash t
-
+ delete-by-moving-to-trash t       ; Deleting files go to OS's trash folder
  ;; When multiple buffers have the same name, show parts of the file path
- ;; to distinguish them, e.g., <.../project-a/file.txt> and
- ;; <.../project-b/file.txt>.
+ ;; to distinguish them, e.g., <.../project-a/file.txt> and <.../project-b/file.txt>.
  uniquify-buffer-name-style 'post-forward-angle-brackets
-
  ;; When you press C-g, show a visual "bell" (flash) instead of making a sound.
  visible-bell t
-
- ;; This tells Emacs to kill the entire line, including the newline character,
- ;; when using `kill-line` (C-k).
- kill-whole-line t)
-
+ ;; Kill the entire line, including the newline character when using `kill-line` (C-k).
+ inhibit-compacting-font-caches t  ; Don’t compact font caches during GC
+ uniquify-buffer-name-style 'post-forward-angle-brackets ; Show path if names are same
+ adaptive-fill-regexp "[ t]+|[ t]*([0-9]+.|*+)[ t]*"
+ adaptive-fill-first-line-regexp "^* *$"
+ sentence-end "\\([。！？]\\|……\\|[.?!][]\"')}]*\\($\\|[ \t]\\)\\)[ \t\n]*"
+ sentence-end-double-space nil
+ word-wrap-by-category t)
 
 ;;----------------------------------------------------------------------------
 ;; File & Command History
 ;;----------------------------------------------------------------------------
-
-;; `savehist-mode` saves your minibuffer history (e.g., past commands, search
-;; queries) between Emacs sessions.
+;; `savehist-mode` saves your minibuffer history
 (use-package savehist
-  :ensure nil ; This is a built-in package.
   :hook (after-init . savehist-mode)
-  :config
-  (setq history-length 1000
-        enable-recursive-minibuffers t))
+  :init (setq enable-recursive-minibuffers t ; Allow commands in minibuffers
+              history-length 1000
+              savehist-additional-variables '(mark-ring
+                                              global-mark-ring
+                                              search-ring
+                                              regexp-search-ring
+                                              extended-command-history)
+              savehist-autosave-interval 300))
 
-;; `save-place-mode` remembers the cursor position in files, so when you
-;; reopen a file, you're right back where you left off.
 (use-package saveplace
-  :ensure nil ; This is a built-in package.
   :hook (after-init . save-place-mode))
 
-;; `recentf-mode` keeps a list of recently opened files, making it easy to
-;; jump back to them.
 (use-package recentf
-  :ensure nil ; This is a built-in package.
   :hook (after-init . recentf-mode)
   :bind (("C-x C-r" . recentf-open-files))
+  :init (setq recentf-max-saved-items 300
+              recentf-exclude
+              '("\\.?cache" ".cask" "url" "COMMIT_EDITMSG\\'" "bookmarks"
+                "\\.\\(?:gz\\|gif\\|svg\\|png\\|jpe?g\\|bmp\\|xpm\\)$"
+                "\\.?ido\\.last$" "\\.revive$" "/G?TAGS$" "/.elfeed/"
+                "^/tmp/" "^/var/folders/.+$" "^/ssh:" "/persp-confs/"
+                (lambda (file) (file-in-directory-p file package-user-dir))))
   :config
-  (setq recentf-max-menu-items 50
-        recentf-max-saved-items 50
-        ;; Exclude temporary files, caches, and package directories.
-        recentf-exclude '("/tmp/"
-                          "/ssh:"
-                          "COMMIT_EDITMSG"
-                          "/.emacs.d/elpa/"
-                          "/.emacs.d/eln-cache/"
-                          "/.emacs.d/auto-save-list/")))
+  (push (expand-file-name recentf-save-file) recentf-exclude)
+  (add-to-list 'recentf-filename-handlers #'abbreviate-file-name))
 
 
-;;----------------------------------------------------------------------------
-;; Emacs Server
-;;----------------------------------------------------------------------------
+(defun byte-compile-elpa ()
+  "Compile packages in elpa directory. Useful if you switch Emacs versions."
+  (interactive)
+  (if (fboundp 'async-byte-recompile-directory)
+      (async-byte-recompile-directory package-user-dir)
+    (byte-recompile-directory package-user-dir 0 t)))
 
-;; Start the Emacs server, allowing `emacsclient` to connect to this Emacs
-;; instance. This is useful for opening files quickly from the terminal.
-(use-package server
+;; Async
+(use-package async
+  :functions (async-bytecomp-package-mode dired-async-mode)
+  :config
+  (async-bytecomp-package-mode 1)
+  (dired-async-mode 1))
+
+(use-package simple
   :ensure nil
+  :hook ((after-init . size-indication-mode)
+         (text-mode . visual-line-mode))
   :config
-  (unless (server-running-p)
-    (server-start)))
+  (setq column-number-mode t
+        line-number-mode t
+        kill-whole-line t               ; Kill line including '\n'
+        line-move-visual nil
+        visual-line-mode t
+        track-eol t                     ; Keep cursor at end of lines. Require line-move-visual is nil.
+        set-mark-command-repeat-pop t)  ; Repeating C-SPC after popping mark pops it again
+  (when (not (display-graphic-p))
+    (xterm-mouse-mode 1))
+  ;; Prettify the process list
+  (with-no-warnings
+    (defun my-list-processes--prettify ()
+      "Prettify process list."
+      (when-let* ((entries tabulated-list-entries))
+        (setq tabulated-list-entries nil)
+        (dolist (p (process-list))
+          (when-let* ((val (cadr (assoc p entries)))
+                      (name (aref val 0))
+                      (pid (aref val 1))
+                      (status (aref val 2))
+                      (status (list status
+                                    'face
+                                    (if (memq status '(stop exit closed failed))
+                                        'error
+                                      'success)))
+                      (buf-label (aref val 3))
+                      (tty (list (aref val 4) 'face 'font-lock-doc-face))
+                      (thread (list (aref val 5) 'face 'font-lock-doc-face))
+                      (cmd (list (aref val 6) 'face 'completions-annotations)))
+            (push (list p (vector name pid status buf-label tty thread cmd))
+                  tabulated-list-entries)))))
+    (advice-add #'list-processes--refresh :after #'my-list-processes--prettify)))
 
+(remove-hook 'kill-buffer-query-functions #'process-kill-buffer-query-function)
 
 (provide 'init-base)
 ;;; init-base.el ends here
