@@ -153,6 +153,14 @@ respecting any narrowing (`C-x n n`)."
 (use-package vundo
   :bind (("C-x u" . vundo)))
 
+;;----------------------------------------------------------------------------
+;; Clipboard Integration
+;;----------------------------------------------------------------------------
+
+;; `xclip` integrates the Emacs kill ring with the system clipboard
+(use-package xclip
+  :hook (after-init . xclip-mode))
+
 
 (provide 'init-edit)
 ;;; init-edit.el ends here
