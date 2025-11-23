@@ -9,9 +9,10 @@
 ;;; Code:
 
 (use-package dape
-  :custom (dape-buffer-window-arrangment 'right)
+  :custom (dape-buffer-window-arrangement 'right)
   :config
   (dape-breakpoint-global-mode)
+  ;; codelldb
   (add-to-list 'dape-configs
                '(my-codelldb-cc
                  modes (c-mode c-ts-mode c++-mode c++-ts-mode)
@@ -36,7 +37,20 @@
                               (concat dir name)))
 
                  :args []
-                 :stopOnEntry nil)))
+                 :stopOnEntry nil))
+  ;; gdb
+  (add-to-list 'dape-configs
+               '(gdb
+                 modes (c-mode c-ts-mode c++-mode c++-ts-mode)
+                 ensure dape-ensure-command
+                 command "gdb"
+                 command-args ("--interpreter=dap")
+                 :request "launch"
+                 :cwd "."
+                 :program (lambda ()
+                            (file-name-sans-extension (buffer-file-name)))
+                 :args []
+                 :stopAtBeginningOfMainSubprogram t)))
 
 
 ;; Enable repeat mode for more ergonomic `dape' use
