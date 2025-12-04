@@ -10,12 +10,23 @@
 (use-package org
   :ensure nil
   :hook (org-mode . my-org-mode-setup-emphasis-keys)
+  (org-mode . org-indent-mode)
   :config
   (setq org-confirm-babel-evaluate nil)
   (setq org-src-fontify-natively t)
   (setq org-src-tab-acts-natively t)
   (setq org-hide-emphasis-markers t)
+  (setq org-highlight-latex-and-related '(native))
   (require 'org-tempo)
+  (require 'ox-beamer)
+  (setq org-beamer-frame-default-options "fragile")
+  (setq org-beamer-emphasis-alist
+      '(("*" . "\\textbf{%s}")
+        ("/" . "\\emph{%s}")
+        ("_" . "\\uline{%s}")
+        ("=" . "\\texttt{%s}")
+        ("~" . "\\texttt{%s}")
+        ("+" . "\\st{%s}")))
   (setq org-structure-template-alist
         '(("s"  . "src")
           ("sc" . "src scheme")
@@ -83,68 +94,103 @@ it falls back to the default conservative behavior."
   (define-key org-mode-map (kbd "s-c") (lambda () (interactive) (my-smart-org-emphasize ?~)))
   (define-key org-mode-map (kbd "s-d") (lambda () (interactive) (my-smart-org-emphasize ?+))))
 
+;; ----------------------------------------------------------------------------
+;; Visual Enhancements for Org Mode
+;; ----------------------------------------------------------------------------
+
+;; Automatically show/hide emphasis markers
+(use-package org-appear
+  :hook (org-mode . org-appear-mode)
+  :custom (org-appear-autosubmarkers t)
+  (org-appear-autolinks t))
+
+;; Modern heading and list styles
+(use-package org-modern
+  :hook (org-mode . org-modern-mode)
+  :config (setq org-modern-star '("●" "○" "✸" "✿")
+                org-modern-replace-stars "●○✿◉✸"
+                org-modern-list '((45 . "➤")  ;; '-' -> '➤'
+                                  (43 . "•") )  ;; '+' -> '•'
+                org-modern-tag nil
+                org-modern-priority nil
+                org-modern-timestamp nil
+                org-modern-block-name nil
+                org-modern-todo nil
+                org-modern-table nil))
+
+;; Better alignment of tables
+(use-package valign
+  :hook (org-mode . valign-mode))
+
+;; Real-time LaTeX Fragment Preview
+(use-package org-fragtog
+  :diminish
+  :hook (org-mode . org-fragtog-mode)
+  :config
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 0.6)) ;; MacOS :scale 1.8
+  (setq org-preview-latex-default-process 'dvisvgm))
 
 ;;----------------------------------------------------------------------------
-;; LaTeX Export Configuration
+;; Export Configuration
 ;;----------------------------------------------------------------------------
+
+;; latex export configuration
 (use-package ox-latex
   :ensure nil
   :config
   (setq org-latex-compiler "xelatex")
-  (setq org-latex-listings 'minted)
+  (setq org-latex-src-block-backend 'minted)
   ;; minted configurations
   (setq org-latex-minted-options
         '(("frame" "lines")
           ("framesep" "2mm")
           ("breaklines" "true")
-          ("fontsize" "\\footnotesize")
-          ("framerule" "0.8pt")
-          ("autogobble" "true")
-          ("linenos" "true")
-          ("fontfamily" "MonacoFamily")))
-  ;; (setq org-latex-pdf-process
-  ;;       '("xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-  ;;         "xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+          ("autogobble" "true")))
   (setq org-latex-default-class "cn-article")
+
+  (defvar org-setup-dir (expand-file-name "org/setup/" user-emacs-directory))
+
+  (setq org-latex-pdf-process
+        '("latexmk -xelatex -shell-escape -interaction=nonstopmode -output-directory=%o %f"))
+
   (add-to-list 'org-latex-classes
-               '("cn-article"
-                 "\\documentclass[11pt, a4paper]{article}
+               `("en-article"
+                 ,(concat "\\documentclass{article}
 [NO-DEFAULT-PACKAGES]
-
-% --- basic macro packages ---
-\\usepackage{amsmath, amssymb, graphicx, longtable}
-\\usepackage[normalem]{ulem}
-\\usepackage[a4paper, top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
-\\usepackage{xcolor}
-\\definecolor{solBlue}{HTML}{268bd2}
-\\usepackage[bottom]{footmisc}
-\\usepackage[colorlinks=true, allcolors=solBlue]{hyperref}
-% Math
-\\usepackage{mathtools}
-\\usepackage{bm}
-
-% --- fonts configurations ---
-\\usepackage{fontspec}
-\\setmainfont{Latin Modern Roman}
-\\setsansfont{Latin Modern Sans}
-\\setmonofont{Latin Modern Mono}
-\\usepackage{xeCJK}
-\\setCJKmainfont{Songti SC}
-\\setCJKsansfont{PingFang SC}
-\\setCJKmonofont{PingFang SC}
-\\newfontfamily\\monaco{Monaco}[NFSSFamily=MonacoFamily]
-
-% --- code block syntax highlighting configures ---
-\\usepackage{minted}
-\\usemintedstyle{solarized-light}
-
-[EXTRA]
-"
+[PACKAGES]
+\\input{" org-setup-dir "latex/style-en.tex}
+[EXTRA]")
                  ("\\section{%s}" . "\\section*{%s}")
                  ("\\subsection{%s}" . "\\subsection*{%s}")
                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
                  ("\\paragraph{%s}" . "\\paragraph*{%s}")
-                 ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
+                 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+
+  (add-to-list 'org-latex-classes
+               `("cn-article"
+                 ,(concat "\\documentclass{ctexart}
+[NO-DEFAULT-PACKAGES]
+[PACKAGES]
+\\input{" org-setup-dir "latex/style-cn.tex}
+[EXTRA]")
+                 ("\\section{%s}" . "\\section*{%s}")
+                 ("\\subsection{%s}" . "\\subsection*{%s}")
+                 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+
+    (add-to-list 'org-latex-classes
+             `("zju-beamer"
+               ,(concat "\\documentclass[10pt,aspectratio=169,mathserif]{beamer}
+[NO-DEFAULT-PACKAGES]
+[PACKAGES]
+\\def\\ZjuRoot{" org-setup-dir "beamer/zju/}
+\\input{" org-setup-dir "beamer/zju/style-zju.tex}
+[EXTRA]")
+               ("\\section{%s}" . "\\section*{%s}")
+               ("\\subsection{%s}" . "\\subsection*{%s}")
+               ("\\subsubsection{%s}" . "\\subsubsection*{%s}")))
+                 )
 
 (provide 'init-org)
 ;;; init-org.el ends here

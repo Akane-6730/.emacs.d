@@ -1,0 +1,55 @@
+% ~/.emacs.d/org/setup/beamer/zju/style-zju.tex
+
+% ============================================================
+% 1. 基础配置
+% ============================================================
+\usepackage{ctex}
+\usepackage{amsmath,amsfonts,amssymb,bm}
+\usepackage{graphicx,hyperref,url}
+\usepackage{metalogo}
+\usepackage[normalem]{ulem}
+
+% ============================================================
+% 2. 极简 ZJU 主题
+% ============================================================
+\mode<presentation> {
+  \setbeamertemplate{headline}{}
+  \setbeamertemplate{footline}{}
+  \setbeamertemplate{navigation symbols}{}
+  
+  \usefonttheme{serif}
+  \useinnertheme{rounded}
+
+  % 列表图标
+  \setbeamertemplate{itemize item}[ball]
+  \setbeamertemplate{itemize subitem}[circle]
+  \setbeamertemplate{itemize subsubitem}[triangle]
+
+  % 颜色定义
+  \definecolor{ZJUBlue}{RGB}{0,63,136}
+  \usecolortheme[named=ZJUBlue]{structure}
+  
+  \setbeamercolor{block title}{bg=ZJUBlue,fg=white}
+  \setbeamercolor{block body}{bg=ZJUBlue!10!white}
+}
+
+% ============================================================
+% 3. 代码高亮 (Minted 配置)
+% ============================================================
+% 加载 minted
+\usepackage{minted}
+\usemintedstyle{solarized-light}
+% \setmonofont{Consolas}
+\setminted{fontsize=\footnotesize}
+
+% ============================================================
+% 4. 背景与资源
+% ============================================================
+\pgfdeclareimage[width=\paperwidth,height=\paperheight]{bg}{\ZjuRoot res/zju_background}
+\usebackgroundtemplate{\pgfuseimage{bg}}
+
+\pgfdeclareimage[height=1.3cm]{title}{\ZjuRoot res/zju_title}
+\titlegraphic{\pgfuseimage{title}}
+
+\catcode`\。=\active
+\newcommand{。}{．}
