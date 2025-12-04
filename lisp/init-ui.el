@@ -20,12 +20,12 @@
     (cl-find-if (lambda (font-name) (find-font (font-spec :family font-name)))
                 font-list))
   ;; 1. Setup English / Monospace font with fallback
-  (let* ((preferred-mono-fonts '("Monaco" "Menlo" "Consolas" "SF Mono" "Courier New" "Monego"))
+  (let* ((preferred-mono-fonts '("Maple Mono NF CN" "Monaco" "Menlo" "Consolas" "SF Mono" "Courier New" "Monego"))
          (installed-font (my-find-first-available-font preferred-mono-fonts)))
     ;; Only set the font if one from our preferred list is found.
     ;; Otherwise, do nothing and let Emacs use its system default.
     (when installed-font
-      (set-face-attribute 'default nil :family installed-font :height 180)))
+      (set-face-attribute 'default nil :family installed-font :height 140)))
 
   ;; 2. Setup Chinese / Han script font with fallback
   (let* ((preferred-han-fonts '("LXGW WenKai Mono GB Screen" "PingFang SC"))
@@ -54,7 +54,7 @@
 (use-package doom-themes
   :custom
   (doom-themes-enable-bold nil)
-  (doom-themes-enable-italic nil)
+  ;; (doom-themes-enable-italic nil)
   :config
   ;; Enable flashing mode-line on errors to avoid getting the yellow warning triangle on MacOS.
   (doom-themes-visual-bell-config)
