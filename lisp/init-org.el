@@ -20,13 +20,6 @@
   (require 'org-tempo)
   (require 'ox-beamer)
   (setq org-beamer-frame-default-options "fragile")
-  (setq org-beamer-emphasis-alist
-      '(("*" . "\\textbf{%s}")
-        ("/" . "\\emph{%s}")
-        ("_" . "\\uline{%s}")
-        ("=" . "\\texttt{%s}")
-        ("~" . "\\texttt{%s}")
-        ("+" . "\\st{%s}")))
   (setq org-structure-template-alist
         '(("s"  . "src")
           ("sc" . "src scheme")
@@ -179,18 +172,17 @@ it falls back to the default conservative behavior."
                  ("\\paragraph{%s}" . "\\paragraph*{%s}")
                  ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 
-    (add-to-list 'org-latex-classes
-             `("zju-beamer"
-               ,(concat "\\documentclass[10pt,aspectratio=169,mathserif]{beamer}
+  (add-to-list 'org-latex-classes
+               `("zju-beamer"
+                 ,(concat "\\documentclass[10pt,aspectratio=169,mathserif]{beamer}
 [NO-DEFAULT-PACKAGES]
 [PACKAGES]
 \\def\\ZjuRoot{" org-setup-dir "beamer/zju/}
 \\input{" org-setup-dir "beamer/zju/style-zju.tex}
 [EXTRA]")
-               ("\\section{%s}" . "\\section*{%s}")
-               ("\\subsection{%s}" . "\\subsection*{%s}")
-               ("\\subsubsection{%s}" . "\\subsubsection*{%s}")))
-                 )
+                 ("\\section{%s}" . "\\section*{%s}")
+                 ("\\subsection{%s}" . "\\subsection*{%s}")
+                 ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))))
 
 (provide 'init-org)
 ;;; init-org.el ends here

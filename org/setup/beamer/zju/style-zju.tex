@@ -16,7 +16,7 @@
   \setbeamertemplate{headline}{}
   \setbeamertemplate{footline}{}
   \setbeamertemplate{navigation symbols}{}
-  
+
   \usefonttheme{serif}
   \useinnertheme{rounded}
 
@@ -28,7 +28,7 @@
   % 颜色定义
   \definecolor{ZJUBlue}{RGB}{0,63,136}
   \usecolortheme[named=ZJUBlue]{structure}
-  
+
   \setbeamercolor{block title}{bg=ZJUBlue,fg=white}
   \setbeamercolor{block body}{bg=ZJUBlue!10!white}
 }
@@ -53,3 +53,20 @@
 
 \catcode`\。=\active
 \newcommand{。}{．}
+
+% ============================================================
+% 5. 固化机构与联系方式 (排版优化版)
+% ============================================================
+\institute{
+  % 1. 强制使用正常字号 (\normalsize)，如果还嫌小可用 \large
+  {\normalsize \href{mailto:lin.shao@zju.edu.cn}{\ttfamily lin.shao@zju.edu.cn}}
+
+  % 2. 大幅增加垂直间距 (1.2em)
+  \vspace{2em}
+
+  % 3. 使用 \href{mailto:...} 修复邮箱链接，并用打字机字体 (\ttfamily) 显示
+  {\normalsize 计算机科学与技术学院} \\
+}
+
+\setbeamercolor{alerted text}{fg=black}
+\setbeamerfont{alerted text}{series=\bfseries}
