@@ -1,72 +1,123 @@
 % ~/.emacs.d/org/setup/beamer/zju/style-zju.tex
 
 % ============================================================
-% 1. 基础配置
+% ZJU Beamer Theme Style File
 % ============================================================
-\usepackage{ctex}
-\usepackage{amsmath,amsfonts,amssymb,bm}
-\usepackage{graphicx,hyperref,url}
-\usepackage{metalogo}
-\usepackage[normalem]{ulem}
 
 % ============================================================
-% 2. 极简 ZJU 主题
+% 1. Global Dependencies
+% ============================================================
+
+% --- Basic & Localization ---
+\usepackage{ctex}                               % Chinese support
+\usepackage[normalem]{ulem}                     % Underline support
+\usepackage{metalogo}                           % Logos (LaTeX, etc.)
+
+% --- Math ---
+\usepackage{amsmath,amsfonts,amssymb,bm}        % Advanced math symbols and bold math
+
+% --- Graphics & Tables ---
+\usepackage{graphicx,hyperref,url}              % Graphics inclusion and hyperlinks
+\usepackage{booktabs}                           % Professional tables (toprule, midrule, bottomrule)
+\usepackage{array}                              % Extended table column formatting
+\usepackage{multirow}                           % Multi-row table cells
+
+% --- Global Graphics Settings ---
+\setkeys{Gin}{width=0.9\textwidth,height=0.8\textheight,keepaspectratio}
+
+% ============================================================
+% 2. Code Highlighting (Minted)
+% ============================================================
+\usepackage{minted}
+\usemintedstyle{algol_nu}
+\setmonofont{Consolas}                          % Monospace font for code
+\setminted{fontsize=\footnotesize}              % Code block font size
+
+% ============================================================
+% 3. Theme Appearance
 % ============================================================
 \mode<presentation> {
-  \setbeamertemplate{headline}{}
-  \setbeamertemplate{footline}{}
-  \setbeamertemplate{navigation symbols}{}
 
-  \usefonttheme{serif}
-  \useinnertheme{rounded}
+  % --- Fonts & Inner/Outer Themes ---
+  \usefonttheme{serif}                          % Serif font theme
+  \useinnertheme{rounded}                       % Rounded corners for blocks
+  
+  \setbeamerfont{frametitle}{family=\sffamily, series=\mdseries}
+  \setbeamerfont{block title}{family=\sffamily, series=\mdseries}
 
-  % 列表图标
+  % --- Color Palette (ZJU Blue) ---
+  \definecolor{ZJUBlue}{RGB}{0,63,136}          % ZJU Official Blue
+  \usecolortheme[named=ZJUBlue]{structure}      % Set structural color
+  
+  \setbeamercolor{block title}{bg=ZJUBlue,fg=white}
+  \setbeamercolor{block body}{bg=ZJUBlue!10!white}
+  
+  % --- Component Styling ---
   \setbeamertemplate{itemize item}[ball]
   \setbeamertemplate{itemize subitem}[circle]
   \setbeamertemplate{itemize subsubitem}[triangle]
 
-  % 颜色定义
-  \definecolor{ZJUBlue}{RGB}{0,63,136}
-  \usecolortheme[named=ZJUBlue]{structure}
+  % --- Navigation ---
+  \setbeamertemplate{navigation symbols}{}      % Disable bottom navigation symbols
 
-  \setbeamercolor{block title}{bg=ZJUBlue,fg=white}
-  \setbeamercolor{block body}{bg=ZJUBlue!10!white}
+  % --- Footline Setup ---
+  % Font size for page numbers
+  \setbeamerfont{page number in head/foot}{size=\small}
+  
+  % Custom footline with frame number at bottom right
+  \setbeamertemplate{footline}{
+    \hbox to \paperwidth{
+      \hfill                                    % Push to right
+      \usebeamerfont{page number in head/foot}
+      \ttfamily                                 % Use Consolas/Monospace for numbers
+      \insertframenumber\,/\,\inserttotalframenumber
+      \hspace{0.3em}                            % Right margin adjustment
+    }%
+    \vskip1em                                   % Bottom margin
+  }
 }
 
 % ============================================================
-% 3. 代码高亮 (Minted 配置)
+% 4. Background & Title Graphics
 % ============================================================
-% 加载 minted
-\usepackage{minted}
-\usemintedstyle{solarized-light}
-% \setmonofont{Consolas}
-\setminted{fontsize=\footnotesize}
-
-% ============================================================
-% 4. 背景与资源
-% ============================================================
+% Slide Background
 \pgfdeclareimage[width=\paperwidth,height=\paperheight]{bg}{\ZjuRoot res/zju_background}
 \usebackgroundtemplate{\pgfuseimage{bg}}
 
+% Title Page Logo
 \pgfdeclareimage[height=1.3cm]{title}{\ZjuRoot res/zju_title}
 \titlegraphic{\pgfuseimage{title}}
 
+% ============================================================
+% 5. Institute & Contact Info
+% ============================================================
+\institute{
+  % Email
+  {\normalsize \href{mailto:lin.shao@zju.edu.cn}{\ttfamily lin.shao@zju.edu.cn}}
+  \\[2em]
+  % Affiliation
+  {\normalsize 计算机科学与技术学院} \\
+}
+
+% ============================================================
+% 6. Typography & Localization Adjustments
+% ============================================================
+% Alerted text styling
+\setbeamercolor{alerted text}{fg=black}
+\setbeamerfont{alerted text}{series=\bfseries}
+
+% Chinese Punctuation Swap (Full-stop '。' -> Solid dot '．')
 \catcode`\。=\active
 \newcommand{。}{．}
 
 % ============================================================
-% 5. 固化机构与联系方式 (排版优化版)
+% 7. Document Hooks
 % ============================================================
-\institute{
-  % 1. 强制使用正常字号 (\normalsize)，如果还嫌小可用 \large
-  {\normalsize \href{mailto:lin.shao@zju.edu.cn}{\ttfamily lin.shao@zju.edu.cn}}
-
-  % 2. 大幅增加垂直间距 (1.2em)
-  \vspace{2em}
-
-  % 3. 使用 \href{mailto:...} 修复邮箱链接，并用打字机字体 (\ttfamily) 显示
-  {\normalsize 计算机科学与技术学院} \\
+% Auto-insert Outline at the beginning of each section
+\AtBeginSection[]
+{
+  \begin{frame}
+    \frametitle{Outline}
+    \tableofcontents[currentsection]
+  \end{frame}
 }
-
-\setbeamercolor{alerted text}{fg=black}
-\setbeamerfont{alerted text}{series=\bfseries}
