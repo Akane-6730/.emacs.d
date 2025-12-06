@@ -66,6 +66,25 @@
 (set-terminal-coding-system 'utf-8-unix)
 
 ;;----------------------------------------------------------------------------
+;; Network / Proxy Settings
+;;----------------------------------------------------------------------------
+
+;; Set up HTTP/HTTPS proxy for Emacs and external processes
+(defconst my-proxy-host "127.0.0.1:7897" "Host:Port for the proxy.")
+(defconst my-proxy-url (concat "http://" my-proxy-host) "Full URL for the proxy.")
+
+(setenv "http_proxy" my-proxy-url)
+(setenv "https_proxy" my-proxy-url)
+(setenv "no_proxy" "localhost,127.0.0.1,.local")
+
+;; Configure proxy for the internal 'url' package
+(setq url-proxy-services
+      `(("no_proxy" . "^\\(localhost\\|10\\..*\\|192\\.168\\..*\\)")
+        ("http" . ,my-proxy-host)
+        ("https" . ,my-proxy-host)))
+
+
+;;----------------------------------------------------------------------------
 ;; Core Editor Behavior
 ;;----------------------------------------------------------------------------
 
