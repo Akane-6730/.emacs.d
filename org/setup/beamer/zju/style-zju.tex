@@ -9,7 +9,12 @@
 % ============================================================
 
 % --- Basic & Localization ---
-\usepackage{ctex}                               % Chinese support
+\usepackage[fontset=none]{ctex}                % Chinese support (no default fonts)
+\setmainfont{Libertinus Serif}                  % English Main Font
+\setCJKmainfont[                                % Chinese Main Font
+  UprightFont = * SemiBold,                     % Fix "too thin" on projector
+  BoldFont    = * Heavy                         % Ensure sufficient contrast
+]{Source Han Serif CN}
 \usepackage[normalem]{ulem}                     % Underline support
 \usepackage{metalogo}                           % Logos (LaTeX, etc.)
 
@@ -29,7 +34,7 @@
 % 2. Code Highlighting (Minted)
 % ============================================================
 \usepackage{minted}
-\usemintedstyle{algol_nu}
+\usemintedstyle{solarized-light}
 \setmonofont{Consolas}                          % Monospace font for code
 \setminted{fontsize=\footnotesize}              % Code block font size
 
@@ -40,10 +45,11 @@
 
   % --- Fonts & Inner/Outer Themes ---
   \usefonttheme{serif}                          % Serif font theme
+  \usefonttheme{professionalfonts}              % Prevent Beamer from overwriting math fonts
   \useinnertheme{rounded}                       % Rounded corners for blocks
   
-  \setbeamerfont{frametitle}{family=\sffamily, series=\mdseries}
-  \setbeamerfont{block title}{family=\sffamily, series=\mdseries}
+  \setbeamerfont{frametitle}{series=\bfseries}
+  \setbeamerfont{block title}{series=\bfseries}
 
   % --- Color Palette (ZJU Blue) ---
   \definecolor{ZJUBlue}{RGB}{0,63,136}          % ZJU Official Blue

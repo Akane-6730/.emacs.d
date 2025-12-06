@@ -7,6 +7,8 @@
 
 ;;; Code:
 
+(defvar org-setup-dir (expand-file-name "org/setup/" user-emacs-directory))
+
 (use-package org
   :ensure nil
   :hook (org-mode . my-org-mode-setup-emphasis-keys)
@@ -132,6 +134,8 @@ it falls back to the default conservative behavior."
   :ensure nil
   :config
   (setq org-latex-compiler "xelatex")
+  (setq org-latex-tables-booktabs t)
+  (setq org-latex-tables-centered t)
   (setq org-latex-src-block-backend 'minted)
   ;; minted configurations
   (setq org-latex-minted-options
@@ -139,9 +143,10 @@ it falls back to the default conservative behavior."
           ("framesep" "2mm")
           ("breaklines" "true")
           ("autogobble" "true")))
+
   (setq org-latex-default-class "cn-article")
 
-  (defvar org-setup-dir (expand-file-name "org/setup/" user-emacs-directory))
+
 
   (setq org-latex-pdf-process
         '("latexmk -xelatex -shell-escape -interaction=nonstopmode -output-directory=%o %f"))
