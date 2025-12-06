@@ -150,60 +150,19 @@
   (push (expand-file-name recentf-save-file) recentf-exclude)
   (add-to-list 'recentf-filename-handlers #'abbreviate-file-name))
 
+;;----------------------------------------------------------------------------
+;; Input Method
+;;----------------------------------------------------------------------------
 
-(defun byte-compile-elpa ()
-  "Compile packages in elpa directory. Useful if you switch Emacs versions."
-  (interactive)
-  (if (fboundp 'async-byte-recompile-directory)
-      (async-byte-recompile-directory package-user-dir)
-    (byte-recompile-directory package-user-dir 0 t)))
-
-;; Async
-(use-package async
-  :functions (async-bytecomp-package-mode dired-async-mode)
-  :config
-  (async-bytecomp-package-mode 1)
-  (dired-async-mode 1))
-
-(use-package simple
-  :ensure nil
-  :hook ((after-init . size-indication-mode)
-         (text-mode . visual-line-mode))
-  :config
-  (setq column-number-mode t
-        line-number-mode t
-        kill-whole-line t               ; Kill line including '\n'
-        line-move-visual nil
-        visual-line-mode t
-        track-eol t                     ; Keep cursor at end of lines. Require line-move-visual is nil.
-        set-mark-command-repeat-pop t)  ; Repeating C-SPC after popping mark pops it again
-  (when (not (display-graphic-p))
-    (xterm-mouse-mode 1))
-  ;; Prettify the process list
-  (with-no-warnings
-    (defun my-list-processes--prettify ()
-      "Prettify process list."
-      (when-let* ((entries tabulated-list-entries))
-        (setq tabulated-list-entries nil)
-        (dolist (p (process-list))
-          (when-let* ((val (cadr (assoc p entries)))
-                      (name (aref val 0))
-                      (pid (aref val 1))
-                      (status (aref val 2))
-                      (status (list status
-                                    'face
-                                    (if (memq status '(stop exit closed failed))
-                                        'error
-                                      'success)))
-                      (buf-label (aref val 3))
-                      (tty (list (aref val 4) 'face 'font-lock-doc-face))
-                      (thread (list (aref val 5) 'face 'font-lock-doc-face))
-                      (cmd (list (aref val 6) 'face 'completions-annotations)))
-            (push (list p (vector name pid status buf-label tty thread cmd))
-                  tabulated-list-entries)))))
-    (advice-add #'list-processes--refresh :after #'my-list-processes--prettify)))
-
-(remove-hook 'kill-buffer-query-functions #'process-kill-buffer-query-function)
+(use-package rime
+  :custom
+  (default-input-method "rime")
+  (rime-show-candidate 'posframe)
+  (rime-disable-predicates
+   '(rime-predicate-after-alphabet-char-p ; Switch to English after alphabet characters
+     rime-predicate-prog-in-code-p        ; Force English in code (except comments/strings)
+     rime-predicate-space-after-cc-p      ; Support mixed English/Chinese (space after Chinese)
+     )))
 
 (provide 'init-base)
 ;;; init-base.el ends here
