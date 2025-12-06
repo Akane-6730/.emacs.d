@@ -189,5 +189,35 @@ it falls back to the default conservative behavior."
                  ("\\subsection{%s}" . "\\subsection*{%s}")
                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))))
 
+;;----------------------------------------------------------------------------
+;; Reveal.js Export Configuration
+;;----------------------------------------------------------------------------
+(use-package org-re-reveal
+  :init
+  ;; Load org-re-reveal when ox is loaded to register the export backend
+  (with-eval-after-load 'ox
+    (require 'org-re-reveal))
+  :config
+  ;; Use a reliable CDN for Reveal.js so it works out of the box without local installation
+  (setq org-re-reveal-root "https://cdn.jsdelivr.net/npm/reveal.js")
+  (setq org-re-reveal-revealjs-version "4")
+  ;; Aesthetic defaults
+  (setq org-re-reveal-theme "simple")
+  (setq org-re-reveal-transition "slide")
+  ;; Use a light theme for code highlighting to match the template
+  (setq org-re-reveal-highlight-css "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css")
+  ;; Set slide number format to current/total
+  (setq org-re-reveal-slide-number "c/t")
+  ;; Default extra CSS for ZJU theme
+  (setq org-re-reveal-extra-css (concat org-setup-dir "reveal/zju/zju-reveal.css"))
+  ;; Default plugins
+  (setq org-re-reveal-plugins '(highlight))
+  ;; Default Org export options for cleaner presentations
+  (setq org-export-with-toc nil              ; No table of contents by default
+        ;; org-export-with-section-numbers nil   ; No section numbers
+        org-export-time-stamp-file nil)      ; No timestamp
+  )
+
+
 (provide 'init-org)
 ;;; init-org.el ends here
