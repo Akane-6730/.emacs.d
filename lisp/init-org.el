@@ -243,6 +243,34 @@ it falls back to the default conservative behavior."
         org-export-time-stamp-file nil)      ; No timestamp
   )
 
+;;----------------------------------------------------------------------------
+;; Automation: Auto-export Beamer on Save
+;;----------------------------------------------------------------------------
+
+
+(defun my/org-auto-export-on-save ()
+  "Export logic to run when saving an Org file.
+Checks if LATEX_CLASS is set, and if so, runs the appropriate async export."
+  (interactive)
+  (when (eq major-mode 'org-mode)
+    (let* ((keywords (org-collect-keywords '("LATEX_CLASS")))
+           (latex-class (if keywords (cadr (car keywords)) nil)))
+
+      (when latex-class
+        (let ((is-beamer (string-match-p "beamer" latex-class)))
+          (if is-beamer
+              (org-beamer-export-to-pdf t)
+            (org-latex-export-to-pdf t)))))))
+
+;; Global Auto-Save for Org buffers
+(add-hook 'org-mode-hook
+          (lambda ()
+            (setq-local auto-save-visited-interval 2)
+            (auto-save-visited-mode +1)))
+
+
+(add-hook 'after-save-hook #'my/org-auto-export-on-save)
+
 
 (provide 'init-org)
 ;;; init-org.el ends here
