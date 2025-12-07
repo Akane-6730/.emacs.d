@@ -16,7 +16,6 @@
   BoldFont    = * Heavy                         % Ensure sufficient contrast
 ]{Source Han Serif CN}
 \usepackage[normalem]{ulem}                     % Underline support
-\usepackage{metalogo}                           % Logos (LaTeX, etc.)
 
 % --- Math ---
 \usepackage{amsmath,amsfonts,amssymb,bm}        % Advanced math symbols and bold math
@@ -25,7 +24,6 @@
 \usepackage{graphicx,hyperref,url}              % Graphics inclusion and hyperlinks
 \usepackage{booktabs}                           % Professional tables (toprule, midrule, bottomrule)
 \usepackage{array}                              % Extended table column formatting
-\usepackage{multirow}                           % Multi-row table cells
 
 % --- Global Graphics Settings ---
 \setkeys{Gin}{width=0.9\textwidth,height=0.8\textheight,keepaspectratio}
@@ -59,9 +57,13 @@
   \setbeamercolor{block body}{bg=ZJUBlue!10!white}
   
   % --- Component Styling ---
-  \setbeamertemplate{itemize item}[ball]
+  \setbeamertemplate{itemize item}[circle]
   \setbeamertemplate{itemize subitem}[circle]
-  \setbeamertemplate{itemize subsubitem}[triangle]
+  \setbeamertemplate{itemize subsubitem}[circle]
+
+  \setbeamertemplate{enumerate item}{\insertenumlabel.}
+  \setbeamertemplate{enumerate subitem}{\insertenumlabel.\insertsubenumlabel}
+  \setbeamertemplate{enumerate subsubitem}{\insertenumlabel.\insertsubenumlabel.\insertsubsubenumlabel}
 
   % --- Navigation ---
   \setbeamertemplate{navigation symbols}{}      % Disable bottom navigation symbols
