@@ -2,56 +2,68 @@
 
 ;;; Commentary:
 ;;
-;; Configures Org Mode, with a focus on Org Babel and LaTeX exporting.
+;; Configures Org Mode, with a focus on Org Babel, LaTeX exporting and reveal.js exporting.
 ;;
 
 ;;; Code:
 
+;; Custom Org setup directory
 (defvar org-setup-dir (expand-file-name "org/setup/" user-emacs-directory))
 
+;;----------------------------------------------------------------------------
+;; Core Org Mode Configuration
+;;----------------------------------------------------------------------------
 (use-package org
   :ensure nil
   :hook (org-mode . my-org-mode-setup-emphasis-keys)
   (org-mode . org-indent-mode)
   :config
-  (setq org-confirm-babel-evaluate nil)
   (setq org-src-fontify-natively t)
   (setq org-src-tab-acts-natively t)
   (setq org-hide-emphasis-markers t)
   (setq org-highlight-latex-and-related '(native))
+  (setq org-export-in-background t)
+  ;; Structure templates (e.g., <s TAB)
   (require 'org-tempo)
-  (require 'ox-beamer)
-  (setq org-beamer-frame-default-options "fragile")
   (setq org-structure-template-alist
         '(("s"  . "src")
           ("sc" . "src scheme")
           ("e"  . "src emacs-lisp")
           ("p"  . "src python")
-          ("r"  . "src ruby")
+          ("r" . "src ruby")
           ("sh" . "src shell")
           ("j"  . "src java")
           ("q"  . "quote")
           ("ex" . "example")))
-  (setq org-babel-python-command "python3")
-  :init
-  (setq org-babel-load-languages
-        '((emacs-lisp . t)
-          (scheme     . t)
-          (python     . t)
-          (ruby       . t)
-          (shell      . t)
-          (java       . t)
-          (C          . t)))
   :bind (("C-c a" . org-agenda)))
 
+;;----------------------------------------------------------------------------
+;; Code Evaluation
+;;----------------------------------------------------------------------------
+
+;; Org Babel Configuration
+(use-package ob
+  :ensure nil
+  :after org
+  :config
+  (setq org-confirm-babel-evaluate nil
+        org-babel-python-command "python3")
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (scheme     . t)
+     (python     . t)
+     (ruby       . t)
+     (shell      . t)
+     (java       . t)
+     (C          . t))))
+
 
 ;;----------------------------------------------------------------------------
-;; Fine-grained Electric Pair Configuration for Org Mode
+;; UX Enhancements
 ;;----------------------------------------------------------------------------
-;; This ensures other pairs like `()` and `""` continue to work,
-;; while only disabling auto-pairing for `<` to not conflict with
-;; org-tempo structure templates (e.g., `<s` + TAB).
 
+;; Smart Pairing
 (defun my-org-mode-pair-predicate (c)
   "A custom predicate for `electric-pair-mode` in Org buffers.
 It returns t (inhibit pairing) if the character is `<`, otherwise
@@ -66,9 +78,7 @@ it falls back to the default conservative behavior."
           (lambda ()
             (setq-local electric-pair-inhibit-predicate #'my-org-mode-pair-predicate)))
 
-;;----------------------------------------------------------------------------
-;; Helper function for smart emphasis
-;;----------------------------------------------------------------------------
+;; Smart Emphasis
 (defun my-smart-org-emphasize (char)
   "Apply emphasis CHAR to region or word at point."
   (if (use-region-p)
@@ -89,17 +99,20 @@ it falls back to the default conservative behavior."
   (define-key org-mode-map (kbd "s-c") (lambda () (interactive) (my-smart-org-emphasize ?~)))
   (define-key org-mode-map (kbd "s-d") (lambda () (interactive) (my-smart-org-emphasize ?+))))
 
+
 ;; ----------------------------------------------------------------------------
-;; Visual Enhancements for Org Mode
+;; UI Visual Enhancements
 ;; ----------------------------------------------------------------------------
 
 ;; Automatically show/hide emphasis markers
 (use-package org-appear
   :hook (org-mode . org-appear-mode)
-  :custom (org-appear-autosubmarkers t)
+  :custom
+  (org-appear-autosubmarkers t)
   (org-appear-autolinks t))
 
-;; Modern heading and list styles
+
+;; Modernize the look of headings, lists, and other Org elements
 (use-package org-modern
   :hook (org-mode . org-modern-mode)
   :config (setq org-modern-star '("●" "○" "✸" "✿")
@@ -113,7 +126,7 @@ it falls back to the default conservative behavior."
                 org-modern-todo nil
                 org-modern-table nil))
 
-;; Better alignment of tables
+;; Better CJK table alignment
 (use-package valign
   :hook (org-mode . valign-mode))
 
@@ -122,22 +135,26 @@ it falls back to the default conservative behavior."
   :diminish
   :hook (org-mode . org-fragtog-mode)
   :config
-  (setq org-format-latex-options (plist-put org-format-latex-options :scale 0.6)) ;; MacOS :scale 1.8
+  ;; Adjust preview scale (0.6 matches typical editor font size on Linux/Windows)
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 0.6))
+  ;; Use dvisvgm for crisper preview images
   (setq org-preview-latex-default-process 'dvisvgm))
 
+
 ;;----------------------------------------------------------------------------
-;; Export Configuration
+;; Export Configuration: LaTeX, Beamer and Reveal.js
 ;;----------------------------------------------------------------------------
 
-;; latex export configuration
+;; Latex Article Export
 (use-package ox-latex
   :ensure nil
   :config
+  ;; Use XeLaTeX for better Unicode/CJK support
   (setq org-latex-compiler "xelatex")
   (setq org-latex-tables-booktabs t)
   (setq org-latex-tables-centered t)
+  ;; Use minted for syntax highlighting
   (setq org-latex-src-block-backend 'minted)
-  ;; minted configurations
   (setq org-latex-minted-options
         '(("frame" "lines")
           ("framesep" "2mm")
@@ -146,11 +163,13 @@ it falls back to the default conservative behavior."
 
   (setq org-latex-default-class "cn-article")
 
-
-
+  ;; Define the PDF build process (using latexmk)
   (setq org-latex-pdf-process
         '("latexmk -xelatex -shell-escape -interaction=nonstopmode -output-directory=%o %f"))
 
+  ;; Define custom LaTeX classes
+
+  ;; 1. Standard English Article
   (add-to-list 'org-latex-classes
                `("en-article"
                  ,(concat "\\documentclass{article}
@@ -164,6 +183,7 @@ it falls back to the default conservative behavior."
                  ("\\paragraph{%s}" . "\\paragraph*{%s}")
                  ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 
+  ;; 2. Chinese Article (using ctexart)
   (add-to-list 'org-latex-classes
                `("cn-article"
                  ,(concat "\\documentclass{ctexart}
@@ -177,6 +197,7 @@ it falls back to the default conservative behavior."
                  ("\\paragraph{%s}" . "\\paragraph*{%s}")
                  ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 
+  ;; 3. ZJU Beamer Presentation
   (add-to-list 'org-latex-classes
                `("zju-beamer"
                  ,(concat "\\documentclass[10pt,aspectratio=169,mathserif]{beamer}
@@ -189,28 +210,32 @@ it falls back to the default conservative behavior."
                  ("\\subsection{%s}" . "\\subsection*{%s}")
                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))))
 
-;;----------------------------------------------------------------------------
-;; Reveal.js Export Configuration
-;;----------------------------------------------------------------------------
+;; Beamer Export
+(use-package ox-beamer
+  :ensure nil
+  :init
+  (with-eval-after-load 'ox
+    (require 'ox-beamer))
+  :config
+
+  ;; Allow using 'fragile' frames by default (useful for code blocks)
+  (setq org-beamer-frame-default-options "fragile"))
+
+
+;; Reveal.js Export (HTML Slides)
 (use-package org-re-reveal
   :init
-  ;; Load org-re-reveal when ox is loaded to register the export backend
   (with-eval-after-load 'ox
     (require 'org-re-reveal))
   :config
-  ;; Use a reliable CDN for Reveal.js so it works out of the box without local installation
+  ;; Use a reliable CDN for Reveal.js (v4) to avoid local installation
   (setq org-re-reveal-root "https://cdn.jsdelivr.net/npm/reveal.js")
   (setq org-re-reveal-revealjs-version "4")
-  ;; Aesthetic defaults
   (setq org-re-reveal-theme "simple")
   (setq org-re-reveal-transition "slide")
-  ;; Use a light theme for code highlighting to match the template
   (setq org-re-reveal-highlight-css "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css")
-  ;; Set slide number format to current/total
   (setq org-re-reveal-slide-number "c/t")
-  ;; Default extra CSS for ZJU theme
   (setq org-re-reveal-extra-css (concat org-setup-dir "reveal/zju/zju-reveal.css"))
-  ;; Default plugins
   (setq org-re-reveal-plugins '(highlight))
   ;; Default Org export options for cleaner presentations
   (setq org-export-with-toc nil              ; No table of contents by default
