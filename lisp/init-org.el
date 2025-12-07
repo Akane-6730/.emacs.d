@@ -123,6 +123,7 @@ it falls back to the default conservative behavior."
                 org-modern-priority nil
                 org-modern-timestamp nil
                 org-modern-block-name nil
+                org-modern-block-fringe nil
                 org-modern-todo nil
                 org-modern-table nil))
 
