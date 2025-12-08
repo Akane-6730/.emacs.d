@@ -1,0 +1,61 @@
+% =========================================
+% Basic Utilities and Formatting
+% =========================================
+% Inclusion of graphics
+\usepackage{graphicx}
+% Tables that span multiple pages
+\usepackage{longtable}
+% Professional tables
+\usepackage{booktabs}
+% Underlining text (normalem prevents overriding \emph)
+\usepackage[normalem]{ulem}
+
+% =========================================
+% Page Layout and Headers
+% =========================================
+% Page margins and dimensions
+\usepackage[margin=1in]{geometry}
+% Headers and footers customization
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\cfoot{\thepage}
+
+% =========================================
+% Typography and Fonts
+% =========================================
+% Font selection for XeLaTeX/LuaLaTeX
+\usepackage{fontspec}
+\setmonofont{Consolas}[Scale=MatchLowercase]
+
+% =========================================
+% Mathematics
+% =========================================
+% Standard AMS math packages
+\usepackage{amsmath, amssymb}
+% Extension packages for amsmath
+\usepackage{mathtools}
+% Bold math symbols
+\usepackage{bm}
+
+% =========================================
+% Colors and Hyperlinks
+% =========================================
+% Color support
+\usepackage{xcolor}
+\definecolor{solBlue}{HTML}{268bd2}
+
+% Hyperlinks and PDF metadata
+\usepackage[colorlinks=true, allcolors=solBlue]{hyperref}
+
+% =========================================
+% Miscellaneous
+% =========================================
+% Footnote customization (bottom ensures footnotes stay at page bottom)
+\usepackage[bottom]{footmisc}
+
+% =========================================
+% Code Highlighting
+% =========================================
+% Syntax highlighting using Pygments
+\usepackage{minted}
+\usemintedstyle{solarized-light}

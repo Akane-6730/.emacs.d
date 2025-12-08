@@ -1,0 +1,395 @@
+/* ==========================================================================
+   Imports & Fonts
+   ========================================================================== */
+@import url(https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&family=Source+Code+Pro&family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400;1,700);
+@import url(https://gcore.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.1.0/style.css);
+
+:root {
+  /* Define main font families for the presentation */
+  --r-main-font: "JetBrains Mono", "LXGW WenKai Screen", sans-serif;
+  --r-heading-font: "JetBrains Mono", "LXGW WenKai Screen", sans-serif;
+  --r-code-font: "JetBrains Mono", "LXGW WenKai Screen", sans-serif;
+}
+
+/* ==========================================================================
+   Global Slide Settings
+   ========================================================================== */
+
+/* Main container configuration */
+.reveal {
+  background-image: url("../../beamer/zju/res/zju_background.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Slide content wrapper */
+.reveal .slides {
+  text-align: left;
+  font-weight: 300;
+  /* border: 1.5px #ddd solid; */ /* Optional border */
+  /* border-radius: 7px; */
+}
+
+/* General Section Padding */
+.reveal section {
+  padding: 20px 0;
+}
+
+/* Slide Number Styling */
+.reveal .slide-number {
+  font-size: 26px;
+  border-radius: 5px;
+  background-color: rgba(0, 0, 0, .3);
+  /* Repositioned to left side */
+  left: 8px;
+  right: unset;
+}
+
+/* ==========================================================================
+   Typography
+   ========================================================================== */
+
+/* Headings Configuration */
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+  text-align: left;
+  margin: 0 0 20px 0;
+  color: #222;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: normal;
+}
+
+/* Specific Heading Overrides */
+.reveal h1 {
+  margin: 0 10px 0 10px; /* Fixed '10' to '10px' for valid CSS, though browser might ignore unitless non-zero */
+  font-size: 50px;
+}
+
+.reveal h2 {
+  font-size: 48px;
+  border-bottom: 2px solid rgb(0, 63, 163); /* ZJU Blue */
+  padding-bottom: 20px;
+}
+
+.reveal h3 { font-size: 1.15em; }
+.reveal h4 { font-size: 1.05em; }
+
+
+
+/* Content Padding */
+.reveal p, .reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5 {
+  padding: 0 25px 0 25px;
+}
+
+/* Standard text sizing */
+.reveal p, .reveal li, .reveal center {
+  font-size: 30px;
+}
+
+/* Code Blocks & Preformatted Text */
+.reveal pre {
+  font-size: 20px;
+  border-radius: 3mm;
+}
+
+.reveal pre code {
+  max-height: none;
+  border-radius: 3mm;
+  padding: 20px;
+  line-height: 28px;
+}
+
+.reveal pre code table {
+  font-size: inherit;
+}
+
+/* Lists Styling */
+.reveal ul {
+  display: block;
+  margin: 0 15px 0 1.5em; /* Combined margins */
+}
+
+.reveal ol {
+  margin: 0 0 0 2em;
+}
+
+.reveal li {
+  margin-top: 10px;
+}
+
+.reveal li + li {
+  margin-top: 10px;
+}
+
+/* Math / Equations */
+.MathJax .math {
+  font-size: 80%;
+}
+
+.katex {
+  font-size: 1em;
+}
+
+/* ==========================================================================
+   Components: Blockquotes
+   ========================================================================== */
+
+/* Enhanced Blockquote Styling */
+.reveal blockquote {
+  /* Layout & Dimensions */
+  width: 96%;            /* Occupy near full width instead of default 70% */
+  box-sizing: border-box; /* Include padding in width calculation */
+  margin: 20px auto;     /* Vertical spacing and horizontal centering */
+  
+  /* Visual Appearance */
+  border-radius: 8px;    /* Soft rounded corners */
+  padding: 15px 25px;    /* Internal breathing room */
+  background: rgba(255, 255, 255, 0.7); /* Semi-transparent white background */
+  border-left: 6px solid rgb(0, 63, 163); /* ZJU Blue accent border */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* Subtle depth shadow */
+  
+  /* Typography */
+  font-style: normal;    /* Override default italic style */
+  text-align: left;
+}
+
+/* Blockquote Paragraph Reset */
+.reveal blockquote p {
+  margin: 0;
+  padding: 0;
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   Layout Utilities
+   ========================================================================== */
+
+/* Alignment Helpers */
+.reveal .center {
+  text-align: center;
+}
+
+section .center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.reveal .middle {
+  height: 660px;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.reveal .middle h1 {
+  text-align: center;
+}
+
+/* Multi-column Layout */
+.reveal .mul-cols {
+  display: flex;
+}
+
+.reveal .mul-cols .col {
+  width: 100%;
+}
+
+/* Horizontal Rules */
+.reveal hr {
+  border: 10px solid white;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.reveal .middle hr {
+  border: 0;
+  height: 2px;
+  background: radial-gradient(ellipse at center, rgba(1, 14, 54, 0.324) 0, hsla(0, 0%, 100%, 0) 75%);
+  margin-bottom: 40px;
+  width: 60%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ==========================================================================
+   Tables
+   ========================================================================== */
+
+/* General Table Styling */
+.reveal table {
+  font-size: 30px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+/* Standard Section Tables */
+section > table {
+  border: 1.5pt solid;
+  text-align: center;
+  page-break-inside: avoid;
+}
+
+section > table > tbody > tr > td,
+section > table > tbody > tr,
+section > table > thead,
+section > table th {
+  border: 0.75pt solid;
+  padding: 7px;
+}
+
+section > table > thead {
+  font-size: 0.9em;
+}
+
+/* Scientific "Three-Line" Table Style */
+.three-line {
+  text-align: center;
+}
+
+.three-line > table {
+  border-top: 1.5pt solid;
+  border-bottom: 1.5pt solid;
+  text-align: center;
+  page-break-inside: avoid;
+  display: inline-table !important;
+}
+
+.three-line > table > tbody > tr > td,
+.three-line > table > tbody > tr {
+  border: none;
+  padding: 7px 15px;
+}
+
+.three-line > table > thead {
+  border-bottom: 0.75pt solid;
+  font-size: 0.9em;
+}
+
+.three-line > table th {
+  border: none;
+}
+
+/* ==========================================================================
+   Chinese Typography Optimization (Heti)
+   ========================================================================== */
+/**
+ * Modified from https://github.com/sivan/heti
+ * Spacing adjustments for mixed CJK and Latin text.
+ */
+
+.reveal heti-spacing {
+  display: inline;
+}
+
+.reveal heti-spacing + sup,
+.reveal heti-spacing + sub {
+  margin-inline-start: 0;
+}
+
+.reveal .heti-spacing {
+  font-size: 0.5em;
+  vertical-align: top;
+}
+
+.reveal .heti-spacing-start {
+  margin-inline-end: 0.25em;
+}
+
+.reveal .heti-spacing-end {
+  margin-inline-start: 0.25em;
+}
+
+.reveal heti-adjacent {
+  display: inline;
+}
+
+.reveal .heti-adjacent-half {
+  margin-inline-end: -0.5em;
+}
+
+.reveal .heti-adjacent-quarter {
+  margin-inline-end: -0.25em;
+}
+
+/* ==========================================================================
+   Title Slide Specifics
+   ========================================================================== */
+
+/* Force center alignment for title slide elements */
+#sec-title-slide {
+  text-align: center !important;
+}
+
+#sec-title-slide h1, 
+#sec-title-slide h2, 
+#sec-title-slide .author, 
+#sec-title-slide .date, 
+#sec-title-slide .email {
+  text-align: center !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Add divider line below the main title */
+#sec-title-slide h1 {
+  border-bottom: 2px solid rgb(0, 63, 163); /* Match H2 border style */
+  padding-bottom: 20px;
+  margin-bottom: 30px !important; /* Force space between line and author */
+  width: 100%; /* Full width like standard slide headers */
+}
+
+/* Remove conflicting borders/lines from other elements on Title Slide */
+#sec-title-slide h2 {
+  border-bottom: none !important;
+}
+
+#sec-title-slide hr {
+  display: none !important;
+}
+
+/* ==========================================================================
+   View Mode Overrides
+   ========================================================================== */
+
+/* Print PDF Fixes */
+html.print-pdf .reveal pre code {
+  font-family: var(--r-code-font) !important;
+}
+
+/* Scroll View Mode - Specific Adjustments */
+.reveal-viewport.reveal-scroll .slide-background {
+  width: var(--slide-width) !important;
+  height: var(--slide-height) !important;
+}
+
+.reveal-viewport.reveal-scroll .slides {
+  border: none;
+}
+
+.reveal-viewport.reveal-scroll .scroll-page-content {
+  width: var(--slide-width) !important;
+  height: var(--slide-height) !important;
+  top: 50% !important;
+  left: 50% !important;
+  opacity: 1 !important;
+  transform: scale(var(--slide-scale)) translate(-50%, -50%) !important;
+  transform-style: flat !important;
+  transform-origin: 0 0 !important;
+  border: 1.5px #ddd solid;
+  border-radius: 7px;
+}
+
+.reveal-viewport.reveal-scroll .scroll-page section {
+  /* Reset positioning for scroll view */
+  top: unset !important;
+  left: unset !important;
+  transform: none !important;
+}
