@@ -83,3 +83,7 @@ tutorial/
 url/
 var/
 debug-adapters/
+example.tex
+example.pdf
+_minted*/
+ltximg
