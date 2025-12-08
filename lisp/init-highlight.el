@@ -67,9 +67,9 @@
          (dired-mode . diff-hl-dired-mode))
   :custom (diff-hl-draw-borders nil)
   :custom-face
-  (diff-hl-change ((t (:inherit custom-changed :foreground unspecified :background unspecified))))
-  (diff-hl-insert ((t (:inherit diff-added :background unspecified))))
-  (diff-hl-delete ((t (:inherit diff-removed :background unspecified))))
+  (diff-hl-change ((t (:inherit diff-indicator-changed :foreground unspecified :background unspecified))))
+  (diff-hl-insert ((t (:inherit diff-indicator-added :background unspecified))))
+  (diff-hl-delete ((t (:inherit diff-indicator-removed :background unspecified))))
   :config
   ;; Highlight on-the-fly
   (diff-hl-flydiff-mode 1)
@@ -81,15 +81,11 @@
   (setq diff-hl-fringe-bmp-function
         (lambda (_type _pos) 'my-diff-hl-thin-bar))
   (with-no-warnings
-    ;; This defines a dedicated function to create the fringe bitmap, which is
-    ;; more reliable. The custom system check `sys/linuxp` is replaced with the
-    ;; standard Emacs `(eq system-type 'gnu/linux)`.
     (defun my-diff-hl--fringe-bmp-function (_type _pos)
       "Fringe bitmap function for use as `diff-hl-fringe-bmp-function'."
       (define-fringe-bitmap 'my-diff-hl-bmp
-        ;; Use a slightly different bitmap for Linux vs macOS/Windows
-        ;; to achieve a similar visual thickness.
-        (vector (if (eq system-type 'gnu/linux) #b11111100 #b11100000))
+        ;; Make the fringe bitmap 3 pixels wide as requested
+        (vector #b11100000)
         1 8 '(center t)))
     (setq diff-hl-fringe-bmp-function #'my-diff-hl--fringe-bmp-function)
 
@@ -97,7 +93,14 @@
     ;; markers stay in sync when you interact with Magit.
     (with-eval-after-load 'magit
       (add-hook 'magit-pre-refresh-hook #'diff-hl-magit-pre-refresh)
-      (add-hook 'magit-post-refresh-hook #'diff-hl-magit-post-refresh))))
+      (add-hook 'magit-post-refresh-hook #'diff-hl-magit-post-refresh)))
+  (unless (display-graphic-p)
+      ;; Fall back to the display margin since the fringe is unavailable in tty
+      (diff-hl-margin-mode 1)
+      ;; Avoid restoring `diff-hl-margin-mode'
+      (with-eval-after-load 'desktop
+        (add-to-list 'desktop-minor-mode-table
+                     '(diff-hl-margin-mode nil)))))
 
 ;;----------------------------------------------------------------------------
 ;; Indentation Guides Highlighting
