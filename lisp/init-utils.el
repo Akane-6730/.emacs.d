@@ -50,5 +50,17 @@
         ediff-split-window-function 'split-window-horizontally
         ediff-merge-split-window-function 'split-window-horizontally))
 
+;;----------------------------------------------------------------------------
+;; Helper Functions
+;;----------------------------------------------------------------------------
+
+;; Compile packages in elpa directory.
+(defun byte-compile-elpa ()
+  "Compile packages in elpa directory."
+  (interactive)
+  (if (fboundp 'async-byte-recompile-directory)
+      (async-byte-recompile-directory package-user-dir)
+    (byte-recompile-directory package-user-dir 0 t)))
+
 (provide 'init-utils)
 ;;; init-utils.el ends here

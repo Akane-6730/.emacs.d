@@ -121,6 +121,47 @@
 ;; Misc
 ;;----------------------------------------------------------------------------
 
+;;----------------------------------------------------------------------------
+;; Visual & UX
+;;----------------------------------------------------------------------------
+
+(use-package simple
+  :ensure nil
+  :hook ((after-init . size-indication-mode)
+         (text-mode . visual-line-mode))
+  :config
+  (setq column-number-mode t
+        line-number-mode t
+        line-move-visual nil
+        visual-line-mode t
+        track-eol t                     ; Keep cursor at end of lines. Require line-move-visual is nil.
+        set-mark-command-repeat-pop t)  ; Repeating C-SPC after popping mark pops it again
+  (when (not (display-graphic-p))
+    (xterm-mouse-mode 1))
+  ;; Prettify the process list
+  (with-no-warnings
+    (defun my-list-processes--prettify ()
+      "Prettify process list."
+      (when-let* ((entries tabulated-list-entries))
+        (setq tabulated-list-entries nil)
+        (dolist (p (process-list))
+          (when-let* ((val (cadr (assoc p entries)))
+                      (name (aref val 0))
+                      (pid (aref val 1))
+                      (status (aref val 2))
+                      (status (list status
+                                    'face
+                                    (if (memq status '(stop exit closed failed))
+                                        'error
+                                      'success)))
+                      (buf-label (aref val 3))
+                      (tty (list (aref val 4) 'face 'font-lock-doc-face))
+                      (thread (list (aref val 5) 'face 'font-lock-doc-face))
+                      (cmd (list (aref val 6) 'face 'completions-annotations)))
+            (push (list p (vector name pid status buf-label tty thread cmd))
+                  tabulated-list-entries)))))
+    (advice-add #'list-processes--refresh :after #'my-list-processes--prettify)))
+
 ;; Display line numbers in prog-mode
 (use-package display-line-numbers
   :ensure nil
