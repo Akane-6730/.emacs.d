@@ -13,38 +13,14 @@
   :bind ("C-c g" . gptel-menu)
   :custom (gptel-default-mode 'org-mode)
   :config
-  (setq gptel-model 'gpt-5
-        gptel-backend (gptel-make-openai "KXY"
-                        :host "api.kkyyxx.xyz"
+  (setq gptel--known-backends nil) ; Clear default backends (ChatGPT)
+  (setq gptel-model 'gemini-2.5-pro
+        gptel-backend (gptel-make-gemini "Gemini"
                         :key gptel-api-key
                         :stream t
-                        :models '(gpt-5 gpt-5-codex
-                                        claude-4.5-sonnet claude-4-opus claude-4.1-opus)))
+                        :models '(gemini-2.5-pro gemini-2.5-flash)))
 
-  (gptel-make-openai "DoneHub"
-    :host "donehub.darstib.cn"
-    :protocol "http"
-    :key gptel-api-key
-    :stream t
-    :models '(gpt-5 gpt-5-codex
-                    claude-4.5-sonnet claude-opus-4 claude-sonnet-4-think claude-haiku-4-5-20251001
-                    gemini-2.5-pro gemini-2.5-flash))
-
-  (gptel-make-gh-copilot "Copilot" :stream t)
-
-  (gptel-make-gemini "Gemini"
-    :key gptel-api-key
-    :stream t
-    :models '(gemini-2.5-pro gemini-2.5-flash))
-
-  (gptel-make-openai "Anannas"
-    :host "api.anannas.ai"
-    :key gptel-api-key
-    :stream t
-    :models '(deepseek/deepseek-v3.2-exp
-              qwen/qwen3-coder-plus
-              qwen/qwen3-coder
-              qwen/qwen3-max)))
+  (gptel-make-gh-copilot "Copilot" :stream t))
 
 ;; Generate commit messages for magit
 (use-package gptel-magit
