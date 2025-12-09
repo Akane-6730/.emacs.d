@@ -35,6 +35,7 @@
 
   (treemacs-follow-mode t)
   (treemacs-filewatch-mode t)
+  (add-hook 'treemacs-mode-hook (lambda () (text-scale-set -1)))
   (pcase (cons (not (null (executable-find "git")))
                (not (null (executable-find "python3"))))
     (`(t . t)
