@@ -22,6 +22,7 @@
 
 ;; Use garbage collector magic hack to improve performance.
 (use-package gcmh
+  :ensure t
   :diminish
   :hook (emacs-startup . gcmh-mode)
   :init (setq gcmh-idle-delay 'auto
