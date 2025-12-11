@@ -13,15 +13,15 @@
 ;; Fonts
 ;;----------------------------------------------------------------------------
 
+(defun font-available-p (font-name)
+  "Check if font with FONT-NAME is available."
+  (find-font (font-spec :family font-name)))
+
 ;; Set the global font family and size.
 (when window-system
-  (defun my-find-first-available-font (font-list)
-    "Find the first installed font from FONT-LIST."
-    (cl-find-if (lambda (font-name) (find-font (font-spec :family font-name)))
-                font-list))
-  ;; 1. Setup English / Monospace font with fallback
+;; 1. Setup English / Monospace font with fallback
   (let* ((preferred-mono-fonts '("Maple Mono NF CN" "Monaco" "Menlo" "Consolas" "SF Mono" "Courier New" "Monego"))
-         (installed-font (my-find-first-available-font preferred-mono-fonts)))
+         (installed-font (cl-find-if #'font-available-p preferred-mono-fonts)))
     ;; Only set the font if one from our preferred list is found.
     ;; Otherwise, do nothing and let Emacs use its system default.
     (when installed-font
@@ -29,14 +29,14 @@
 
   ;; 2. Setup Chinese / Han script font with fallback
   (let* ((preferred-han-fonts '("LXGW WenKai Mono GB Screen" "PingFang SC"))
-         (installed-font (my-find-first-available-font preferred-han-fonts)))
+         (installed-font (cl-find-if #'font-available-p preferred-han-fonts)))
     ;; Same logic for Chinese fonts.
     (when installed-font
       (set-fontset-font t 'han (font-spec :family installed-font))))
 
   ;; 3. Setup Japanese / Kana script font to use the same fallback list
   (let* ((preferred-kana '("LXGW WenKai Mono GB Screen" "PingFang SC"))
-         (font (my-find-first-available-font preferred-kana)))
+         (font (cl-find-if #'font-available-p preferred-kana)))
     (when font
       (set-fontset-font t 'kana (font-spec :family font)))))
 
@@ -52,15 +52,19 @@
 
 ;; `doom-themes` is a package containing a collection of beautifully crafted themes.
 (use-package doom-themes
+  :demand t
   :custom
   (doom-themes-enable-bold nil)
-  ;; (doom-themes-enable-italic nil)
+  (doom-themes-enable-italic t)
   :config
   ;; Enable flashing mode-line on errors to avoid getting the yellow warning triangle on MacOS.
   (doom-themes-visual-bell-config)
   (doom-themes-org-config)
-  :hook (after-init . (lambda ()
-                        (load-theme 'my-dark t))))
+  ;; Load the theme AFTER ensuring the package is loaded
+  (load-theme 'my-dark t)
+  ;; Set specific faces to use italics AFTER loading the theme
+  (set-face-attribute 'font-lock-comment-face nil :slant 'italic)
+  (set-face-attribute 'font-lock-keyword-face nil :slant 'italic))
 
 
 ;;;----------------------------------------------------------------------------
@@ -85,10 +89,15 @@
 ;; Icons
 ;;----------------------------------------------------------------------------
 
-;; `nerd-icons` provides a vast collection of icons used by other UI packages
-;; like `doom-modeline`.
 (use-package nerd-icons
-  :demand t)
+  :commands nerd-icons-install-fonts
+  :functions font-available-p
+  :config
+  ;; Install nerd fonts automatically only in GUI
+  ;; For macOS, may install via "brew install font-symbols-only-nerd-font"
+  (when (and (display-graphic-p)
+             (not (font-available-p nerd-icons-font-family)))
+    (nerd-icons-install-fonts t)))
 
 
 ;;----------------------------------------------------------------------------
@@ -196,7 +205,7 @@
   (my/ns-set-frame-titlebar (selected-frame)))
 
 ;; set transparency
-;; (set-frame-parameter nil 'alpha 95)
+;; (set-frame-parameter nil 'alpha 99)
 
 
 ;; --- Scrolling Behavior ---
