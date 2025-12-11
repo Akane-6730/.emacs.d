@@ -18,10 +18,11 @@
 (package-initialize)
 
 ;; Ensure GPG keyring for GNU ELPA is up to date.
-(unless package-archive-contents
-  (message "First time setup: refreshing package contents...")
-  (package-refresh-contents)
-  (message "Package contents refreshed."))
+(let ((melpa-archive-exists (file-exists-p (expand-file-name "archives/melpa/archive-contents" package-user-dir))))
+  (unless (and package-archive-contents melpa-archive-exists)
+    (message "First time setup: refreshing package contents...")
+    (package-refresh-contents)
+    (message "Package contents refreshed.")))
 
 (setq use-package-always-ensure t
       use-package-always-defer t
