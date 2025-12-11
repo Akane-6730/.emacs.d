@@ -31,6 +31,7 @@
   (setq dashboard-show-shortcuts nil)
 
   (set-face-attribute 'dashboard-items-face nil :weight 'normal)
+  (set-face-attribute 'dashboard-no-items-face nil :weight 'normal)
 
   ;;; --- Content & Items ---
   (setq dashboard-items '((recents  . 10)
