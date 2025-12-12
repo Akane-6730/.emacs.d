@@ -81,6 +81,7 @@ new window, and then returns it."
           "\\*Warnings\\*$"
           help-mode
           compilation-mode
+          grep-mode occur-mode rg-mode
           "\\*quickrun\\*$"
           ;; Regex for various terminal-like buffers
           "^\\*.*\\(eat\\|eshell\\|shell\\|terminal\\|vterm\\).*-*\\*.*$"
