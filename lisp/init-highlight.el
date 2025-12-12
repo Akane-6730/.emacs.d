@@ -103,6 +103,15 @@
                      '(diff-hl-margin-mode nil)))))
 
 ;;----------------------------------------------------------------------------
+;; Doxygen Highlighting
+;;----------------------------------------------------------------------------
+
+(use-package highlight-doxygen
+  :hook (prog-mode . highlight-doxygen-mode)
+  :custom-face
+  (highlight-doxygen-comment ((t (:background unspecified)))))
+
+;;----------------------------------------------------------------------------
 ;; Indentation Guides Highlighting
 ;;----------------------------------------------------------------------------
 ;;
