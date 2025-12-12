@@ -40,27 +40,26 @@ Can be an integer to determine the exact padding."
   :background-mode 'dark
 
   ;; name        gui       256       16
-  ((bg         '("#2c2e33" nil       nil            ))
-   (bg-alt     '("#1E2528" nil       nil            ))
+  ((bg         '("#2c2e34" nil       nil            ))
+   (bg-alt     '("#222327" nil       nil            )) ; 1E2528
    (base0      '("#131313" "#121212" "black"        ))
    (base1      '("#161b1e" "#1c1c1c" "black"        ))
-   (base2      '("#2e363b" "#262626" "brightblack"  ))
+   (base2      '("#363944" "#262626" "brightblack"  )) ;2e363b
    (base3      '("#474950" "#3a3a3a" "brightblack"  ))
    (base4      '("#545f62" "#585858" "brightblack"  ))
    (base5      '("#5a6568" "#585858" "brightblack"  ))
    (base6      '("#6b7678" "#6c6c6c" "brightblack"  ))
    (base7      '("#8b9798" "#8a8a8a" "brightblack"  ))
    (base8      '("#b4c1c0" "#bcbcbc" "white"        ))
-   (fg         '("#f2fffc" "#ffffff" "brightwhite"  ))
+   (fg         '("#e2e2e3" "color-250" "brightwhite"  ))
    (fg-alt     '("#c6c6c6" "#c6c6c6" "white"        ))
-
-   (grey       base4)
-   (red        '("#ff6d7e" "#ff69bf" "red"          ))
-   (orange     '("#ffb270" "#ff7f50" "brightred"    ))
-   (green      '("#a2e57b" "#90ee90" "green"        ))
-   (yellow     '("#ffed72" "#f0e68c" "yellow"       ))
-   (violet     '("#baa0f8" "#9370db" "magenta"      ))
-   (cyan       '("#7cd5f1" "#40e0d0" "brightcyan"   ))
+   (grey       '("#7f8490" "color-246" "brightblack"))
+   (red        '("#fc5d7c" "color-203" "red"         ))
+   (orange     '("#f39660" "color-215" "brightred"   ))
+   (yellow     '("#e7c664" "color-179" "yellow"      ))
+   (green      '("#9ed072" "color-107" "green"       ))
+   (cyan       '("#76cce0" "color-110" "brightcyan"  ))
+   (violet     '("#b39df3" "color-176" "magenta"     ))
    (magenta    '("#FF6188" "#FF6188" "violet"       ))
    (blue        cyan)
    (dark-blue   cyan)
@@ -78,13 +77,13 @@ Can be an integer to determine the exact padding."
    (functions      green)
    (keywords       magenta)
    (methods        green)
-   (operators      red)
+   (operators      magenta)
    (type           cyan)
    (strings        yellow)
    (variables      fg)
    (numbers        violet)
    (region         base3)
-   (error          red)
+   (error          magenta)
    (warning        orange)
    (success        green)
    (vc-modified    blue)
@@ -104,12 +103,12 @@ Can be an integer to determine the exact padding."
   ;;;; Base theme face overrides
   ((cursor                                       :background fg)
    ;; I-search
-   (match                                        :foreground fg :background base3)
+   (match                                        :foreground fg :background base2)
    (isearch                                      :inherit 'match :box `(:line-width 2 :color ,yellow))
    (lazy-highlight                               :inherit 'match)
    (isearch-fail                                 :foreground red)
    ;; current line
-   (hl-line                                      :background base3)
+   (hl-line                                      :background base2)
    ;; line-numbers
    ((line-number &override)                      :foreground base4 :distant-foreground nil)
    ((line-number-current-line &override)         :foreground base7 :distant-foreground nil)
@@ -118,12 +117,6 @@ Can be an integer to determine the exact padding."
                                                  :box (if -modeline-pad `(:line-width ,-modeline-pad :color red)))
    (mode-line-inactive                           :background bg :foreground fg
                                                  :box (if -modeline-pad `(:line-width ,-modeline-pad :color red)))
-
-   ;;;; css-mode <built-in> / scss-mode
-   (css-proprietary-property                     :foreground keywords)
-   ;;;; deadgrep
-   (deadgrep-match-face                          :inherit 'match :box `(:line-width 2 :color ,yellow))
-
    ;;;; doom-modeline
    (doom-modeline-bar                            :background yellow)
    (doom-modeline-buffer-file                    :inherit 'mode-line-buffer-id :weight 'normal)
@@ -138,9 +131,6 @@ Can be an integer to determine the exact padding."
    (markdown-pre-face                            :foreground cyan)
    (markdown-link-face                           :inherit 'normal :foreground blue)
    ((markdown-code-face &override)               :background (doom-lighten base2 0.045))
-   ;;;; neotree
-   (neo-dir-link-face                            :foreground cyan)
-   (neo-expand-btn-face                          :foreground red)
    ;;;; outline <built-in>
    ((outline-1 &override)                        :foreground yellow)
    ((outline-2 &override)                        :foreground blue)
@@ -160,26 +150,16 @@ Can be an integer to determine the exact padding."
    ((org-block-background &override) :background base2)
    ((org-block-begin-line &override) :background base2)
    ;;;; rainbow-delimiters
-   (rainbow-delimiters-depth-1-face :foreground violet)
-   (rainbow-delimiters-depth-2-face :foreground blue)
-   (rainbow-delimiters-depth-3-face :foreground orange)
-   (rainbow-delimiters-depth-4-face :foreground green)
-   (rainbow-delimiters-depth-5-face :foreground violet)
-   (rainbow-delimiters-depth-6-face :foreground yellow)
-   (rainbow-delimiters-depth-7-face :foreground blue)
+   (rainbow-delimiters-depth-1-face :foreground  violet)
+   (rainbow-delimiters-depth-2-face :foreground  blue)
+   (rainbow-delimiters-depth-3-face :foreground  yellow)
+   (rainbow-delimiters-depth-4-face :foreground  green)
+   (rainbow-delimiters-depth-5-face :foreground  violet)
+   (rainbow-delimiters-depth-6-face :foreground  blue)
+   (rainbow-delimiters-depth-7-face :foreground  yellow)
    ;;;; show-paren-mode
    (show-paren-match                             :weight 'normal :foreground green)
    (show-paren-mismatch                          :weight 'normal :foreground red)
-   ;;;; swiper
-   (swiper-background-match-face-1               :inherit 'match :weight 'normal)
-   (swiper-background-match-face-2               :inherit 'match)
-   (swiper-background-match-face-3               :inherit 'match :foreground green)
-   (swiper-background-match-face-4               :inherit 'match :weight 'normal :foreground green)
-   (swiper-match-face-1                          :inherit 'isearch :weight 'normal)
-   (swiper-match-face-2                          :inherit 'isearch)
-   (swiper-match-face-3                          :inherit 'isearch :foreground green)
-   (swiper-match-face-4                          :inherit 'isearch :weight 'normal :foreground green)
-   (swiper-line-face                             :inherit 'hl-line)
    ;;;; term <built-in>
    (term-color-black                            :foreground base3)
    (term-color-blue                             :foreground blue)
@@ -193,19 +173,12 @@ Can be an integer to determine the exact padding."
    (treemacs-git-added-face                     :foreground green)
    (treemacs-git-conflict-face                  :foreground red)
    (treemacs-git-ignored-face                   :foreground base6)
-   (treemacs-git-modified-face                  :foreground blue)
+   (treemacs-git-modified-face                  :foreground (doom-darken blue 0.2))
    (treemacs-git-renamed-face                   :foreground orange)
-   (treemacs-git-untracked-face                 :foreground (doom-darken yellow 0.3))
+   (treemacs-git-untracked-face                 :foreground (doom-darken yellow 0.2))
    (treemacs-on-failure-pulse-face              :foreground base0 :background red)
    (treemacs-on-success-pulse-face              :foreground base0 :background green)
-   ;;;; web-mode
-   (web-mode-html-tag-face                      :foreground red)
-   (web-mode-html-tag-bracket-face              :foreground base7)
-   (web-mode-html-attr-name-face                :foreground cyan :italic italic)
-   (web-mode-html-attr-equal-face               :inherit 'web-mode-html-tag-bracket-face)
-   ;; Apparently web-mode has no face for values of css properties.
-   (web-mode-css-selector-face                  :foreground green)
-   (web-mode-css-property-name-face             :foreground base7)
+
    ;; Rime
    (rime-highlight-candidate-face               :foreground green)
    ;; Tab bar
@@ -242,9 +215,11 @@ Can be an integer to determine the exact padding."
     :background base3
     :foreground fg
     :box nil)
-
+   ;; Info
+   (info-menu-star :foreground magenta)
    ;; Override the theme's default color for operators.
    (font-lock-operator-face :foreground magenta)
+   (font-lock-property-name-face :foreground orange)
    )
 
   ;;;; Base theme variable overrides
