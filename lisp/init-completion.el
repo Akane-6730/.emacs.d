@@ -69,8 +69,10 @@
                                 (setq-local corfu-auto nil)
                                 (corfu-mode))))
 
-(unless (display-graphic-p)
+(when (< emacs-major-version 31)
   (use-package corfu-terminal
+    :if (display-graphic-p)
+    :ensure t
     :hook (global-corfu-mode . corfu-terminal-mode)))
 
 (use-package nerd-icons-corfu
