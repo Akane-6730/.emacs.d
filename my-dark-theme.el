@@ -103,10 +103,9 @@ Can be an integer to determine the exact padding."
   ;;;; Base theme face overrides
   ((cursor                                       :background fg)
    ;; I-search
-   (match                                        :foreground fg :background base2)
-   (isearch                                      :inherit 'match :box `(:line-width 2 :color ,yellow))
+   (match                                        :foreground bg :background yellow)
    (lazy-highlight                               :inherit 'match)
-   (isearch-fail                                 :foreground red)
+   (isearch-fail                                 :foreground magenta)
    ;; current line
    (hl-line                                      :background base2)
    ;; line-numbers
@@ -220,11 +219,32 @@ Can be an integer to determine the exact padding."
    ;; Override the theme's default color for operators.
    (font-lock-operator-face :foreground magenta)
    (font-lock-property-name-face :foreground orange)
+   (font-lock-function-call-face :foreground green)
    )
 
   ;;;; Base theme variable overrides
   ;; ()
   )
+
+(custom-theme-set-variables 'my-dark
+                            `(hl-todo-keyword-faces
+                              (list
+                               (cons "TODO"       (doom-color 'blue))
+                               (cons "FIXME"      (doom-color 'magenta))
+                               (cons "BUG"        (doom-color 'magenta))
+                               (cons "HACK"       (doom-color 'orange))
+                               (cons "NOTE"       (doom-color 'yellow))
+                               (cons "DONE"       (doom-color 'green))
+                               (cons "DEPRECATED" (doom-color 'grey))))
+                            `(ansi-color-names-vector
+                              (vector (doom-color 'base0)   ; black
+                                      (doom-color 'red)     ; red
+                                      (doom-color 'green)   ; green
+                                      (doom-color 'yellow)  ; yellow
+                                      (doom-color 'blue)    ; blue
+                                      (doom-color 'magenta) ; magenta
+                                      (doom-color 'cyan)    ; cyan
+                                      (doom-color 'fg))))   ; white
 
 (provide 'my-dark-theme)
 ;;; my-dark-theme.el ends here
