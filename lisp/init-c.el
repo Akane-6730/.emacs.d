@@ -63,7 +63,11 @@
 (add-to-list 'auto-mode-alist '("\\.cuh\\'" . c++-mode))
 
 ;; Associate CMakeLists.txt with cmake-ts-mode
-(add-to-list 'auto-mode-alist '("CMakeLists\\.txt\\'" . cmake-ts-mode))
+(use-package cmake-ts-mode
+  :mode ("CMakeLists\\.txt\\'" . cmake-ts-mode)
+  :config
+  (add-to-list 'eglot-server-programs
+               '((cmake-mode cmake-ts-mode) . ("neocmakelsp" "stdio"))))
 
 (provide 'init-c)
 ;;; init-c.el ends here
