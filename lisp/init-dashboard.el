@@ -9,10 +9,12 @@
 ;;; Code:
 
 (use-package dashboard
-  :init
-  ;; This hook correctly sets up the dashboard to appear at startup.
-  (dashboard-setup-startup-hook)
+  :if window-system
+  :init (dashboard-setup-startup-hook)
   :bind (("<f2>" . dashboard-open))
+  :custom-face
+  (dashboard-items-face    ((t (:weight normal))))
+  (dashboard-no-items-face ((t (:weight normal))))
   :config
   ;;; --- Banner & Logo ---
   ;; Define a customizable variable for the banner file path.
@@ -30,8 +32,9 @@
   (setq dashboard-set-file-icons t)
   (setq dashboard-show-shortcuts nil)
 
-  (set-face-attribute 'dashboard-items-face nil :weight 'normal)
-  (set-face-attribute 'dashboard-no-items-face nil :weight 'normal)
+  (when (find-font (font-spec :family "Maple Mono NF CN"))
+    (set-face-attribute 'dashboard-text-banner nil
+                        :family "Maple Mono NF CN"))
 
   ;;; --- Content & Items ---
   (setq dashboard-items '((recents  . 10)
