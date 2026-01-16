@@ -10,9 +10,9 @@
 ;;; Keybinding Hints
 ;;;----------------------------------------------------------------------------
 
-(use-package which-key
-  :ensure nil
-  :hook (after-init . which-key-mode))
+;; (use-package which-key
+;;   :ensure nil
+;;   :hook (after-init . which-key-mode))
 
 ;;;----------------------------------------------------------------------------
 ;;; Search Tool Enhancement
@@ -33,6 +33,17 @@
      'grep-find-command '("rg --color=auto --null -nH --no-heading -e ''" . 38))
     (grep-apply-setting
      'grep-find-template "rg --color=auto --null -nH --no-heading -e <R> <D>")))
+
+;; Fast search tool `ripgrep'
+(use-package rg
+  :hook (after-init . rg-enable-default-bindings)
+  :bind (:map rg-global-map
+         ("c" . rg-dwim-current-dir)
+         ("f" . rg-dwim-current-file)
+         ("m" . rg-menu))
+  :init (setq rg-show-columns t)
+  :config (add-to-list 'rg-custom-type-aliases '("tmpl" . "*.tmpl")))
+
 
 ;;----------------------------------------------------------------------------
 ;; Ediff Configuration
