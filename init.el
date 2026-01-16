@@ -58,7 +58,6 @@
 (require 'init-dired)       ; File manager enhancements.
 (require 'init-shell)       ; Eshell configuration.
 (require 'init-window)      ; Window management commands.
-(require 'init-treemacs)
 (require 'init-utils)
 
 ;; -- 4. Programming Language Support --
