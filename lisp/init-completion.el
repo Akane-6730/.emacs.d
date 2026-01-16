@@ -14,7 +14,7 @@
 
 (use-package vertico
   :hook (after-init . vertico-mode)
-  :custom (vertico-count 15)
+  :custom (vertico-count 10)
   :bind (:map vertico-map
               ("RET" . vertico-directory-enter)
               ("DEL" . vertico-directory-delete-char)
