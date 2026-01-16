@@ -13,7 +13,9 @@
   (markdown-hide-urls t)
   (markdown-hide-markup t)
   (markdown-enable-wiki-links t)
-  (markdown-enable-highlighting-syntax t))
+  (markdown-enable-highlighting-syntax t)
+  :config
+  (setq markdown-list-item-bullets '("•" "►")))
 
 
 (provide 'init-markdown)
