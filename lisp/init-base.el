@@ -38,7 +38,7 @@
 ;; Manually load PATH from ~/.path for better performance.
 ;; NOTE: When PATH is changed, run the following command
 ;; $ sh -c 'printf "%s" "$PATH"' > .path
-(when (or (memq window-system '(mac ns x)) (daemonp))
+(when (or (window-system) (daemonp))
   (condition-case err
       (let ((path (with-temp-buffer
                     (insert-file-contents-literally "~/.path")
