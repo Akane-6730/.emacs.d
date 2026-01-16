@@ -123,12 +123,22 @@
   (setq doom-modeline-time-icon t)
   (setq doom-modeline-time-clock-size 1.0))
 
+;;----------------------------------------------------------------------------
+;; Layout
+;;----------------------------------------------------------------------------
 
-;; `minions` integrates with the modeline to provide a clean menu for minor modes.
-;; (use-package minions
-;;   :ensure t
-;;   :hook (doom-modeline-mode . minions-mode))
-
+(use-package spacious-padding
+  :hook (after-init . spacious-padding-mode)
+  :config
+  (setq spacious-padding-widths
+        '( :internal-border-width 10   ; Gap between the frame border and the windows
+           :header-line-width 0        ; Vertical padding for the header-line
+           :mode-line-width 0          ; Vertical padding for the mode-line
+           :custom-button-width 0      ; Padding for buttons (e.g. in Custom UI)
+           :tab-width 2                ; Horizontal padding for tab-bar tabs
+           :right-divider-width 15     ; Width of the divider between side-by-side windows
+           :scroll-bar-width 0         ; Width reserved for scrollbars
+           :fringe-width 8)))          ; Width of the lateral fringes (git gutters, etc.)
 
 ;;----------------------------------------------------------------------------
 ;; Misc
