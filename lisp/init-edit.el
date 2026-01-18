@@ -62,8 +62,25 @@
 
 ;; Move to beginning/end of code first, then line
 (use-package mwim
-  :bind (([remap move-beginning-of-line] . mwim-beginning)
-         ([remap move-end-of-line] . mwim-end)))
+  :config
+  (defun my/mwim-excluded-p ()
+    (or (minibufferp)
+        (derived-mode-p 'comint-mode
+                        'term-mode
+                        'vterm-mode
+                        'eshell-mode)))
+  (defun my/mwim-beginning ()
+    (interactive)
+    (if (my/mwim-excluded-p)
+        (move-beginning-of-line 1)
+      (mwim-beginning)))
+  (defun my/mwim-end ()
+    (interactive)
+    (if (my/mwim-excluded-p)
+        (move-end-of-line 1)
+      (mwim-end)))
+  :bind (([remap move-beginning-of-line] . my/mwim-beginning)
+         ([remap move-end-of-line]       . my/mwim-end)))
 
 ;; Delete all whitespace up to the next non-whitespace character
 (use-package hungry-delete
@@ -200,16 +217,16 @@
 ;; Standard Command Enhancements
 ;;----------------------------------------------------------------------------
 
-;; Automate cleanup whitespace before saving
-(defun my-cleanup-and-save ()
-  "Run `whitespace-cleanup` and save the buffer."
-  (interactive)
-  (whitespace-cleanup)
-  (save-buffer))
-
 ;; Remap standard commands
 (use-package simple
   :ensure nil
+  :config
+  ;; Automate cleanup whitespace before saving
+  (defun my-cleanup-and-save ()
+    "Run `whitespace-cleanup` and save the buffer."
+    (interactive)
+    (whitespace-cleanup)
+    (save-buffer))
   :bind ([remap save-buffer] . my-cleanup-and-save))
 
 (provide 'init-edit)
