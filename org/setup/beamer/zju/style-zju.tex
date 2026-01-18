@@ -9,11 +9,10 @@
 % ============================================================
 
 % --- Basic & Localization ---
-\usepackage[fontset=none]{ctex}                % Chinese support (no default fonts)
-\setmainfont{Libertinus Serif}                  % English Main Font
+\setmainfont[Scale=1.1]{Libertinus Serif}   % English Main Font
 \setCJKmainfont[                                % Chinese Main Font
-  UprightFont = * SemiBold,                     % Fix "too thin" on projector
-  BoldFont    = * Heavy                         % Ensure sufficient contrast
+    UprightFont = * SemiBold,                     % Fix "too thin" on projector
+    BoldFont    = * Heavy                         % Ensure sufficient contrast
 ]{Source Han Serif CN}
 \usepackage[normalem]{ulem}                     % Underline support
 
@@ -41,47 +40,47 @@
 % ============================================================
 \mode<presentation> {
 
-  % --- Fonts & Inner/Outer Themes ---
-  \usefonttheme{serif}                          % Serif font theme
-  \usefonttheme{professionalfonts}              % Prevent Beamer from overwriting math fonts
-  \useinnertheme[shadow]{rounded}               % Rounded corners with shadows for blocks
-  
-  \setbeamerfont{frametitle}{series=\bfseries}
-  \setbeamerfont{block title}{series=\bfseries}
+    % --- Fonts & Inner/Outer Themes ---
+    \usefonttheme{serif}                          % Serif font theme
+    \usefonttheme{professionalfonts}              % Prevent Beamer from overwriting math fonts
+    \useinnertheme[shadow]{rounded}               % Rounded corners with shadows for blocks
 
-  % --- Color Palette (ZJU Blue) ---
-  \definecolor{ZJUBlue}{RGB}{0,63,136}          % ZJU Official Blue
-  \usecolortheme[named=ZJUBlue]{structure}      % Set structural color
-  
-  \setbeamercolor{block title}{bg=ZJUBlue,fg=white}
-  \setbeamercolor{block body}{bg=ZJUBlue!10!white}
-  
-  % --- Component Styling ---
-  \setbeamertemplate{itemize item}[circle]
-  \setbeamertemplate{itemize subitem}[circle]
-  \setbeamertemplate{itemize subsubitem}[circle]
+    \setbeamerfont{frametitle}{series=\bfseries}
+    \setbeamerfont{block title}{series=\bfseries}
 
-  \setbeamertemplate{enumerate item}{\insertenumlabel.}
-  \setbeamertemplate{enumerate subitem}{\insertenumlabel.\insertsubenumlabel}
-  \setbeamertemplate{enumerate subsubitem}{\insertenumlabel.\insertsubenumlabel.\insertsubsubenumlabel}
+    % --- Color Palette (ZJU Blue) ---
+    \definecolor{ZJUBlue}{RGB}{0,63,136}          % ZJU Official Blue
+    \usecolortheme[named=ZJUBlue]{structure}      % Set structural color
 
-  % --- Navigation ---
-  \setbeamertemplate{navigation symbols}{}      % Disable bottom navigation symbols
+    \setbeamercolor{block title}{bg=ZJUBlue,fg=white}
+    \setbeamercolor{block body}{bg=ZJUBlue!10!white}
 
-  % --- Footline Setup ---
-  % Font size for page numbers
-  \setbeamerfont{page number in head/foot}{size=\small}
-  
-  % Custom footline with frame number at bottom right
-  \setbeamertemplate{footline}{
-    \hbox to \paperwidth{
-      \hfill                                    % Push to right
-      \usebeamerfont{page number in head/foot}
-      \insertframenumber\,/\,\inserttotalframenumber
-      \hspace{0.3em}                            % Right margin adjustment
-    }%
-    \vskip1em                                   % Bottom margin
-  }
+    % --- Component Styling ---
+    \setbeamertemplate{itemize item}[circle]
+    \setbeamertemplate{itemize subitem}[circle]
+    \setbeamertemplate{itemize subsubitem}[circle]
+
+    \setbeamertemplate{enumerate item}{\insertenumlabel.}
+    \setbeamertemplate{enumerate subitem}{\insertenumlabel.\insertsubenumlabel}
+    \setbeamertemplate{enumerate subsubitem}{\insertenumlabel.\insertsubenumlabel.\insertsubsubenumlabel}
+
+    % --- Navigation ---
+    \setbeamertemplate{navigation symbols}{}      % Disable bottom navigation symbols
+
+    % --- Footline Setup ---
+    % Font size for page numbers
+    \setbeamerfont{page number in head/foot}{size=\small}
+
+    % Custom footline with frame number at bottom right
+    \setbeamertemplate{footline}{
+        \hbox to \paperwidth{
+            \hfill                                    % Push to right
+            \usebeamerfont{page number in head/foot}
+            \insertframenumber\,/\,\inserttotalframenumber
+            \hspace{0.3em}                            % Right margin adjustment
+        }%
+        \vskip1em                                   % Bottom margin
+    }
 }
 
 % ============================================================
@@ -99,11 +98,11 @@
 % 5. Institute & Contact Info
 % ============================================================
 \institute{
-  % Email
-  {\normalsize \href{mailto:lin.shao@zju.edu.cn}{\rmfamily lin.shao@zju.edu.cn}}
-  \\[2em]
-  % Affiliation
-  {\normalsize 计算机科学与技术学院} \\
+% Email
+{\normalsize \href{mailto:lin.shao@zju.edu.cn}{\rmfamily lin.shao@zju.edu.cn}}
+\\[2em]
+% Affiliation
+{\normalsize 计算机科学与技术学院} \\
 }
 
 % ============================================================
@@ -121,18 +120,17 @@
 % 7. Document Hooks
 % ============================================================
 % Auto-insert Outline at the beginning of each section
-\AtBeginSection[]
-{
-  \begin{frame}
-    \frametitle{Outline}
-    \tableofcontents[currentsection]
-  \end{frame}
+\AtBeginSection[]{
+    \begin{frame}
+        \frametitle{Outline}
+        \tableofcontents[currentsection]
+    \end{frame}
 }
 
 % Auto-insert Thank You slide at the end
 \AtEndDocument{
-  \begin{frame}[c, plain]
-    \centering
-    \Huge \bfseries Thank You!
-  \end{frame}
+    \begin{frame}[c, plain]
+        \centering
+        \Huge \bfseries Thank You!
+    \end{frame}
 }
