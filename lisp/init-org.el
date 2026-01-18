@@ -10,19 +10,41 @@
 ;; Custom Org setup directory
 (defvar org-setup-dir (expand-file-name "org/setup/" user-emacs-directory))
 
+(unless (package-installed-p 'org-mode)
+  (package-vc-install
+   '(org-mode :url "https://git.tecosaur.net/tec/org-mode.git"
+              :branch "dev")))
+
 ;;----------------------------------------------------------------------------
 ;; Core Org Mode Configuration
 ;;----------------------------------------------------------------------------
 (use-package org
-  :ensure nil
-  :hook (org-mode . my-org-mode-setup-emphasis-keys)
-  (org-mode . org-indent-mode)
+  :load-path "~/.emacs.d/elpa/org-mode/lisp/"
+  :hook ((org-mode . my-org-mode-setup-emphasis-keys)
+         (org-mode . variable-pitch-mode)
+         (org-mode . org-indent-mode)
+         (org-mode . my/org-setup-prettify-symbols))
   :config
   (setq org-src-fontify-natively t)
   (setq org-src-tab-acts-natively t)
   (setq org-hide-emphasis-markers t)
   (setq org-highlight-latex-and-related '(native))
-  (setq org-export-in-background t)
+  ;; (setq org-export-in-background t)
+  (setq org-ellipsis " ") ; ⤵ ▾ ▼ ↴
+  (defun my/org-setup-prettify-symbols ()
+    "Configure prettify symbols for Org mode, allowing non-word boundaries."
+    (setq-local prettify-symbols-alist
+                '(("lambda"  . ?λ)
+                  ("[ ]" . ?)
+                  ("[-]" . ?)
+                  ("[X]" . ?)))
+    (setq-local prettify-symbols-compose-predicate
+                (lambda (start end _match) t)) ; Allow composition anywhere
+    (prettify-symbols-mode 1))
+
+  (setq org-startup-with-latex-preview t)
+  (setq org-latex-precompile nil)
+  (setq org-latex-preview-process-precompile nil)
   ;; Structure templates (e.g., <s TAB)
   (require 'org-tempo)
   (setq org-structure-template-alist
@@ -34,8 +56,7 @@
           ("sh" . "src shell")
           ("j"  . "src java")
           ("q"  . "quote")
-          ("ex" . "example")))
-  :bind (("C-c a" . org-agenda)))
+          ("ex" . "example"))))
 
 ;;----------------------------------------------------------------------------
 ;; Code Evaluation
@@ -112,34 +133,19 @@ it falls back to the default conservative behavior."
   (org-appear-autolinks t))
 
 
-;; Modernize the look of headings, lists, and other Org elements
-(use-package org-modern
-  :hook (org-mode . org-modern-mode)
-  :config (setq org-modern-star '("●" "○" "✸" "✿")
-                org-modern-replace-stars "●○✿◉✸"
-                org-modern-list '((45 . "➤")  ;; '-' -> '➤'
-                                  (43 . "•") )  ;; '+' -> '•'
-                org-modern-tag nil
-                org-modern-priority nil
-                org-modern-timestamp nil
-                org-modern-block-name nil
-                org-modern-block-fringe nil
-                org-modern-todo nil
-                org-modern-table nil))
-
 ;; Better CJK table alignment
 (use-package valign
   :hook (org-mode . valign-mode))
 
-;; Real-time LaTeX Fragment Preview
-(use-package org-fragtog
-  :diminish
-  :hook (org-mode . org-fragtog-mode)
+(use-package org-latex-preview
+  :ensure nil
+  :hook (org-mode . org-latex-preview-mode)
   :config
-  ;; Adjust preview scale (0.6 matches typical editor font size on Linux/Windows)
-  (setq org-format-latex-options (plist-put org-format-latex-options :scale 0.6))
-  ;; Use dvisvgm for crisper preview images
-  (setq org-preview-latex-default-process 'dvisvgm))
+  (setq org-latex-preview-precompile nil)
+  ;; Increase preview width
+  (plist-put org-latex-preview-appearance-options :page-width 0.8)
+  (setq org-latex-preview-mode-display-live t)
+  (setq org-latex-preview-mode-update-delay 0.25))
 
 
 ;;----------------------------------------------------------------------------
@@ -150,7 +156,6 @@ it falls back to the default conservative behavior."
 (use-package ox-latex
   :ensure nil
   :config
-  ;; Use XeLaTeX for better Unicode/CJK support
   (setq org-latex-compiler "xelatex")
   (setq org-latex-tables-booktabs t)
   (setq org-latex-tables-centered t)
@@ -162,11 +167,10 @@ it falls back to the default conservative behavior."
           ("breaklines" "true")
           ("autogobble" "true")))
 
-  (setq org-latex-default-class "cn-article")
-
-  ;; Define the PDF build process (using latexmk)
   (setq org-latex-pdf-process
-        '("latexmk -xelatex -shell-escape -interaction=nonstopmode -output-directory=%o %f"))
+        '("latexmk -xelatex -shell-escape -file-line-error -interaction=nonstopmode -output-directory=%o %f"))
+
+  (setq org-latex-default-class "cn-article")
 
   ;; Define custom LaTeX classes
 
@@ -201,7 +205,7 @@ it falls back to the default conservative behavior."
   ;; 3. ZJU Beamer Presentation
   (add-to-list 'org-latex-classes
                `("zju-beamer"
-                 ,(concat "\\documentclass[10pt,aspectratio=169,mathserif]{beamer}
+                 ,(concat "\\documentclass[10pt,aspectratio=169,mathserif,fontset=none]{ctexbeamer}
 [NO-DEFAULT-PACKAGES]
 [PACKAGES]
 \\def\\ZjuRoot{" org-setup-dir "beamer/zju/}
@@ -218,7 +222,6 @@ it falls back to the default conservative behavior."
   (with-eval-after-load 'ox
     (require 'ox-beamer))
   :config
-
   ;; Allow using 'fragile' frames by default (useful for code blocks)
   (setq org-beamer-frame-default-options "fragile"))
 
@@ -237,6 +240,7 @@ it falls back to the default conservative behavior."
   (setq org-re-reveal-highlight-css "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css")
   (setq org-re-reveal-slide-number "c/t")
   (setq org-re-reveal-extra-css (concat org-setup-dir "reveal/zju/zju-reveal.css"))
+  (setq org-re-reveal-history t)
   (setq org-re-reveal-plugins '(highlight))
   ;; Default Org export options for cleaner presentations
   (setq org-export-with-toc nil              ; No table of contents by default
@@ -272,6 +276,337 @@ Checks if LATEX_CLASS is set, and if so, runs the appropriate async export."
 
 (add-hook 'after-save-hook #'my/org-auto-export-on-save)
 
+(setq org-emphasis-regexp-components
+      '("-[:space:]('\"{[:nonascii:][:alpha:]"
+        "-[:space:].,:!?;'\")}\\[[:nonascii:][:alpha:]"
+        "[:space:]"
+        "."
+        1))
+
+;; [https://emacs-china.org/t/org-emphasis-regexp-components-org/25600]
+(defun eli/org-element--parse-generic-emphasis (mark type)
+  "Parse emphasis object at point, if any.
+
+MARK is the delimiter string used.  TYPE is a symbol among
+`bold', `code', `italic', `strike-through', `underline', and
+`verbatim'.
+
+Assume point is at first MARK."
+  (save-excursion
+    (let ((origin (point)))
+      (unless (bolp) (forward-char -1))
+      (let ((opening-re
+             (rx-to-string
+              `(seq (or line-start (any space ?- ?\( ?' ?\" ?\{ nonascii))
+                    ,mark
+                    (not space)))))
+        (when (looking-at opening-re)
+          (goto-char (1+ origin))
+          (let ((closing-re
+                 (rx-to-string
+                  `(seq
+                    (not space)
+                    (group ,mark)
+                    (or (any space ?- ?. ?, ?\; ?: ?! ?? ?' ?\" ?\) ?\} ?\\ ?\[
+                             nonascii)
+                        line-end)))))
+            (when (re-search-forward closing-re nil t)
+              (let ((closing (match-end 1)))
+                (goto-char closing)
+                (let* ((post-blank (skip-chars-forward " \t"))
+                       (contents-begin (1+ origin))
+                       (contents-end (1- closing)))
+                  (list type
+                        (append
+                         (list :begin origin
+                               :end (point)
+                               :post-blank post-blank)
+                         (if (memq type '(code verbatim))
+                             (list :value
+                                   (and (memq type '(code verbatim))
+                                        (buffer-substring
+                                         contents-begin contents-end)))
+                           (list :contents-begin contents-begin
+                                 :contents-end contents-end)))))))))))))
+
+(advice-add #'org-element--parse-generic-emphasis :override #'eli/org-element--parse-generic-emphasis)
+
+
+(use-package org-superstar
+  :hook (org-mode . org-superstar-mode)
+  :config
+  (setq org-hide-leading-stars t)
+  (setq org-superstar-headline-bullets-list '(9673 9675 9679)) ;10047
+  (setq org-superstar-item-bullet-alist
+        '((43 . 8226) (42 . 8226) (45 . 8211)))
+  :custom-face
+  (org-superstar-header-bullet ((t (:family "JetBrains Mono")))))
+
+;;----------------------------------------------------------------------------
+;; Org Capture
+;;----------------------------------------------------------------------------
+(use-package org-capture
+  :ensure nil
+  :bind ("C-c c" . org-capture)
+  :config
+  (setq org-default-notes-file (concat org-directory "inbox.org"))
+  (setq org-capture-templates
+        '(("t" "Todo [Inbox]" entry
+           (file+headline "inbox.org" "Tasks")
+           "* TODO %?\n  %i\n  %a"
+           :prepend t))))
+
+(use-package org-agenda
+  :ensure nil
+  :after org
+  :bind
+  ("C-c a" . org-agenda)
+  (:map org-agenda-mode-map
+        ("C-." . consult-org-agenda))
+  :custom
+  (org-agenda-files (mapcar (lambda (f) (expand-file-name f org-directory))
+                            '("inbox.org")))
+  (org-agenda-skip-scheduled-if-done t)
+  (org-agenda-skip-deadline-if-done t)
+  :config
+  (setq org-agenda-custom-commands
+        '(("o" "Overview"
+           ((agenda "" ((org-agenda-span 'day)))
+            (todo "TODO"
+                  ((org-agenda-overriding-header "Unscheduled Tasks")))
+            (todo "WAIT"
+                  ((org-agenda-overriding-header "Waiting"))))))))
+
+
+(defun my/configure-org-mixed-fonts ()
+  "Set up mixed fonts for Org mode: Serif for prose, Mono for code."
+  (interactive)
+
+  (let ((fontset "fontset-org"))
+    (unless (member fontset (fontset-list))
+      (create-fontset-from-fontset-spec
+       "-*-*-*-*-*-*-*-*-*-*-*-*-fontset-org"))
+    (set-fontset-font fontset 'latin (font-spec :family "Source Serif 4"))
+    (set-fontset-font fontset 'han (font-spec :family "Source Han Serif CN" :weight 'medium))
+    (set-face-attribute 'variable-pitch nil
+                        :family "Source Serif 4"
+                        :weight 'regular
+                        :fontset fontset))
+
+  (set-face-attribute 'fixed-pitch nil
+                      :family "Maple Mono NF CN"
+                      :weight 'regular)
+
+  (let ((fixed-pitch-faces '(org-block org-code org-verbatim org-table org-table-row
+                                       org-formula org-link org-special-keyword org-meta-line
+                                       org-checkbox org-priority org-todo org-done org-ellipsis
+                                       org-tag org-date line-number org-document-info-keyword
+                                       org-hide font-lock-comment-face corfu-default)))
+    (dolist (face fixed-pitch-faces)
+      (set-face-attribute face nil :inherit 'fixed-pitch))))
+
+(add-hook 'org-mode-hook #'my/configure-org-mixed-fonts)
+
+;; (use-package mixed-pitch
+;;   :hook
+;;   ((org-mode markdown-mode) . mixed-pitch-mode))
+
+;;----------------------------------------------------------------------------
+;; SVG Tag Mode
+;;----------------------------------------------------------------------------
+
+(use-package svg-tag-mode
+  :hook (org-mode . svg-tag-mode)
+  :init
+  (require 'svg-lib)
+
+  (defun svg-lib-tag (label &optional style &rest args)
+    "Create an image displaying LABEL in a rounded box using given STYLE
+and style elements ARGS."
+
+    (let* ((default svg-lib-style-default)
+           (style (if style (apply #'svg-lib-style nil style) default))
+           (style (if args  (apply #'svg-lib-style style args) style))
+
+           (foreground  (plist-get style :foreground))
+           (background  (plist-get style :background))
+
+           (crop-left   (plist-get style :crop-left))
+           (crop-right  (plist-get style :crop-right))
+
+           (alignment   (plist-get style :alignment))
+           (stroke      (plist-get style :stroke))
+           ;; (width       (plist-get style :width))
+           (height      (plist-get style :height))
+           (radius      (plist-get style :radius))
+           ;; (scale       (plist-get style :scale))
+           (margin      (plist-get style :margin))
+           (padding     (plist-get style :padding))
+           (font-size   (plist-get style :font-size))
+           (font-family (plist-get style :font-family))
+           (font-weight (plist-get style :font-weight))
+
+           ;; use `fixed-pitch' while in `mixed-pitch-mode'
+           (txt-char-width  (window-font-width nil 'fixed-pitch))
+           (txt-char-height (window-font-height nil 'fixed-pitch))
+           (txt-char-height (if line-spacing
+                                (+ txt-char-height line-spacing)
+                              txt-char-height))
+           (font-info       (font-info (format "%s-%d" font-family font-size)))
+           (font-size       (aref font-info 2)) ;; redefine font-size
+           (ascent          (let ((asc (plist-get style :ascent)))
+                              (if (numberp asc) asc (aref font-info 8))))
+           (tag-char-width  (aref font-info 11))
+           ;; (tag-char-height (aref font-info 3))
+           (tag-width       (* (+ (length label) padding) txt-char-width))
+           (tag-height      (* txt-char-height height))
+
+           (svg-width       (+ tag-width (* margin txt-char-width)))
+           (svg-height      tag-height)
+
+           (tag-x  (* (- svg-width tag-width)  alignment))
+           (text-x (+ tag-x (/ (- tag-width (* (length label) tag-char-width))
+                               2)))
+           (text-y ascent)
+
+           (tag-x      (if crop-left  (- tag-x     txt-char-width) tag-x))
+           (tag-width  (if crop-left  (+ tag-width txt-char-width) tag-width))
+           (text-x     (if crop-left  (- text-x (/ stroke 2)) text-x))
+           (tag-width  (if crop-right (+ tag-width txt-char-width) tag-width))
+           (text-x     (if crop-right (+ text-x (/ stroke 2)) text-x))
+
+           (svg (svg-create svg-width svg-height)))
+
+      (if (>= stroke 0.25)
+          (svg-rectangle svg tag-x 0 tag-width tag-height
+                         :fill foreground :rx radius))
+      (svg-rectangle svg (+ tag-x (/ stroke 2.0)) (/ stroke 2.0)
+                     (- tag-width stroke) (- tag-height stroke)
+                     :fill background :rx (- radius (/ stroke 2.0)))
+      (svg-text svg label
+                :font-family font-family :font-weight font-weight
+                :font-size font-size :fill foreground :x text-x :y  text-y)
+      (svg-lib--image svg :ascent 'center)))
+
+  (defun my/svg-tag-mode-refresh (&rest _)
+    (setq svg-lib-style-default (svg-lib-style-compute-default))
+    (clear-image-cache)
+    (dolist (buffer (buffer-list))
+      (with-current-buffer buffer
+        (when (derived-mode-p 'org-mode)
+          (svg-tag-mode -1)
+          (svg-tag-mode 1)))))
+  (advice-add 'load-theme :after #'my/svg-tag-mode-refresh)
+  (advice-add 'consult-theme :after #'my/svg-tag-mode-refresh)
+  (advice-add 'text-scale-adjust :after #'my/svg-tag-mode-refresh)
+
+  (defconst date-re "[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}")
+  (defconst time-re "[0-9]\\{2\\}:[0-9]\\{2\\}")
+  (defconst day-re "[A-Za-z]\\{3\\}")
+  (defconst day-time-re (format "\\(%s\\)? ?\\(%s\\)?" day-re time-re))
+
+  (defun svg-progress-percent (value)
+    (save-match-data
+      (svg-image (svg-lib-concat
+                  (svg-lib-progress-bar (/ (string-to-number value) 100.0)
+                                        nil :margin 0 :stroke 2 :radius 3 :padding 2 :width 11 :height 0.8)
+                  (svg-lib-tag (concat value "%")
+                               nil :stroke 0 :margin 0 :radius 3 :font-weight 'bold :font-family "Roboto Mono" :height 0.8)) :ascent 'center)))
+
+  (defun svg-progress-count (value)
+    (save-match-data
+      (let* ((seq (split-string value "/"))
+             (count (if (stringp (car seq))
+                        (float (string-to-number (car seq)))
+                      0))
+             (total (if (stringp (cadr seq))
+                        (float (string-to-number (cadr seq)))
+                      1000)))
+        (svg-image (svg-lib-concat
+                    (svg-lib-progress-bar (/ count total) nil
+                                          :margin 0 :stroke 2 :radius 3 :padding 2 :width 11 :height 0.8)
+                    (svg-lib-tag value nil
+                                 :stroke 0 :margin 0 :radius 3 :font-weight 'bold :font-family "Roboto Mono" :height 0.8)) :ascent 'center))))
+
+  ;; Define a custom face for headlines that is visible in both light and dark modes
+  (defface my/svg-headline-face
+    '((((background dark)) :foreground "#8b9798")  ; Lighter grey for dark mode
+      (((background light)) :foreground "#505050")) ; Darker grey for light mode
+    "Face for SVG headlines.")
+
+  (setq svg-tag-tags
+        `(
+          ;; 1. Org Tags (Pill shape)
+          ;; Matches :TAG: patterns
+          ("\\(:[A-Za-z0-9]+:\\)$" . ((lambda (tag) (svg-tag-make tag :beg 1 :end -1 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 0 :height 0.8))))
+
+
+          ;; 2. Priorities
+          ("\\(\\[#[A-Z]\\]\\)" . ((lambda (tag) (svg-tag-make tag :beg 1 :end -1 :face 'org-priority :inverse nil :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :stroke 1.5 :height 0.8))))
+
+          ;; 3. Keywords (Rounded Box)
+          ("TODO" . ((lambda (tag) (svg-tag-make "TODO" :face 'org-todo :inverse t :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :height 0.8))))
+          ("DONE" . ((lambda (tag) (svg-tag-make "DONE" :face 'org-done :inverse nil :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :stroke 1.5 :height 0.8))))
+          ("NOTE" . ((lambda (tag) (svg-tag-make "NOTE" :face 'org-note :inverse nil :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :stroke 1.5 :height 0.8))))
+          ("COMMENT" . ((lambda (tag) (svg-tag-make "COMMENT" :face 'org-note :inverse nil :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :stroke 1.5 :height 0.8))))
+
+          ;; 4. Active Date (Split-Pill Style)
+          ;; Date only: <2023-01-01>
+          (,(format "\\(<%s>\\)" date-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :beg 1 :end -1 :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :height 0.8))))
+
+          ;; Date + Time/Day: <2023-01-01 Fri 10:00>
+          ;; Left part (Date): Light/Outlined, cropped right
+          (,(format "\\(<%s \\)%s>" date-re day-time-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :stroke 2 :height 0.8))))
+
+          ;; Right part (Day/Time): Dark/Inverse, cropped left
+          (,(format "<%s \\(%s>\\)" date-re day-time-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :height 0.8))))
+
+          ;; 5. Inactive Date (Same split-pill style)
+          ;; Date only: [2023-01-01]
+          (,(format "\\(\\[%s\\]\\)" date-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :beg 1 :end -1 :margin 0 :face 'org-date :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :height 0.8))))
+
+          ;; Date + Time/Day: [2023-01-01 Fri 10:00]
+          ;; Left part
+          (,(format "\\(\\[%s \\)%s\\]" date-re day-time-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0 :face 'org-date :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :stroke 2 :height 0.8))))
+
+          ;; Right part
+          (,(format "\\[%s \\(%s\\]\\)" date-re day-time-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0 :face 'org-date :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :height 0.8))))
+
+          ;; 6. Progress
+          ("\\(\\[[0-9]\\{1,3\\}%\\]\\)" . ((lambda (tag)
+                                              (svg-progress-percent (substring tag 1 -2)))))
+          ("\\(\\[[0-9]+/[0-9]+\\]\\)" . ((lambda (tag)
+                                            (svg-progress-count (substring tag 1 -1))))))))
+
+(add-hook 'org-mode-hook #'my/svg-tag-mode-refresh)
+
+(defun org-agenda-show-svg ()
+  (let* ((case-fold-search nil)
+         (keywords (mapcar #'svg-tag--build-keywords svg-tag--active-tags))
+         (keyword (car keywords)))
+    (while keyword
+      (save-excursion
+        (goto-char (point-min))
+        (while (re-search-forward (nth 0 keyword) nil t)
+          (overlay-put (make-overlay (match-beginning 0) (match-end 0))
+                       'display  (nth 3 (eval (nth 2 keyword))))))
+      (setq keywords (cdr keywords)
+            keyword (car keywords)))))
+(add-hook 'org-agenda-finalize-hook #'org-agenda-show-svg)
+
 
 (provide 'init-org)
+
 ;;; init-org.el ends here
