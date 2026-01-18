@@ -77,7 +77,12 @@
   padding-bottom: 20px;
 }
 
-.reveal h3 { font-size: 1.15em; }
+.reveal h3 {
+  font-size: 1.2em;
+  border-bottom: 2px solid rgb(0, 63, 163); /* ZJU Blue */
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
 .reveal h4 { font-size: 1.05em; }
 
 
@@ -146,14 +151,14 @@
   width: 96%;            /* Occupy near full width instead of default 70% */
   box-sizing: border-box; /* Include padding in width calculation */
   margin: 20px auto;     /* Vertical spacing and horizontal centering */
-  
+
   /* Visual Appearance */
   border-radius: 8px;    /* Soft rounded corners */
   padding: 15px 25px;    /* Internal breathing room */
   background: rgba(255, 255, 255, 0.7); /* Semi-transparent white background */
   border-left: 6px solid rgb(0, 63, 163); /* ZJU Blue accent border */
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* Subtle depth shadow */
-  
+
   /* Typography */
   font-style: normal;    /* Override default italic style */
   text-align: left;
@@ -328,10 +333,10 @@ section > table > thead {
   text-align: center !important;
 }
 
-#sec-title-slide h1, 
-#sec-title-slide h2, 
-#sec-title-slide .author, 
-#sec-title-slide .date, 
+#sec-title-slide h1,
+#sec-title-slide h2,
+#sec-title-slide .author,
+#sec-title-slide .date,
 #sec-title-slide .email {
   text-align: center !important;
   margin-left: auto;
