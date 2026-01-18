@@ -14,19 +14,19 @@
   :custom (gptel-default-mode 'org-mode)
   :config
   (setq gptel--known-backends nil) ; Clear default backends (ChatGPT)
-  (setq gptel-model 'gemini-2.5-pro
-        gptel-backend (gptel-make-gemini "Gemini"
+  (setq gptel-track-media t)
+  (setq gptel-model 'gemini-3-pro-preview
+        gptel-backend (gptel-make-gh-copilot "Copilot" :stream t))
+  (gptel-make-gemini "Gemini"
                         :key gptel-api-key
                         :stream t
                         :models '(gemini-2.5-pro gemini-2.5-flash)))
-
-  (gptel-make-gh-copilot "Copilot" :stream t))
 
 ;; Generate commit messages for magit
 (use-package gptel-magit
   :hook (magit-mode . gptel-magit-install)
   :config
-  (setq gptel-magit-model "gpt-4.1"
+  (setq gptel-magit-model "gemini-3-flash-preview"
         gptel-magit-backend (gptel-make-gh-copilot "copilot" :stream t)))
 
 ;; GitHub Copilot for code completion
