@@ -31,7 +31,7 @@
 
 ;; GitHub Copilot for code completion
 (use-package copilot
-  :hook ((latex-mode text-mode) . copilot-mode)
+  :hook ((latex-mode markdown-mode org-mode) . copilot-mode)
   :bind (:map copilot-mode-map
               ("TAB" . my/copilot-tab)
               ("M-<right>" . copilot-accept-completion-by-word))
