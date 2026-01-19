@@ -29,8 +29,30 @@
 
 (use-package eldoc
   :ensure nil
-  :hook (prog-mode . eldoc-mode)
-  :bind (:map prog-mode-map ("C-h ." . eldoc)))
+  :diminish
+  :hook (prog-mode . eldoc-mode))
+
+(use-package eldoc-mouse
+  :diminish
+  :bind (:map eldoc-mouse-mode-map
+              ("C-h ." . eldoc-mouse-pop-doc-at-cursor))
+  :hook ((eglot-managed-mode emacs-lisp-mode)
+         (after-load-theme . eldoc-mouse-set-appearance))
+  :init
+  (defun eldoc-mouse-set-appearance ()
+    "Set appearance of eldoc-mouse."
+    (let ((border-color (if (facep 'posframe-border)
+                            (face-background 'posframe-border nil t)
+                          (face-foreground 'default nil t))))
+      (setq eldoc-mouse-posframe-override-parameters
+            `((internal-border-width . 1)
+              (drag-internal-border . t)
+              (timeout . nil)
+              (foreground-color . ,(face-foreground 'tooltip nil t))
+              (background-color . ,(face-background 'tooltip nil t)))
+            eldoc-mouse-posframe-border-color border-color)))
+  (eldoc-mouse-set-appearance))
+
 
 ;; Go to definition and finding references
 
@@ -128,7 +150,11 @@
 
 (use-package editorconfig
   :diminish
-  :hook (after-init . editorconfig-mode))
+  :hook ((prog-mode . editorconfig-mode)
+         (conf-mode . editorconfig-mode)
+         (text-mode . editorconfig-mode)))
+
+(use-package yaml-ts-mode)
 
 (provide 'init-prog)
 ;;; init-prog.el ends here

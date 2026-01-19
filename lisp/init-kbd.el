@@ -47,9 +47,10 @@
 ;;---------------------------------------------------------------------
 
 ;; Enable extended key combinations in TUI
-(use-package kkp
-  :if (not (display-graphic-p))
-  :hook (after-init . global-kkp-mode))
+(when (not window-system)
+  (use-package kkp
+    :defer 0.01
+    :config (global-kkp-mode 1)))
 
 (provide 'init-kbd)
 ;;; init-kbd.el ends here
