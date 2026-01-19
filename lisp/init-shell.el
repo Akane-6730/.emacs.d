@@ -2,7 +2,7 @@
 
 ;;; Commentary:
 ;;
-;; eshell configurations
+;; eshell and vterm configurations for an enhanced shell experience in Emacs.
 
 ;;; Code:
 
@@ -15,6 +15,9 @@
         eshell-directory-name-completion-ignore-case t
         eshell-list-files-after-cd t) ; Automatically list files after `cd`
   :hook (eshell-mode . (lambda () (completion-preview-mode 1))))
+
+(use-package vterm
+  :config (setq vterm-disable-bold t))
 
 (provide 'init-shell)
 ;;; init-shell.el ends here
