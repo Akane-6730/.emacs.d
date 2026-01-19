@@ -13,26 +13,91 @@
 ;; Fonts
 ;;----------------------------------------------------------------------------
 
-(defun font-available-p (font-name)
-  "Check if font with FONT-NAME is available."
-  (find-font (font-spec :family font-name)))
-
-;; Set the global font family and size.
 (when window-system
-  (defun my-find-first-available-font (font-list)
-    "Find the first installed font from FONT-LIST."
-    (cl-find-if (lambda (font-name) (find-font (font-spec :family font-name)))
-                font-list))
+  (defun font-available-p (font-name)
+    "Check if font with FONT-NAME is available."
+    (find-font (font-spec :family font-name)))
+
+  ;; Setup variable-pitch and fixed-pitch fonts
+  (defun my/setup-variable-pitch-fonts ()
+    "Setup variable-pitch fonts for generic reading modes (Org, Markdown, Info)."
+    (interactive)
+    (let ((fontset "fontset-variable"))
+      (unless (member fontset (fontset-list))
+        (create-fontset-from-fontset-spec
+         (concat "-*-*-*-*-*-*-*-*-*-*-*-*-" fontset)))
+      (set-fontset-font fontset 'latin (font-spec :family "Source Serif 4"))
+      (set-fontset-font fontset 'han (font-spec :family "Source Han Serif CN" :weight 'medium))
+
+      (set-face-attribute 'variable-pitch nil
+                          :family "Source Serif 4"
+                          :weight 'regular
+                          :fontset fontset)))
+
+  (defun my/setup-fixed-pitch-fonts ()
+    "Setup fixed-pitch face (Mono)."
+    (interactive)
+    (set-face-attribute 'fixed-pitch nil
+                        :family "Maple Mono NF CN"
+                        :weight 'regular))
+
+  ;; Run basic setup once on init
+  (add-hook 'window-setup-hook #'my/setup-fixed-pitch-fonts)
+  ;; Defer variable pitch setup until needed
+  (add-hook 'org-mode-hook #'my/setup-variable-pitch-fonts)
+  (add-hook 'markdown-mode-hook #'my/setup-variable-pitch-fonts)
+
+  (defgroup my-mixed-font nil
+    "Configuration for custom mixed-font mode."
+    :group 'faces)
+
+  (defcustom my-mixed-font-fixed-faces
+    '(org-block org-code org-verbatim org-table org-table-row
+                org-formula org-link org-special-keyword org-meta-line
+                org-checkbox org-priority org-todo org-done org-ellipsis
+                org-tag org-date line-number org-document-info-keyword
+                org-hide font-lock-comment-face corfu-default
+                markdown-code-face markdown-pre-face markdown-table-face)
+    "List of faces that should use fixed-pitch font in `my-mixed-font-mode'."
+    :type '(repeat face)
+    :group 'my-mixed-font)
+
+  (defvar-local my-mixed-font--cookies nil
+    "List of cookies for remapped faces.")
+
+  (define-minor-mode my-mixed-font-mode
+    "Toggle mixed font mode (prose in variable-pitch, code in fixed-pitch)."
+    :init-value nil
+    :lighter " Mixed"
+    (if my-mixed-font-mode
+        (progn
+          ;; Enable variable-pitch-mode
+          (variable-pitch-mode 1)
+          ;; Remap fixed faces
+          (setq my-mixed-font--cookies nil)
+          (dolist (face my-mixed-font-fixed-faces)
+            (push (face-remap-add-relative face 'fixed-pitch)
+                  my-mixed-font--cookies)))
+      ;; Disable
+      (variable-pitch-mode -1)
+      (mapc #'face-remap-remove-relative my-mixed-font--cookies)
+      (setq my-mixed-font--cookies nil)))
+
+  (add-hook 'org-mode-hook #'my-mixed-font-mode)
+  (add-hook 'markdown-mode-hook #'my-mixed-font-mode)
+
+  ;; Set the global font family and size.
+
   ;; 1. Setup English / Monospace font with fallback
-  (let* ((preferred-mono-fonts '("Monaco" "Menlo" "Consolas" "SF Mono" "Courier New" "Monego"))
-         (installed-font (my-find-first-available-font preferred-mono-fonts)))
+  (let* ((preferred-mono-fonts '("Maple Mono NF CN" "Monaco" "Menlo" "Cascadia code" "Consolas" "SF Mono" "Courier New" "Monego"))
+         (installed-font (cl-find-if #'font-available-p preferred-mono-fonts)))
     ;; Only set the font if one from our preferred list is found.
     ;; Otherwise, do nothing and let Emacs use its system default.
     (when installed-font
       (set-face-attribute 'default nil :family installed-font :height 180)))
 
   ;; 2. Setup Chinese / Han script font with fallback
-  (let* ((preferred-han-fonts '("LXGW WenKai Mono GB Screen" "PingFang SC"))
+  (let* ((preferred-han-fonts '("LXGW WenKai Mono GB Screen" "PingFang SC" "Source Han Sans SC"))
          (installed-font (cl-find-if #'font-available-p preferred-han-fonts)))
     ;; Same logic for Chinese fonts.
     (when installed-font
@@ -57,15 +122,14 @@
 ;; `doom-themes` is a package containing a collection of beautifully crafted themes.
 (use-package doom-themes
   :demand t
-  :custom
-  (doom-themes-enable-bold nil)
-  (doom-themes-enable-italic t)
   :config
+  (setq doom-themes-enable-bold t)
+  (setq doom-themes-enable-italic t)
   ;; Enable flashing mode-line on errors to avoid getting the yellow warning triangle on MacOS.
   (doom-themes-visual-bell-config)
-  (doom-themes-org-config)
+  ;; (doom-themes-org-config)
   ;; Load the theme AFTER ensuring the package is loaded
-  (load-theme 'my-dark t)
+  (load-theme 'my-light t)
   ;; Set specific faces to use italics AFTER loading the theme
   (set-face-attribute 'font-lock-comment-face nil :slant 'italic)
   (set-face-attribute 'font-lock-keyword-face nil :slant 'italic))
@@ -87,6 +151,17 @@
 
 ;; Advise the core `load-theme' function to use our wrapper.
 (advice-add 'load-theme :around #'my-theme-load-wrapper)
+
+
+(defun my-toggle-theme ()
+  "Toggle between `my-dark` and `my-light` themes."
+  (interactive)
+
+  (if (custom-theme-enabled-p 'my-dark)
+      (load-theme 'my-light t)
+    (load-theme 'my-dark t)))
+
+(global-set-key (kbd "<f7>") #'my-toggle-theme)
 
 
 ;;----------------------------------------------------------------------------
@@ -223,24 +298,28 @@
 
 
 ;; --- Scrolling Behavior ---
+
 (setq mouse-wheel-scroll-amount '(1 ((shift) . hscroll))
       mouse-wheel-progressive-speed nil
       scroll-conservatively 101
       fast-but-imprecise-scrolling t
-      pixel-scroll-precision-interpolate-page t
-      ;; make scrolling smoother by avoiding unnecessary fontification.
       redisplay-skip-fontification-on-input t)
 
-(pixel-scroll-precision-mode 1)
+(use-package pixel-scroll
+  :ensure nil
+  :bind (("C-v" . pixel-scroll-interpolate-down)
+         ("M-v" . pixel-scroll-interpolate-up))
+  :custom
+  (pixel-scroll-precision-interpolate-page t)
+  :init
+  (pixel-scroll-precision-mode 1))
 
 (use-package ultra-scroll
-  :ensure t
-  :hook (after-init . ultra-scroll-mode))
-
-(setq pixel-scroll-precision-interpolate-page t)
-
-(global-set-key (kbd "C-v") #'pixel-scroll-interpolate-down)
-(global-set-key (kbd "M-v") #'pixel-scroll-interpolate-up)
+  :bind (:map pixel-scroll-precision-mode-map
+              ("<wheel-up>" . ultra-scroll)
+              ("<wheel-down>" . ultra-scroll))
+  :config
+  (ultra-scroll-mode 1))
 
 
 ;; --- GUI Behavior & Clean Startup ---
@@ -290,13 +369,13 @@
                2)))))
 
 (use-package vertico-posframe
-    :functions posframe-poshandler-frame-center-near-bottom
-    :hook (vertico-mode . vertico-posframe-mode)
-    :init (setq vertico-posframe-poshandler
-                #'posframe-poshandler-frame-center-near-bottom
-                vertico-posframe-parameters
-                '((left-fringe  . 8)
-                  (right-fringe . 8))))
+  :functions posframe-poshandler-frame-center-near-bottom
+  :hook (vertico-mode . vertico-posframe-mode)
+  :init (setq vertico-posframe-poshandler
+              #'posframe-poshandler-frame-center-near-bottom
+              vertico-posframe-parameters
+              '((left-fringe  . 8)
+                (right-fringe . 8))))
 
 (provide 'init-ui)
 ;;; init-ui.el ends here
