@@ -134,7 +134,8 @@
                 fundamental-mode-hook
                 flymake-diagnostics-buffer-mode-hook
                 view-mode-hook
-                compilation-mode-hook))
+                compilation-mode-hook
+                benchmark-init/tabulated-mode-hook))
   (add-hook hook #'my-jk-navigation-mode))
 
 ;; In-Buffer Navigation with Avy

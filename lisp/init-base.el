@@ -102,7 +102,7 @@
 (setq
  make-backup-files nil
  auto-save-default nil
- delete-by-moving-to-trash t       ; Deleting files go to OS's trash folder
+ delete-by-moving-to-trash t
  ;; When multiple buffers have the same name, show parts of the file path
  ;; to distinguish them, e.g., <.../project-a/file.txt> and <.../project-b/file.txt>.
  uniquify-buffer-name-style 'post-forward-angle-brackets
@@ -125,7 +125,7 @@
 
 ;; `savehist-mode` saves your minibuffer history
 (use-package savehist
-  :hook (after-init . savehist-mode)
+  :defer 0.01
   :init (setq enable-recursive-minibuffers t ; Allow commands in minibuffers
               history-length 1000
               savehist-additional-variables '(mark-ring
@@ -133,13 +133,15 @@
                                               search-ring
                                               regexp-search-ring
                                               extended-command-history)
-              savehist-autosave-interval 300))
+              savehist-autosave-interval 300)
+  :config (savehist-mode 1))
 
 (use-package saveplace
-  :hook (after-init . save-place-mode))
+  :defer 0.01
+  :config (save-place-mode 1))
 
 (use-package recentf
-  :hook (after-init . recentf-mode)
+  :defer 0.01
   :bind (("C-x C-r" . recentf-open-files))
   :init (setq recentf-max-saved-items 300
               recentf-exclude
@@ -149,6 +151,7 @@
                 "^/tmp/" "^/var/folders/.+$" "^/ssh:" "/persp-confs/"
                 (lambda (file) (file-in-directory-p file package-user-dir))))
   :config
+  (recentf-mode 1)
   (push (expand-file-name recentf-save-file) recentf-exclude)
   (add-to-list 'recentf-filename-handlers #'abbreviate-file-name))
 

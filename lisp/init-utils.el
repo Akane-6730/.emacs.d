@@ -18,26 +18,10 @@
 ;;; Search Tool Enhancement
 ;;;----------------------------------------------------------------------------
 
-;; Replace the standard `grep` command with the much faster `ripgrep` (rg)
-;; if it is available on the system.
-(use-package grep
-  :ensure nil
-  :autoload grep-apply-setting
-  :config
-  (when (executable-find "rg")
-    (grep-apply-setting
-     'grep-command "rg --color=auto --null -nH --no-heading -e ")
-    (grep-apply-setting
-     'grep-template "rg --color=auto --null --no-heading -g '!*/' -e <R> <D>")
-    (grep-apply-setting
-     'grep-find-command '("rg --color=auto --null -nH --no-heading -e ''" . 38))
-    (grep-apply-setting
-     'grep-find-template "rg --color=auto --null -nH --no-heading -e <R> <D>")))
-
 ;; Fast search tool `ripgrep'
 (use-package rg
-  :hook (after-init . rg-enable-default-bindings)
-  :bind (:map rg-global-map
+  :bind (("C-c /" . rg-menu)
+         :map rg-global-map
          ("c" . rg-dwim-current-dir)
          ("f" . rg-dwim-current-file)
          ("m" . rg-menu))

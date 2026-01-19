@@ -36,28 +36,28 @@
   :hook (dired-mode . dired-omit-mode)
   :config
   (setq dired-omit-files
-        (concat dired-omit-files "\\|^\\.[^.]\\|^go\\|^eln-cache$\\|^auto-save-list$\\|^transient$\\|^tree-sitter$\\|^dirvish$\\|^elpa$\\|^history\\|^places\\|^recentf\\|^screenshots\\|^eshell\\|^snippets\\|^rime\\|^package\\.json$\\|^package-lock\\.json$\\|^node_modules$")))
+        (concat dired-omit-files "\\|^\\.[^.]\\|^go\\|^eln-cache$\\|^auto-save-list$\\|^transient$\\|^tree-sitter$\\|^dirvish$\\|^elpa$\\|^history\\|^places\\|^recentf\\|^screenshots\\|^eshell\\|^snippets\\|^rime\\|^package\\.json$\\|^package-lock\\.json$\\|^node_modules$\\|^_minted-")))
 
 (use-package dirvish
-  :init (dirvish-override-dired-mode)
-  :custom
-  (dirvish-side-width 25)
-  (dirvish-header-line-height 21)
-  (dirvish-path-separators (list "   " "   " "  "))
-  (dirvish-subtree-state-style 'nerd)
-  (dirvish-attributes '(subtree-state nerd-icons git-msg file-time file-size))
-  (dirvish-side-attributes '(nerd-icons subtree-state))
-  (dirvish-side-mode-line-format '(:left (sort omit symlink)))
-  (dirvish-quick-access-entries
+  :init (with-eval-after-load 'dired (dirvish-override-dired-mode))
+  :config
+  (setq dirvish-side-width 25)
+  (setq dirvish-header-line-height 21)
+  (setq dirvish-path-separators (list "   " "   " "  "))
+  (setq dirvish-subtree-state-style 'nerd)
+  (setq dirvish-attributes '(subtree-state nerd-icons git-msg file-time file-size))
+  (setq dirvish-side-attributes '(nerd-icons subtree-state))
+  (setq dirvish-side-mode-line-format '(:left (sort omit symlink)))
+  (setq dirvish-quick-access-entries
    '(("e" "~/.emacs.d/" "Emacs user directory")
      ("c" "~/Documents/code/" "Code")
      ("d" "~/Documents/" "Documents")
      ("h" "~/" "Home")
      ("o" "~/org/" "Org")))
-  :config
+
   (setq dirvish-large-directory-threshold 20000)
   (setq dired-mouse-drag-files t)
-  (setq mouse-drag-and-drop-region-cross-program t) ; added in Emacs 29
+  (setq mouse-drag-and-drop-region-cross-program t)
 
   (defun my/dirvish-mouse-find-file (event)
     "Middle click behavior: select window/point and find file."

@@ -39,7 +39,6 @@
 ;;----------------------------------------------------------------------------
 
 (use-package corfu
-  :ensure t
   :hook (after-init . global-corfu-mode)
   :custom
   (corfu-auto t)
