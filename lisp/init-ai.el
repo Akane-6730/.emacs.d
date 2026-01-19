@@ -34,7 +34,7 @@
   :hook ((latex-mode markdown-mode org-mode) . copilot-mode)
   :bind (:map copilot-mode-map
               ("TAB" . my/copilot-tab)
-              ("M-<right>" . copilot-accept-completion-by-word))
+              ("C-<right>" . copilot-accept-completion-by-word))
   :config
   (defun my/copilot-tab ()
     "Tab command that handles Copilot, Yasnippet, Corfu, and default Tab."
