@@ -103,48 +103,55 @@ Can be an integer to determine the exact padding."
   ;;;; Base theme face overrides
   ((cursor                                       :background fg)
    ;; I-search
-   (match                                        :foreground bg :background yellow)
+   (match                                        :box `(:line-width 2 :color ,yellow))
    (lazy-highlight                               :inherit 'match)
    (isearch-fail                                 :foreground magenta)
    ;; current line
    (hl-line                                      :background base2)
    ;; line-numbers
    ((line-number &override)                      :foreground base4 :distant-foreground nil)
-   ((line-number-current-line &override)         :foreground base7 :distant-foreground nil)
+   ((line-number-current-line &override)         :foreground base7 :distant-foreground nil :weight 'bold)
    ;; mode-line
-   (mode-line                                    :background base3 :foreground fg
+   (mode-line                                    :background base2 :foreground fg
                                                  :box (if -modeline-pad `(:line-width ,-modeline-pad :color red)))
-   (mode-line-inactive                           :background bg :foreground fg
+   (mode-line-inactive                           :background base2 :foreground base7
                                                  :box (if -modeline-pad `(:line-width ,-modeline-pad :color red)))
    ;;;; doom-modeline
    (doom-modeline-bar                            :background yellow)
+   (doom-modeline-bar-inactive                   :background base7 :foreground base7)
    (doom-modeline-buffer-file                    :inherit 'mode-line-buffer-id :weight 'normal)
    (doom-modeline-buffer-path                    :inherit 'normal :foreground green)
    (doom-modeline-buffer-project-root            :foreground green :weight 'normal)
    (doom-modeline-buffer-modified                :inherit 'normal :foreground orange)
    ;;;; ediff <built-in>
    (ediff-fine-diff-A                            :background (doom-blend red bg 0.3) :weight 'normal)
-   ;;;; markdown-mode
-   (markdown-blockquote-face                     :inherit 'italic :foreground dark-blue)
-   (markdown-list-face                           :foreground red)
-   (markdown-pre-face                            :foreground cyan)
-   (markdown-link-face                           :inherit 'normal :foreground blue)
-   ((markdown-code-face &override)               :background (doom-lighten base2 0.045))
+
    ;;;; outline <built-in>
-   ((outline-1 &override)                        :foreground "#d3869b")
-   ((outline-2 &override)                        :foreground "#81a2be")
-   ((outline-3 &override)                        :foreground "#b8bb26")
-   ((outline-4 &override)                        :foreground "#c39ac9")
+   ((outline-1 &override)                        :foreground yellow)    ; "#d3869b"
+   ((outline-2 &override)                        :foreground blue)   ; "#81a2be"
+   ((outline-3 &override)                        :foreground green)  ; "#b8bb26"
+   ((outline-4 &override)                        :foreground (doom-lighten violet 0.2)) ; "#c39ac9"
    (outline-5                                    :inherit 'outline-4)
    (outline-6                                    :inherit 'outline-5)
    (outline-7                                    :inherit 'outline-6)
    (outline-8                                    :inherit 'outline-7)
    ;;;; org <built-in>
+   (org-level-1  :height 1.4 :foreground yellow)
+   (org-level-2  :height 1.3 :foreground blue)
+   (org-level-3  :height 1.2 :foreground green)
+   (org-level-4  :height 1.2 :foreground violet)
+   (org-level-5  :height 1.2)
+
+
    (org-drawer :foreground "#bbd9b0")
 
    (org-document-info                :foreground "#81a2be")
-   (org-document-title               :foreground "#c39ac9")
-   (org-ellipsis                     :foreground orange)
+   (org-document-title               :foreground "#c39ac9" :height 2.0) ;
+   (org-document-info   :height 1.2)
+   (org-verbatim :inherit 'help-key-binding)
+   (org-code     :inherit 'help-key-binding)
+   (org-ellipsis                     :foreground base7)
+   (org-table                          :foreground fg)
    (org-tag                          :foreground yellow :weight 'normal)
    ((org-quote &override)            :inherit 'italic :foreground base7 :background org-quote)
    (org-todo                         :foreground yellow)
@@ -156,6 +163,8 @@ Can be an integer to determine the exact padding."
    (org-agenda-date                  :foreground "#b294bb")
    (org-agenda-date-today            :foreground "#d0bed6")
    (org-agenda-date-weekend          :foreground "#6a5870")
+   (org-imminent-deadline            :foreground (doom-lighten magenta 0.2))
+   (org-agenda-current-time          :foreground yellow)
    ;;;; rainbow-delimiters
    (rainbow-delimiters-depth-1-face :foreground  violet)
    (rainbow-delimiters-depth-2-face :foreground  blue)
@@ -176,16 +185,6 @@ Can be an integer to determine the exact padding."
    (term-color-red                              :foreground red)
    (term-color-white                            :foreground fg)
    (term-color-yellow                           :foreground yellow)
-   ;;;; treemacs
-   (treemacs-git-added-face                     :foreground green)
-   (treemacs-git-conflict-face                  :foreground red)
-   (treemacs-git-ignored-face                   :foreground base6)
-   (treemacs-git-modified-face                  :foreground (doom-darken blue 0.2))
-   (treemacs-git-renamed-face                   :foreground orange)
-   (treemacs-git-untracked-face                 :foreground (doom-darken yellow 0.2))
-   (treemacs-on-failure-pulse-face              :foreground base0 :background red)
-   (treemacs-on-success-pulse-face              :foreground base0 :background green)
-
    ;; Rime
    (rime-highlight-candidate-face               :foreground green)
    ;; Tab bar
@@ -197,11 +196,12 @@ Can be an integer to determine the exact padding."
     :underline `(:color ,blue :position -2))
    (tab-bar-tab-inactive
     :background bg
-    :foreground fg-alt
+    :foreground base6
     :box nil
     :underline nil)
-   ;; Tab line
-   (tab-line                                    :background bg)
+
+   ;; ;; Tab line
+   (tab-line                                    :background base2)
    (tab-line-tab
     :background bg
     :foreground fg
@@ -213,7 +213,7 @@ Can be an integer to determine the exact padding."
     :box nil
     :underline `(:color ,blue :position -2))
    (tab-line-tab-inactive
-    :background bg
+    :background base2
     :foreground fg-alt
     :box nil
     :underline nil)
@@ -228,8 +228,42 @@ Can be an integer to determine the exact padding."
    (font-lock-operator-face :foreground magenta)
    (font-lock-property-name-face :foreground orange)
    (font-lock-function-call-face :foreground green)
-   )
+   ((font-lock-preprocessor-face &override) :weight 'normal)
+   ;; markdown mode
+   (markdown-blockquote-face                     :inherit 'italic :foreground dark-blue)
+   (markdown-link-face                           :inherit 'normal :foreground blue)
+   (markdown-list-face :foreground yellow)
+   (markdown-table-face :background base2)
+   (markdown-code-face  :inherit 'help-key-binding)
+   (markdown-pre-face  :inherit 'help-key-binding)
+   (markdown-bold-face :foreground fg :weight 'bold)
 
+   (markdown-header-face-1 :inherit 'org-level-1)
+   (markdown-header-face-2 :inherit 'org-level-2)
+   (markdown-header-face-3 :inherit 'org-level-3)
+   (markdown-header-face-4 :inherit 'org-level-4)
+   (markdown-header-face-5 :inherit 'org-level-5)
+   (markdown-header-face-6 :inherit 'org-level-6)
+   (markdown-header-face-7 :inherit 'org-level-7)
+   (markdown-header-face-8 :inherit 'org-level-8)
+   ;; dired
+   (dired-directory :foreground base7)
+   (dired-header :foreground yellow)
+
+   ;; dirvish
+   (dired-mark :foreground yellow)
+   (dired-marked :background "#3e3d38")
+   ((dirvish-hl-line &override) :background base2)
+   (dirvish-hl-line-inactive :background bg)
+   (dirvish-free-space :foreground green)
+   (dirvish-git-commit-message :foreground (doom-darken yellow 0.1))
+   (dirvish-file-time :foreground base7)
+
+   ;; ibuffer
+   (nerd-icons-ibuffer-file-face :foreground base7)
+   ;;;; misc
+   ;; (tutorial-warning-face :foreground green)
+   )
   ;;;; Base theme variable overrides
   ;; ()
   )
