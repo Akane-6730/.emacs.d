@@ -94,7 +94,7 @@
     ;; Only set the font if one from our preferred list is found.
     ;; Otherwise, do nothing and let Emacs use its system default.
     (when installed-font
-      (set-face-attribute 'default nil :family installed-font :height 180)))
+      (set-face-attribute 'default nil :family installed-font :height 140)))
 
   ;; 2. Setup Chinese / Han script font with fallback
   (let* ((preferred-han-fonts '("LXGW WenKai Mono GB Screen" "PingFang SC" "Source Han Sans SC"))

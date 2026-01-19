@@ -36,7 +36,7 @@
 ;;----------------------------------------------------------------------------
 
 ;; (setq frame-inhibit-implied-resize t)
-(add-to-list 'default-frame-alist '(fullscreen . maximized))
+;; (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 ;; Disable UI Elements Before They Are Drawn
 ;; Pushing to `default-frame-alist` here is the most efficient way to disable
@@ -44,6 +44,12 @@
 (push '(menu-bar-lines . 0) default-frame-alist)
 (push '(tool-bar-lines . 0) default-frame-alist)
 (push '(vertical-scroll-bars) default-frame-alist)
+
+(add-to-list 'default-frame-alist '(undecorated . t))
+(add-to-list 'default-frame-alist '(fullscreen . nil))
+
+(add-to-list 'default-frame-alist '(width . 120))
+(add-to-list 'default-frame-alist '(height . 32))
 
 ;; macOS Specific UI Tweak
 ;; Use a transparent title bar on macOS for a modern look.
