@@ -138,6 +138,8 @@ Can be an integer to determine the exact padding."
     (secondary-selection :background base2)
 
    ;; --- Font Lock ---
+   ((gnus-group-news-low          &override) :inherit nil :foreground base5 :weight 'normal)
+   ((gnus-group-news-low-empty    &override) :inherit nil :foreground base5 :weight 'normal)
    ((font-lock-comment-face &override)
      :slant 'italic
      :foreground base5
@@ -181,8 +183,8 @@ Can be an integer to determine the exact padding."
    (org-done :inherit 'org-todo :foreground base5)
    (org-table :foreground fg)
    (org-block :background (doom-blend yellow bg 0.04) :extend t)
-   (org-verbatim :background bg-code :box `(:line-width -1 :color ,border))
-   (org-code     :background bg-code :box `(:line-width -1 :color ,border))
+   (org-verbatim :background bg-code) ; :box `(:line-width -1 :color ,border))
+   (org-code     :background bg-code) ; :box `(:line-width -1 :color ,border))
    (org-date-selected :background fg :foreground bg)
 
    ;; Org Agenda

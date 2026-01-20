@@ -263,6 +263,9 @@ Can be an integer to determine the exact padding."
    (nerd-icons-ibuffer-file-face :foreground base7)
    ;;;; misc
    ;; (tutorial-warning-face :foreground green)
+   ;; fix for emacs 31
+   ((gnus-group-news-low          &override) :inherit nil :foreground base5 :weight 'normal)
+   ((gnus-group-news-low-empty    &override) :inherit nil :foreground base5 :weight 'normal)
    )
   ;;;; Base theme variable overrides
   ;; ()
