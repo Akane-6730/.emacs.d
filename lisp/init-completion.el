@@ -70,7 +70,7 @@
 
 (when (< emacs-major-version 31)
   (use-package corfu-terminal
-    :if (display-graphic-p)
+    :unless window-system
     :ensure t
     :hook (global-corfu-mode . corfu-terminal-mode)))
 
