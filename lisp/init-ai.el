@@ -61,5 +61,11 @@
         (apply original-function args))))
   (advice-add 'copilot--get-source :around #'my-copilot-get-source-suppress-warning))
 
+;; A native shell experience to interact with ACP agents
+(use-package agent-shell
+    :diminish agent-shell-ui-mode
+    :hook (agent-shell-mode . (lambda () (activate-input-method "rime"))))
+
+
 (provide 'init-ai)
 ;;; init-ai.el ends here

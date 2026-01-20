@@ -89,6 +89,7 @@ new window, and then returns it."
           "\\*sml\\*$"
           "\\*racket\\*$"
           "\\*python3\\*$"
+          "\\*acp error\\*$"
           racket-repl-mode
           inferior-python-mode
           inferior-scheme-mode
