@@ -69,7 +69,7 @@
   :hook (org-mode . org-latex-preview-mode)
   :config
   (setq org-latex-precompile nil)
-  ;; (setq org-latex-preview-process-precompile nil)
+  (setq org-latex-preview-process-precompile nil)
   ;; Increase preview width
   (plist-put org-latex-preview-appearance-options :page-width 0.8)
   (setq org-latex-preview-mode-display-live t)
