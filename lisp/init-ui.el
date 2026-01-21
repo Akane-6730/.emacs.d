@@ -27,7 +27,7 @@
         (create-fontset-from-fontset-spec
          (concat "-*-*-*-*-*-*-*-*-*-*-*-*-" fontset)))
       (set-fontset-font fontset 'latin (font-spec :family "Source Serif 4"))
-      (set-fontset-font fontset 'han (font-spec :family "Source Han Serif CN" :weight 'medium))
+      (set-fontset-font fontset 'han (font-spec :family "Source Han Serif SC VF"))
 
       (set-face-attribute 'variable-pitch nil
                           :family "Source Serif 4"
@@ -37,9 +37,17 @@
   (defun my/setup-fixed-pitch-fonts ()
     "Setup fixed-pitch face (Mono)."
     (interactive)
-    (set-face-attribute 'fixed-pitch nil
-                        :family "Maple Mono NF CN"
-                        :weight 'regular))
+    (let ((fontset "fontset-fixed"))
+      (unless (member fontset (fontset-list))
+        (create-fontset-from-fontset-spec
+         (concat "-*-*-*-*-*-*-*-*-*-*-*-*-" fontset)))
+      ;; Set Chinese font to Source Han Sans as requested
+      (set-fontset-font fontset 'han (font-spec :family "Source Han Sans SC"))
+
+      (set-face-attribute 'fixed-pitch nil
+                          :family "Maple Mono NF CN"
+                          :weight 'regular
+                          :fontset fontset)))
 
   ;; Run basic setup once on init
   (add-hook 'window-setup-hook #'my/setup-fixed-pitch-fonts)
