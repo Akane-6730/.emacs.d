@@ -27,7 +27,7 @@
         (create-fontset-from-fontset-spec
          (concat "-*-*-*-*-*-*-*-*-*-*-*-*-" fontset)))
       (set-fontset-font fontset 'latin (font-spec :family "Source Serif 4"))
-      (set-fontset-font fontset 'han (font-spec :family "Source Han Serif CN" :weight 'medium))
+      (set-fontset-font fontset 'han (font-spec :family "Source Han Serif SC VF"))
 
       (set-face-attribute 'variable-pitch nil
                           :family "Source Serif 4"
@@ -38,7 +38,7 @@
     "Setup fixed-pitch face (Mono)."
     (interactive)
     (set-face-attribute 'fixed-pitch nil
-                        :family "Maple Mono NF CN"
+                        :family "Monaco"
                         :weight 'regular))
 
   ;; Run basic setup once on init
@@ -89,12 +89,12 @@
   ;; Set the global font family and size.
 
   ;; 1. Setup English / Monospace font with fallback
-  (let* ((preferred-mono-fonts '("Maple Mono NF CN" "Monaco" "Menlo" "Cascadia code" "Consolas" "SF Mono" "Courier New" "Monego"))
+  (let* ((preferred-mono-fonts '("Monaco" "Maple Mono NF CN" "Monaco" "Menlo" "Cascadia code" "Consolas" "SF Mono" "Courier New" "Monego"))
          (installed-font (cl-find-if #'font-available-p preferred-mono-fonts)))
     ;; Only set the font if one from our preferred list is found.
     ;; Otherwise, do nothing and let Emacs use its system default.
     (when installed-font
-      (set-face-attribute 'default nil :family installed-font :height 140)))
+      (set-face-attribute 'default nil :family installed-font :height 180)))
 
   ;; 2. Setup Chinese / Han script font with fallback
   (let* ((preferred-han-fonts '("LXGW WenKai Mono GB Screen" "PingFang SC" "Source Han Sans SC"))
