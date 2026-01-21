@@ -18,36 +18,76 @@
     "Check if font with FONT-NAME is available."
     (find-font (font-spec :family font-name)))
 
+  (defun my--ensure-fontset (name)
+    "Ensure fontset NAME exists and return its fontset name string."
+    (let* ((fontset (concat "fontset-" name))
+           (xlfd (concat "-*-*-*-*-*-*-*-*-*-*-*-*-fontset-" name)))
+      (unless (member fontset (fontset-list))
+        (create-fontset-from-fontset-spec xlfd))
+      fontset))
+
+  (defun my--first-available-font (fonts)
+    "Return the first available font in FONTS."
+    (cl-find-if #'font-available-p fonts))
+
+  (defconst my--preferred-mono-fonts
+    (if (eq system-type 'darwin)
+        '("Monaco" "Maple Mono NF CN" "Menlo" "Cascadia code" "Consolas" "SF Mono" "Courier New" "Monego")
+      '("Maple Mono NF CN" "Monaco" "Menlo" "Cascadia code" "Consolas" "SF Mono" "Courier New" "Monego"))
+    "Preferred monospace fonts in order.")
+
+  (defun my--preferred-mono-font ()
+    "Return the first available preferred monospace font."
+    (my--first-available-font my--preferred-mono-fonts))
+
   ;; Setup variable-pitch and fixed-pitch fonts
   (defun my/setup-variable-pitch-fonts ()
     "Setup variable-pitch fonts for generic reading modes (Org, Markdown, Info)."
     (interactive)
-    (let ((fontset "fontset-variable"))
-      (unless (member fontset (fontset-list))
-        (create-fontset-from-fontset-spec
-         (concat "-*-*-*-*-*-*-*-*-*-*-*-*-" fontset)))
+    (let ((fontset (my--ensure-fontset "variable")))
       (set-fontset-font fontset 'latin (font-spec :family "Source Serif 4"))
       (set-fontset-font fontset 'han (font-spec :family "Source Han Serif SC VF"))
 
       (set-face-attribute 'variable-pitch nil
                           :family "Source Serif 4"
                           :weight 'regular
-                          :fontset fontset)))
+                          :fontset fontset)
+
+      ;; Setup Chinese italics to use LXGW WenKai Mono
+      ;; Create an italic fontset for Chinese characters
+      (let ((italic-fontset (my--ensure-fontset "variableitalic")))
+        ;; Set Chinese italic font to LXGW WenKai Mono
+        (set-fontset-font italic-fontset 'han
+                          (font-spec :family "LXGW WenKai Mono GB Screen" :slant 'italic))
+        ;; Keep English italic font as is
+        (set-fontset-font italic-fontset 'latin
+                          (font-spec :family "Source Serif 4" :slant 'italic))
+        ;; Apply italic fontset to italic faces
+        (set-face-attribute 'italic nil :fontset italic-fontset))))
 
   (defun my/setup-fixed-pitch-fonts ()
     "Setup fixed-pitch face (Mono)."
     (interactive)
-    (let ((fontset "fontset-fixed"))
-      (unless (member fontset (fontset-list))
-        (create-fontset-from-fontset-spec
-         (concat "-*-*-*-*-*-*-*-*-*-*-*-*-" fontset)))
+    (let ((fontset (my--ensure-fontset "fixed"))
+          (mono-font (my--preferred-mono-font)))
       ;; Set Chinese font to Source Han Sans as requested
       (set-fontset-font fontset 'han (font-spec :family "Source Han Sans SC"))
 
-      (set-face-attribute 'fixed-pitch nil
-                          :family "Maple Mono NF CN"
-                          :weight 'regular
-                          :fontset fontset)))
+      (when mono-font
+        (set-face-attribute 'fixed-pitch nil
+                            :family mono-font
+                            :weight 'regular
+                            :fontset fontset))
+
+      ;; Setup Chinese italics in fixed-pitch context
+      (let ((italic-fontset (my--ensure-fontset "fixeditalic")))
+        ;; Set Chinese italic font to LXGW WenKai Mono
+        (set-fontset-font italic-fontset 'han
+                          (font-spec :family "LXGW WenKai Mono GB Screen" :slant 'italic))
+        ;; English italic uses same mono font
+        (when mono-font
+          (set-fontset-font italic-fontset 'latin
+                            (font-spec :family mono-font :slant 'italic))))))
 
   ;; Run basic setup once on init
   (add-hook 'window-setup-hook #'my/setup-fixed-pitch-fonts)
@@ -97,23 +137,23 @@
   ;; Set the global font family and size.
 
   ;; 1. Setup English / Monospace font with fallback
-  (let* ((preferred-mono-fonts '("Maple Mono NF CN" "Monaco" "Menlo" "Cascadia code" "Consolas" "SF Mono" "Courier New" "Monego"))
-         (installed-font (cl-find-if #'font-available-p preferred-mono-fonts)))
+    (let* ((preferred-mono-fonts my--preferred-mono-fonts)
+      (installed-font (my--preferred-mono-font)))
     ;; Only set the font if one from our preferred list is found.
     ;; Otherwise, do nothing and let Emacs use its system default.
     (when installed-font
       (set-face-attribute 'default nil :family installed-font :height 140)))
 
   ;; 2. Setup Chinese / Han script font with fallback
-  (let* ((preferred-han-fonts '("LXGW WenKai Mono GB Screen" "PingFang SC" "Source Han Sans SC"))
-         (installed-font (cl-find-if #'font-available-p preferred-han-fonts)))
+    (let* ((preferred-han-fonts '("LXGW WenKai Mono GB Screen" "PingFang SC" "Source Han Sans SC"))
+      (installed-font (my--first-available-font preferred-han-fonts)))
     ;; Same logic for Chinese fonts.
     (when installed-font
       (set-fontset-font t 'han (font-spec :family installed-font))))
 
   ;; 3. Setup Japanese / Kana script font to use the same fallback list
-  (let* ((preferred-kana '("LXGW WenKai Mono GB Screen" "PingFang SC"))
-         (font (cl-find-if #'font-available-p preferred-kana)))
+    (let* ((preferred-kana '("LXGW WenKai Mono GB Screen" "PingFang SC"))
+      (font (my--first-available-font preferred-kana)))
     (when font
       (set-fontset-font t 'kana (font-spec :family font)))))
 
