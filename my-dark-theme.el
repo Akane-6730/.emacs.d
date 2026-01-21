@@ -174,8 +174,8 @@ Can be an integer to determine the exact padding."
    (rainbow-delimiters-depth-6-face :foreground  blue)
    (rainbow-delimiters-depth-7-face :foreground  yellow)
    ;;;; show-paren-mode
-   (show-paren-match                             :weight 'normal :foreground green)
-   (show-paren-mismatch                          :weight 'normal :foreground red)
+   (show-paren-match                             :foreground green :box '(:line-width (-2 . -2) :color "gray56"))
+   (show-paren-mismatch                          :foreground red)
    ;;;; term <built-in>
    (term-color-black                            :foreground base3)
    (term-color-blue                             :foreground blue)

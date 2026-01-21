@@ -110,10 +110,7 @@
 ;; Clipboard Integration
 ;;----------------------------------------------------------------------------
 
-;; System clipboard integration
-(use-package xclip
-  :if (not (display-graphic-p))
-  :hook (after-init . xclip-mode))
+(setq xterm-extra-capabilities '(setSelection))
 
 ;;----------------------------------------------------------------------------
 ;; Navigation Enhancements

@@ -244,8 +244,8 @@ Can be an integer to determine the exact padding."
    (rainbow-delimiters-depth-7-face :foreground yellow)
 
    ;; Show Paren
-   (show-paren-match    :weight 'normal :foreground green)
-   (show-paren-mismatch :weight 'normal :foreground red)
+   (show-paren-match     :foreground green :box '(:line-width (-2 . -2) :color "gray"))
+   (show-paren-mismatch  :foreground red)
 
    ;; Misc
    (rime-default-face :background base2)
