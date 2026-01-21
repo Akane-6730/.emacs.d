@@ -37,9 +37,17 @@
   (defun my/setup-fixed-pitch-fonts ()
     "Setup fixed-pitch face (Mono)."
     (interactive)
-    (set-face-attribute 'fixed-pitch nil
-                        :family "Monaco"
-                        :weight 'regular))
+    (let ((fontset "fontset-fixed"))
+      (unless (member fontset (fontset-list))
+        (create-fontset-from-fontset-spec
+         (concat "-*-*-*-*-*-*-*-*-*-*-*-*-" fontset)))
+      ;; Set Chinese font to Source Han Sans as requested
+      (set-fontset-font fontset 'han (font-spec :family "Source Han Sans SC"))
+
+      (set-face-attribute 'fixed-pitch nil
+                          :family "Monaco"
+                          :weight 'regular
+                          :fontset fontset)))
 
   ;; Run basic setup once on init
   (add-hook 'window-setup-hook #'my/setup-fixed-pitch-fonts)
