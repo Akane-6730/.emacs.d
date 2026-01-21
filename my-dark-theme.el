@@ -200,7 +200,7 @@ Can be an integer to determine the exact padding."
     :box nil
     :underline nil)
 
-   ;; ;; Tab line
+   ;; Tab line
    (tab-line                                    :background base2)
    (tab-line-tab
     :background bg
@@ -226,7 +226,7 @@ Can be an integer to determine the exact padding."
    (info-menu-star :foreground magenta)
    ;; Override the theme's default color for operators.
    (font-lock-operator-face :foreground magenta)
-   (font-lock-property-name-face :foreground orange)
+   (font-lock-property-name-face :foreground fg)
    (font-lock-function-call-face :foreground green)
    ((font-lock-preprocessor-face &override) :weight 'normal)
    ;; markdown mode
@@ -266,6 +266,11 @@ Can be an integer to determine the exact padding."
    ;; fix for emacs 31
    ((gnus-group-news-low          &override) :inherit nil :foreground base5 :weight 'normal)
    ((gnus-group-news-low-empty    &override) :inherit nil :foreground base5 :weight 'normal)
+
+   ;; elgot
+   ;; Emacs 31 specific: adjust eglot highlighting
+   (eglot-semantic-parameter :foreground orange)
+   (eglot-semantic-property :foreground fg)
    )
   ;;;; Base theme variable overrides
   ;; ()

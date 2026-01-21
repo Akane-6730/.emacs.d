@@ -23,8 +23,12 @@
   :config
   (setq eglot-autoshutdown t)
   (setq read-process-output-max (* 1024 1024)) ; 1MB
-  (setq eglot-events-buffer-config '(:size 0 :format full)))
-
+  (setq eglot-events-buffer-config '(:size 0 :format full))
+  ;; Emacs 31 specific: restrict semantic tokens to avoid excessive highlighting
+  (setq eglot-semantic-token-types
+        '("type" "class" "struct" "interface" "enum" "enumMember" "function" "method" "namespace" "decorator" "parameter" "variable"))
+  (setq eglot-semantic-token-modifiers
+        '("static" "deprecated" "abstract" "async" "modification" "documentation"))) ; "readonly"
 
 ;;----------------------------------------------------------------------------
 ;; Integration with our Completion System
