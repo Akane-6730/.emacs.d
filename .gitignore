@@ -2,6 +2,7 @@
 *.data
 *.db
 *.elc
+*.eld
 *.log
 *.sqlite
 *.tmp
@@ -87,3 +88,5 @@ example.tex
 example.pdf
 _minted*/
 ltximg
+agent/
+.agent-shell/

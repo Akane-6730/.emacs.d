@@ -36,7 +36,7 @@
   :hook (dired-mode . dired-omit-mode)
   :config
   (setq dired-omit-files
-        (concat dired-omit-files "\\|^\\.[^.]\\|^go\\|^eln-cache$\\|^auto-save-list$\\|^transient$\\|^tree-sitter$\\|^dirvish$\\|^elpa$\\|^history\\|^places\\|^recentf\\|^screenshots\\|^eshell\\|^snippets\\|^rime\\|^package\\.json$\\|^package-lock\\.json$\\|^node_modules$\\|^_minted-")))
+        (concat dired-omit-files "\\|^\\.[^.]\\|^go\\|^eln-cache$\\|^auto-save-list$\\|^transient$\\|^tree-sitter$\\|^dirvish$\\|^elpa$\\|^history\\|^places\\|^recentf\\|^screenshots\\|^eshell\\|^snippets\\|^rime\\|^package\\.json$\\|^package-lock\\.json$\\|^node_modules$\\|^_minted-\\|^agent")))
 
 (use-package dirvish
   :init (with-eval-after-load 'dired (dirvish-override-dired-mode))
