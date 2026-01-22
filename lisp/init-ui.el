@@ -137,24 +137,24 @@
   ;; Set the global font family and size.
 
   ;; 1. Setup English / Monospace font with fallback
-    (let* ((preferred-mono-fonts my--preferred-mono-fonts)
-      (installed-font (my--preferred-mono-font))
-      (mono-height (if (eq system-type 'darwin) 180 140)))
+  (let* ((preferred-mono-fonts my--preferred-mono-fonts)
+         (installed-font (my--preferred-mono-font))
+         (mono-height (if (eq system-type 'darwin) 180 140)))
     ;; Only set the font if one from our preferred list is found.
     ;; Otherwise, do nothing and let Emacs use its system default.
     (when installed-font
       (set-face-attribute 'default nil :family installed-font :height mono-height)))
 
   ;; 2. Setup Chinese / Han script font with fallback
-    (let* ((preferred-han-fonts '("LXGW WenKai Mono GB Screen" "PingFang SC" "Source Han Sans SC"))
-      (installed-font (my--first-available-font preferred-han-fonts)))
+  (let* ((preferred-han-fonts '("LXGW WenKai Mono GB Screen" "PingFang SC" "Source Han Sans SC"))
+         (installed-font (my--first-available-font preferred-han-fonts)))
     ;; Same logic for Chinese fonts.
     (when installed-font
       (set-fontset-font t 'han (font-spec :family installed-font))))
 
   ;; 3. Setup Japanese / Kana script font to use the same fallback list
-    (let* ((preferred-kana '("LXGW WenKai Mono GB Screen" "PingFang SC"))
-      (font (my--first-available-font preferred-kana)))
+  (let* ((preferred-kana '("LXGW WenKai Mono GB Screen" "PingFang SC"))
+         (font (my--first-available-font preferred-kana)))
     (when font
       (set-fontset-font t 'kana (font-spec :family font)))))
 
@@ -178,10 +178,12 @@
   (doom-themes-visual-bell-config)
   ;; (doom-themes-org-config)
   ;; Load the theme AFTER ensuring the package is loaded
-  (load-theme 'my-light t)
+  (if window-system (load-theme 'my-light t) (load-theme 'my-dark t))
   ;; Set specific faces to use italics AFTER loading the theme
-  (set-face-attribute 'font-lock-comment-face nil :slant 'italic)
-  (set-face-attribute 'font-lock-keyword-face nil :slant 'italic))
+  (when (and (fboundp 'my--preferred-mono-font)
+             (not (equal (my--preferred-mono-font) "Monaco")))
+    (set-face-attribute 'font-lock-comment-face nil :slant 'italic)
+    (set-face-attribute 'font-lock-keyword-face nil :slant 'italic)))
 
 
 ;;;----------------------------------------------------------------------------
