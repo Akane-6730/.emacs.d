@@ -207,7 +207,7 @@
   ;; Add refresh hook
   (add-hook 'org-mode-hook #'my/svg-tag-mode-refresh)
 
-  
+
   (defun org-agenda-show-svg ()
     (let* ((case-fold-search nil)
            (keywords (mapcar #'svg-tag--build-keywords svg-tag--active-tags))
@@ -404,15 +404,17 @@ it falls back to the default conservative behavior."
 ;; Automation: Auto-export on Save
 (defun my/org-auto-export-on-save ()
   "Export logic to run when saving an Org file.
+Only export when LATEX_CLASS is explicitly defined in the header.
 If LATEX_CLASS is set to 'zju-beamer', export as Beamer PDF.
 Otherwise, export as standard LaTeX PDF."
   (interactive)
   (when (eq major-mode 'org-mode)
     (let* ((keywords (org-collect-keywords '("LATEX_CLASS")))
            (latex-class (if keywords (cadr (car keywords)) nil)))
-      (if (and latex-class (string-equal latex-class "zju-beamer"))
-          (org-beamer-export-to-pdf t)
-        (org-latex-export-to-pdf t)))))
+      (when latex-class
+        (if (string-equal latex-class "zju-beamer")
+            (org-beamer-export-to-pdf t)
+          (org-latex-export-to-pdf t))))))
 
 (add-hook 'after-save-hook #'my/org-auto-export-on-save)
 
