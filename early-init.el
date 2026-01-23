@@ -35,7 +35,14 @@
 ;; UI Customization
 ;;----------------------------------------------------------------------------
 
-;; (setq frame-inhibit-implied-resize t)
+(setq frame-inhibit-implied-resize t)
+(setq-default inhibit-redisplay t
+              inhibit-message t)
+(add-hook 'window-setup-hook
+          (lambda ()
+            (setq-default inhibit-redisplay nil
+                          inhibit-message nil)
+            (redisplay)))
 ;; (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 ;; Disable UI Elements Before They Are Drawn
