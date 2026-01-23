@@ -271,6 +271,7 @@ Can be an integer to determine the exact padding."
    ;; Emacs 31 specific: adjust eglot highlighting
    (eglot-semantic-parameter :foreground orange)
    (eglot-semantic-property :foreground fg)
+   (eglot-semantic-namespace :foreground fg)
    )
   ;;;; Base theme variable overrides
   ;; ()
