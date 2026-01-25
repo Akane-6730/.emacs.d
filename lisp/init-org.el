@@ -505,6 +505,11 @@ Otherwise, export as standard LaTeX PDF."
                                  (forward-char)
                                  (skip-chars-backward "*")
                                  (looking-at-p org-outline-regexp-bol))))
+                     ;; Do not treat subscript as underline (require non-alphanum before _)
+                     (not (and (equal marker "_")
+                               (let ((pre-char (char-before (match-beginning 2))))
+                                 (and pre-char
+                                      (string-match-p "[a-zA-Z0-9]" (char-to-string pre-char))))))
                      ;; Match full emphasis markup regexp.
                      (looking-at (if verbatim? org-verbatim-re org-emph-re))
                      ;; Do not span over paragraph boundaries.
