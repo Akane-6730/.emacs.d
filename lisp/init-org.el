@@ -26,11 +26,14 @@
 ;; 1. Core Org Mode Configuration
 ;;----------------------------------------------------------------------------
 (use-package org
+  :init (setq org-modules-loaded t)
   :load-path "~/.emacs.d/elpa/org-mode/lisp/"
   :hook ((org-mode . my-org-mode-setup-emphasis-keys)
          (org-mode . org-indent-mode)
          (org-mode . my/org-setup-prettify-symbols))
   :config
+  (setq org-directory "~/Documents/org/")
+  (setq org-export-with-smart-quotes t) ;; Global smart quotes for all exports
   (setq org-hide-emphasis-markers t)
   (setq org-highlight-latex-and-related '(native))
   (setq org-ellipsis " ") ; ⤵ ▾ ▼ ↴
@@ -59,8 +62,9 @@
   (org-appear-autolinks t))
 
 ;; Better CJK table alignment
-(use-package valign
-  :hook (org-mode . valign-mode))
+(when (display-graphic-p)
+  (use-package valign
+    :hook (org-mode . valign-mode)))
 
 ;; Asynchronous LaTeX preview
 (use-package org-latex-preview
@@ -71,7 +75,7 @@
   (setq org-latex-precompile nil)
   (setq org-latex-preview-process-precompile nil)
   ;; Increase preview width
-  (plist-put org-latex-preview-appearance-options :page-width 0.8)
+  ;; (plist-put org-latex-preview-appearance-options :page-width 0.8)
   (setq org-latex-preview-mode-display-live t)
   (setq org-latex-preview-mode-update-delay 0.25))
 
@@ -426,12 +430,14 @@ Otherwise, export as standard LaTeX PDF."
   :ensure nil
   :bind ("C-c c" . org-capture)
   :config
-  (setq org-default-notes-file (concat org-directory "inbox.org"))
+  (setq org-default-notes-file (concat org-directory "todo.org"))
   (setq org-capture-templates
-        '(("t" "Todo [Inbox]" entry
-           (file+headline "inbox.org" "Tasks")
-           "* TODO %?\n  %i\n  %a"
-           :prepend t))))
+        '(("t" "Todo" entry (file+headline "todo.org" "Inbox")
+           "* TODO %?\n")
+          ("p" "Project Task" entry (file+headline "projects.org" "Tasks")
+           "* TODO %?\n  Source: %a\n  %i")
+          ("e" "Emacs Config" entry (file+headline "config.org" "Emacs Tasks")
+           "* TODO %?\n"))))
 
 (use-package org-agenda
   :ensure nil
@@ -440,11 +446,13 @@ Otherwise, export as standard LaTeX PDF."
   (:map org-agenda-mode-map
         ("C-." . consult-org-agenda))
   :custom
-  (org-agenda-files (mapcar (lambda (f) (expand-file-name f org-directory))
-                            '("inbox.org")))
   (org-agenda-skip-scheduled-if-done t)
   (org-agenda-skip-deadline-if-done t)
   :config
+  (setq org-agenda-files (append (list (expand-file-name "todo.org" org-directory)
+                                       (expand-file-name "projects.org" org-directory)
+                                       (expand-file-name "config.org" org-directory))
+                                 (directory-files-recursively (expand-file-name "notes/" org-directory) "\\.org$")))
   (setq org-agenda-custom-commands
         '(("o" "Overview"
            ((agenda "" ((org-agenda-span 'day)))
