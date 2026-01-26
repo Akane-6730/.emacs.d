@@ -225,10 +225,13 @@ Can be an integer to determine the exact padding."
    ;; Info
    (info-menu-star :foreground magenta)
    ;; Override the theme's default color for operators.
-   (font-lock-operator-face :foreground magenta)
+   ;; (font-lock-operator-face :foreground magenta)
+   (font-lock-bracket-face :foreground base6)
    (font-lock-property-name-face :foreground fg)
    (font-lock-function-call-face :foreground green)
-   ((font-lock-preprocessor-face &override) :weight 'normal)
+   ((font-lock-preprocessor-face &override) :weight 'normal :foreground red)
+   (font-lock-delimiter-face :foreground base6)
+   (font-lock-escape-face :foreground violet)
    ;; markdown mode
    (markdown-blockquote-face                     :inherit 'italic :foreground dark-blue)
    (markdown-link-face                           :inherit 'normal :foreground blue)
@@ -270,6 +273,9 @@ Can be an integer to determine the exact padding."
    ;; elgot
    ;; Emacs 31 specific: adjust eglot highlighting
    (eglot-semantic-parameter :foreground orange)
+   ;; (eglot-semantic-keyword :foreground magenta)
+   (eglot-semantic-macro :foreground blue)
+   (eglot-semantic-operator :foreground magenta)
    (eglot-semantic-property :foreground fg)
    (eglot-semantic-namespace :foreground fg)
    )
@@ -277,25 +283,26 @@ Can be an integer to determine the exact padding."
   ;; ()
   )
 
-(custom-theme-set-variables 'my-dark
-                            `(hl-todo-keyword-faces
-                              (list
-                               (cons "TODO"       (doom-color 'blue))
-                               (cons "FIXME"      (doom-color 'magenta))
-                               (cons "BUG"        (doom-color 'magenta))
-                               (cons "HACK"       (doom-color 'orange))
-                               (cons "NOTE"       (doom-color 'yellow))
-                               (cons "DONE"       (doom-color 'green))
-                               (cons "DEPRECATED" (doom-color 'grey))))
-                            `(ansi-color-names-vector
-                              (vector (doom-color 'base0)   ; black
-                                      (doom-color 'red)     ; red
-                                      (doom-color 'green)   ; green
-                                      (doom-color 'yellow)  ; yellow
-                                      (doom-color 'blue)    ; blue
-                                      (doom-color 'magenta) ; magenta
-                                      (doom-color 'cyan)    ; cyan
-                                      (doom-color 'fg))))   ; white
+;; (custom-theme-set-variables 'my-dark
+;;                             `(hl-todo-keyword-faces
+;;                               (list
+;;                                (cons "TODO"       (doom-color 'blue))
+;;                                (cons "FIXME"      (doom-color 'magenta))
+;;                                (cons "BUG"        (doom-color 'magenta))
+;;                                (cons "HACK"       (doom-color 'orange))
+;;                                (cons "NOTE"       (doom-color 'yellow))
+;;                                (cons "DONE"       (doom-color 'green))
+;;                                (cons "DEPRECATED" (doom-color 'grey))))
+;;                             `(ansi-color-names-vector
+;;                               (vector (doom-color 'base0)   ; black
+;;                                       (doom-color 'red)     ; red
+;;                                       (doom-color 'green)   ; green
+;;                                       (doom-color 'yellow)  ; yellow
+;;                                       (doom-color 'blue)    ; blue
+;;                                       (doom-color 'magenta) ; magenta
+;;                                       (doom-color 'cyan)    ; cyan
+;;                                       (doom-color 'fg))))
+                                        ; white
 
 (provide 'my-dark-theme)
 ;;; my-dark-theme.el ends here

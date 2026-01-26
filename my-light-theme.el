@@ -91,7 +91,7 @@ Can be an integer to determine the exact padding."
    (comments       (if my-light-brighter-comments
                        (doom-lighten teal 0.25)
                      base6))
-   (doc-comments   teal)
+   (doc-comments   base5)
    (constants      violet)
    (functions      magenta)
    (keywords       green)
@@ -148,7 +148,7 @@ Can be an integer to determine the exact padding."
                   'unspecified))
 
    ((font-lock-function-name-face &override) :foreground blue)
-   ((font-lock-preprocessor-face &override) :foreground blue :weight 'normal)
+   ((font-lock-preprocessor-face &override) :foreground magenta :weight 'normal)
    ((font-lock-variable-name-face &override) :foreground fg)
 
    (font-lock-property-use-face :foreground blue-alt)
