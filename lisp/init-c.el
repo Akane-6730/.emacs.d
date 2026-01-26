@@ -47,7 +47,15 @@
                           my-c-common-flags my-c-debug-flags (or std-flag "")))))
 
   ;; 3. Setup Keybinding
-  (define-key (current-local-map) (kbd "<f12>") #'compile))
+  (define-key (current-local-map) (kbd "<f12>") #'compile)
+
+  ;; 4. Custom Highlighting
+  ;; Override specific operators (.;->;::[]) to be grey
+  ;; Override 'this' to be orange
+  (font-lock-add-keywords
+   nil
+   '(("\\(?:\\.\\|->\\|::\\|\\[\\|\\]\\)" 0 'font-lock-delimiter-face t)
+     ("\\<this\\>" 0 'eglot-semantic-parameter t))))
 
 ;;----------------------------------------------------------------------------
 ;; Hooking into Tree-sitter Modes
