@@ -13,7 +13,7 @@
 ;; Fonts
 ;;----------------------------------------------------------------------------
 
-(when window-system
+(when (or window-system (daemonp))
   (defun font-available-p (font-name)
     "Check if font with FONT-NAME is available."
     (find-font (font-spec :family font-name)))
@@ -32,8 +32,8 @@
 
   (defconst my--preferred-mono-fonts
     (if (eq system-type 'darwin)
-        '("Monaco" "Maple Mono NF CN" "Menlo" "Cascadia code" "Consolas" "SF Mono" "Courier New" "Monego")
-      '("Maple Mono NF CN" "Monaco" "Menlo" "Cascadia code" "Consolas" "SF Mono" "Courier New" "Monego"))
+        '("Monaco" "Maple Mono Normal NF CN" "Maple Mono NF CN" "Menlo" "Cascadia code" "Consolas" "SF Mono" "Courier New" "Monego")
+      '("Maple Mono Normal NF CN" "Maple Mono NF CN" "Monaco" "Menlo" "Cascadia code" "Consolas" "SF Mono" "Courier New" "Monego"))
     "Preferred monospace fonts in order.")
 
   (defun my--preferred-mono-font ()
@@ -134,32 +134,35 @@
   (add-hook 'org-mode-hook #'my-mixed-font-mode)
   (add-hook 'markdown-mode-hook #'my-mixed-font-mode)
 
-  ;; Set the global font family and size.
+  (defun my/setup-fonts (frame)
+    "Setup fonts for FRAME."
+    (with-selected-frame frame
+      ;; 1. Setup English / Monospace font with fallback
+      (let* ((preferred-mono-fonts my--preferred-mono-fonts)
+             (installed-font (my--preferred-mono-font))
+             (mono-height (if (eq system-type 'darwin) 180 140)))
+        ;; Only set the font if one from our preferred list is found.
+        ;; Otherwise, do nothing and let Emacs use its system default.
+        (when installed-font
+          (set-face-attribute 'default frame :family installed-font :height mono-height)))
 
-  ;; 1. Setup English / Monospace font with fallback
-  (let* ((preferred-mono-fonts my--preferred-mono-fonts)
-         (installed-font (my--preferred-mono-font))
-         (mono-height (if (eq system-type 'darwin) 180 140)))
-    ;; Only set the font if one from our preferred list is found.
-    ;; Otherwise, do nothing and let Emacs use its system default.
-    (when installed-font
-      (set-face-attribute 'default nil :family installed-font :height mono-height)))
+      ;; 2. Setup Chinese / Han script font with fallback
+      (let* ((preferred-han-fonts '("LXGW WenKai Mono GB Screen" "PingFang SC" "Source Han Sans SC"))
+             (installed-font (my--first-available-font preferred-han-fonts)))
+        ;; Same logic for Chinese fonts.
+        (when installed-font
+          (set-fontset-font t 'han (font-spec :family installed-font))))
 
-  ;; 2. Setup Chinese / Han script font with fallback
-  (let* ((preferred-han-fonts '("LXGW WenKai Mono GB Screen" "PingFang SC" "Source Han Sans SC"))
-         (installed-font (my--first-available-font preferred-han-fonts)))
-    ;; Same logic for Chinese fonts.
-    (when installed-font
-      (set-fontset-font t 'han (font-spec :family installed-font))))
+      ;; 3. Setup Japanese / Kana script font to use the same fallback list
+      (let* ((preferred-kana '("LXGW WenKai Mono GB Screen" "PingFang SC"))
+             (font (my--first-available-font preferred-kana)))
+        (when font
+          (set-fontset-font t 'kana (font-spec :family font))))))
 
-  ;; 3. Setup Japanese / Kana script font to use the same fallback list
-  (let* ((preferred-kana '("LXGW WenKai Mono GB Screen" "PingFang SC"))
-         (font (my--first-available-font preferred-kana)))
-    (when font
-      (set-fontset-font t 'kana (font-spec :family font)))))
+  (when (and window-system (not (daemonp)))
+    (my/setup-fonts (selected-frame))))
 
-
-;; On macOS, use thinner font smoothing for a sharper look.
+  ;; On macOS, use thinner font smoothing for a sharper look.
 (when (eq system-type 'darwin)
   (setq ns-use-thin-smoothing t))
 
@@ -167,6 +170,15 @@
 ;;----------------------------------------------------------------------------
 ;; Theme
 ;;----------------------------------------------------------------------------
+
+(defun my/setup-italic-faces ()
+  "Set specific faces to use italics on non-Darwin systems."
+  (unless (eq system-type 'darwin)
+    (set-face-attribute 'font-lock-preprocessor-face nil :slant 'italic)
+    (set-face-attribute 'font-lock-type-face nil :slant 'italic)
+    (set-face-attribute 'font-lock-comment-face nil :slant 'italic)
+    (set-face-attribute 'font-lock-keyword-face nil :slant 'italic)
+    (set-face-attribute 'font-lock-builtin-face nil :slant 'italic)))
 
 ;; `doom-themes` is a package containing a collection of beautifully crafted themes.
 (use-package doom-themes
@@ -176,14 +188,19 @@
   (setq doom-themes-enable-italic t)
   ;; Enable flashing mode-line on errors to avoid getting the yellow warning triangle on MacOS.
   (doom-themes-visual-bell-config)
-  ;; (doom-themes-org-config)
   ;; Load the theme AFTER ensuring the package is loaded
-  (if window-system (load-theme 'my-light t) (load-theme 'my-dark t))
-  ;; Set specific faces to use italics AFTER loading the theme
-  (when (and (fboundp 'my--preferred-mono-font)
-             (not (equal (my--preferred-mono-font) "Monaco")))
-    (set-face-attribute 'font-lock-comment-face nil :slant 'italic)
-    (set-face-attribute 'font-lock-keyword-face nil :slant 'italic)))
+  (defun my/apply-theme (frame)
+    (with-selected-frame frame
+      (if (display-graphic-p frame)
+          (progn
+            (load-theme 'my-light t)
+            (my/setup-fonts frame))
+        (load-theme 'my-dark t))
+      (my/setup-italic-faces)))
+
+  (if (daemonp)
+      (add-hook 'after-make-frame-functions #'my/apply-theme)
+    (my/apply-theme (selected-frame))))
 
 
 ;;;----------------------------------------------------------------------------
@@ -210,7 +227,9 @@
 
   (if (custom-theme-enabled-p 'my-dark)
       (load-theme 'my-light t)
-    (load-theme 'my-dark t)))
+    (load-theme 'my-dark t))
+
+  (my/setup-italic-faces))
 
 (global-set-key (kbd "<f7>") #'my-toggle-theme)
 

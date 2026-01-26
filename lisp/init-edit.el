@@ -219,11 +219,11 @@
 (use-package simple
   :ensure nil
   :config
-  ;; Automate cleanup whitespace before saving
   (defun my-cleanup-and-save ()
-    "Run `whitespace-cleanup` and save the buffer."
+    "Run `whitespace-cleanup` if not in `org-mode`, then save the buffer."
     (interactive)
-    (whitespace-cleanup)
+    (unless (eq major-mode 'org-mode)
+      (whitespace-cleanup))
     (save-buffer))
   :bind ([remap save-buffer] . my-cleanup-and-save))
 

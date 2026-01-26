@@ -91,7 +91,7 @@ Can be an integer to determine the exact padding."
    (comments       (if my-light-brighter-comments
                        (doom-lighten teal 0.25)
                      base6))
-   (doc-comments   teal)
+   (doc-comments   base5)
    (constants      violet)
    (functions      magenta)
    (keywords       green)
@@ -131,28 +131,27 @@ Can be an integer to determine the exact padding."
 
   ;;;; Base theme face overrides
   ;; --- Base ---
-   ((cursor :background dark-blue)
-    (hl-line :background base1)
-    ((line-number                  &override) :foreground base6)
-    ((line-number-current-line     &override) :foreground fg :background base1 :weight 'bold)
-    (secondary-selection :background base2)
+  ((cursor :background dark-blue)
+   (hl-line :background base1)
+   ((line-number                  &override) :foreground base6)
+   ((line-number-current-line     &override) :foreground fg :background base1 :weight 'bold)
+   (secondary-selection :background base2)
 
    ;; --- Font Lock ---
    ((gnus-group-news-low          &override) :inherit nil :foreground base5 :weight 'normal)
    ((gnus-group-news-low-empty    &override) :inherit nil :foreground base5 :weight 'normal)
    ((font-lock-comment-face &override)
-     :slant 'italic
-     :foreground base5
-     :background (if my-light-brighter-comments
-                     (doom-blend teal base0 0.07)
-                   'unspecified))
-    ((font-lock-type-face          &override) :slant 'italic)
-    ((font-lock-builtin-face       &override) :slant 'italic)
-    ((font-lock-function-name-face &override) :foreground blue)
-    ((font-lock-variable-name-face &override) :foreground fg)
-    ((font-lock-keyword-face       &override) :slant 'italic)
-    (font-lock-preprocessor-face :weight 'normal)
-    (font-lock-property-use-face :foreground blue-alt)
+    :slant 'italic
+    :foreground base5
+    :background (if my-light-brighter-comments
+                    (doom-blend teal base0 0.07)
+                  'unspecified))
+
+   ((font-lock-function-name-face &override) :foreground blue)
+   ((font-lock-preprocessor-face &override) :foreground magenta :weight 'normal)
+   ((font-lock-variable-name-face &override) :foreground fg)
+
+   (font-lock-property-use-face :foreground blue-alt)
 
    ;; --- Modeline ---
    (mode-line
@@ -252,7 +251,7 @@ Can be an integer to determine the exact padding."
    (tutorial-warning-face :foreground teal)
    (info-menu-star :foreground yellow)
    )
-)
+  )
 
 (provide 'my-light-theme)
 ;;; my-light-theme.el ends here

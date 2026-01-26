@@ -53,7 +53,7 @@
      ("c" "~/Documents/code/" "Code")
      ("d" "~/Documents/" "Documents")
      ("h" "~/" "Home")
-     ("o" "~/org/" "Org")))
+     ("o" "~/Documents/org/" "Org")))
 
   (setq dirvish-large-directory-threshold 20000)
   (setq dired-mouse-drag-files t)

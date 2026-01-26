@@ -53,7 +53,7 @@
 ;; and braces at different nesting levels.
 
 (use-package rainbow-delimiters
-  :hook prog-mode)
+  :hook (emacs-lisp-mode . rainbow-delimiters-mode))
 
 
 ;;----------------------------------------------------------------------------

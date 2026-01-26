@@ -119,6 +119,13 @@
 
 (remove-hook 'kill-buffer-query-functions #'process-kill-buffer-query-function)
 
+;; Large file optimizations
+(setq-default bidi-display-reordering nil)
+(setq bidi-inhibit-bpa t
+      long-line-threshold 1000
+      large-hscroll-threshold 1000
+      syntax-wholeline-max 1000)
+
 ;;----------------------------------------------------------------------------
 ;; History & Persistence
 ;;----------------------------------------------------------------------------
@@ -168,6 +175,15 @@
      rime-predicate-prog-in-code-p        ; Force English in code (except comments/strings)
      rime-predicate-space-after-cc-p      ; Support mixed English/Chinese (space after Chinese)
      )))
+
+;;----------------------------------------------------------------------------
+;; Server
+;;----------------------------------------------------------------------------
+
+;; Start the Emacs server so you can connect with emacsclient
+(use-package server
+  :ensure nil
+  :defer 0.5)
 
 (provide 'init-base)
 ;;; init-base.el ends here
