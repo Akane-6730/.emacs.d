@@ -125,11 +125,16 @@
           (setq my-mixed-font--cookies nil)
           (dolist (face my-mixed-font-fixed-faces)
             (push (face-remap-add-relative face 'fixed-pitch)
-                  my-mixed-font--cookies)))
+                  my-mixed-font--cookies))
+          ;; Force leading whitespace to be fixed-pitch for proper indentation
+          (font-lock-add-keywords nil '(("^[[:space:]]+" 0 'fixed-pitch)) 'append)
+          (if (fboundp 'font-lock-flush) (font-lock-flush) (font-lock-fontify-buffer)))
       ;; Disable
       (variable-pitch-mode -1)
       (mapc #'face-remap-remove-relative my-mixed-font--cookies)
-      (setq my-mixed-font--cookies nil)))
+      (setq my-mixed-font--cookies nil)
+      (font-lock-remove-keywords nil '(("^[[:space:]]+" 0 'fixed-pitch)))
+      (if (fboundp 'font-lock-flush) (font-lock-flush) (font-lock-fontify-buffer))))
 
   (add-hook 'org-mode-hook #'my-mixed-font-mode)
   (add-hook 'markdown-mode-hook #'my-mixed-font-mode)
