@@ -20,15 +20,19 @@
 (use-package eglot
   :ensure nil
   :hook (prog-mode . my-eglot-conditional-ensure)
+  :bind (:map eglot-mode-map
+              ("C-;" . eglot-rename))
   :config
   (setq eglot-autoshutdown t)
   (setq read-process-output-max (* 1024 1024)) ; 1MB
   (setq eglot-events-buffer-config '(:size 0 :format full))
   ;; Emacs 31 specific: restrict semantic tokens to avoid excessive highlighting
   (setq eglot-semantic-token-types
-        '("type" "class" "struct" "interface" "enum" "enumMember" "function" "method" "namespace" "decorator" "parameter" "variable"))
+        '("operator" "namespace" "type" "enum" "interface" "struct" "typeParameter" "parameter" "variable"
+          "property" "enumMember" "event" "function" "method"  "keyword"  "string" "number" "decorator")) ; "class" "operator" "modifier"
   (setq eglot-semantic-token-modifiers
-        '("static" "deprecated" "abstract" "async" "modification" "documentation"))) ; "readonly"
+        '("deprecated" "abstract" "async"
+          "modification" "documentation"))) ; "declaration" "definition" "defaultLibrary" "readonly" "static"
 
 ;;----------------------------------------------------------------------------
 ;; Integration with our Completion System

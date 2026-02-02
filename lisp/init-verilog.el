@@ -54,7 +54,9 @@
                     "--port_declarations_alignment=align"
                     "--formal_parameters_alignment=align"
                     "--case_items_alignment=align"
-                    "--distribution_items_alignment=align"))))
+                    "--distribution_items_alignment=align")))
+  :custom-face
+  (verilog-ts-font-lock-punctuation-face ((t (:inherit 'font-lock-comment-face :slant normal)))))
 
 (provide 'init-verilog)
 ;;; init-verilog.el ends here
