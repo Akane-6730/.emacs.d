@@ -10,6 +10,22 @@
 ;; Math Environment Detection (shared by LaTeX-mode and org-mode)
 ;;----------------------------------------------------------------------------
 
+;; Theorem-like block types that should be treated as LaTeX environments
+(defvar my/org-latex-block-types '("definition" "theorem" "exmp" "proof" "lemma" "corollary" "proposition" "remark")
+  "List of org special block types that should be treated as LaTeX environments.
+Inside these blocks, LaTeX snippets will auto-expand and cdlatex will work.")
+
+(defun my/org-inside-latex-block-p ()
+  "Return non-nil if point is inside a theorem-like special block in org-mode."
+  (when (derived-mode-p 'org-mode)
+    (let ((element (org-element-at-point)))
+      ;; Walk up the element tree to find if we're in a special block
+      (while (and element
+                  (not (eq (org-element-type element) 'special-block)))
+        (setq element (org-element-property :parent element)))
+      (when (eq (org-element-type element) 'special-block)
+        (member (org-element-property :type element) my/org-latex-block-types)))))
+
 (defun my/in-math-p ()
   "Return non-nil if point is in a math environment.
 Works in both LaTeX-mode and org-mode."
@@ -17,10 +33,11 @@ Works in both LaTeX-mode and org-mode."
    ;; In LaTeX-mode, use texmathp from AUCTeX
    ((derived-mode-p 'latex-mode 'LaTeX-mode)
     (and (fboundp 'texmathp) (texmathp)))
-   ;; In org-mode, use org's built-in function
+   ;; In org-mode, check LaTeX fragment OR theorem-like blocks
    ((derived-mode-p 'org-mode)
-    (and (fboundp 'org-inside-LaTeX-fragment-p)
-         (org-inside-LaTeX-fragment-p)))
+    (or (and (fboundp 'org-inside-LaTeX-fragment-p)
+             (org-inside-LaTeX-fragment-p))
+        (my/org-inside-latex-block-p)))
    ;; Default: not in math
    (t nil)))
 
@@ -29,11 +46,11 @@ Works in both LaTeX-mode and org-mode."
 ;; in org-mode without modification.
 (defun my/texmathp-in-org (orig-fun &rest args)
   "Advice for `texmathp' to work in org-mode.
-In org-mode, delegate to `org-inside-LaTeX-fragment-p'.
+In org-mode, delegate to `my/in-math-p' which checks both LaTeX fragments
+and theorem-like special blocks.
 Otherwise, call the original ORIG-FUN with ARGS."
   (if (derived-mode-p 'org-mode)
-      (and (fboundp 'org-inside-LaTeX-fragment-p)
-           (org-inside-LaTeX-fragment-p))
+      (my/in-math-p)
     (apply orig-fun args)))
 
 (with-eval-after-load 'texmathp
