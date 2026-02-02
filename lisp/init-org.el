@@ -252,7 +252,13 @@
      ("sh" . "src sh")
      ("j"  . "src java")
      ("q"  . "quote")
-     ("ex" . "example"))))
+     ("ex" . "example")
+     ;; Theorem environment templates (using Org special blocks)
+     ;; Use names that don't conflict with LaTeX snippets
+     ("def" . "definition")
+     ("thm" . "theorem")
+     ("exm" . "exmp")     ; Use "exmp" to avoid conflict with org's built-in "example"
+     ("prf" . "proof"))))
 
 (defun my-org-mode-pair-predicate (c)
   "A custom predicate for `electric-pair-mode` in Org buffers.
@@ -387,6 +393,74 @@ it falls back to the default conservative behavior."
   :config
   ;; Allow using 'fragile' frames by default (useful for code blocks)
   (setq org-beamer-frame-default-options "fragile"))
+
+;; ----------------------------------------------------------------------------
+;; Custom Org Special Blocks for Theorem Environments
+;; ----------------------------------------------------------------------------
+
+(with-eval-after-load 'ox-latex
+  ;; Save the original function before overriding
+  (defvar my/org-latex-special-block-original
+    (symbol-function 'org-latex-special-block)
+    "Original org-latex-special-block function.")
+
+  ;; List of theorem-like environments we handle
+  (defvar my/theorem-environments '("definition" "theorem" "exmp" "proof")
+    "List of special block types that should be treated as theorem environments.")
+
+  (defun my/parse-theorem-block-args (special-block)
+    "Parse title and label from SPECIAL-BLOCK's raw parameters.
+Supports syntax: #+BEGIN_theorem Title Here :label mylabel
+Returns (title . label) cons cell."
+    (let* ((raw-params (org-element-property :parameters special-block))
+           (title "")
+           (label ""))
+      (when raw-params
+        ;; Extract :label if present
+        (if (string-match "\\(.*?\\)\\s-*:label\\s-+\\(\\S-+\\)\\s-*$" raw-params)
+            (setq title (string-trim (match-string 1 raw-params))
+                  label (match-string 2 raw-params))
+          ;; No :label, entire string is title
+          (setq title (string-trim raw-params))))
+      (cons title label)))
+
+  ;; Add custom export for special blocks to handle theorem environments
+  (defun my/org-latex-special-block (special-block contents info)
+    "Transcode a SPECIAL-BLOCK element from Org to LaTeX.
+CONTENTS holds the contents of the block.  INFO is a plist
+holding contextual information."
+    (let* ((type (org-element-property :type special-block))
+           ;; Try to get title/label from block parameters first
+           (parsed (my/parse-theorem-block-args special-block))
+           ;; Fall back to ATTR_LATEX if not in parameters
+           (attr (org-export-read-attribute :attr_latex special-block))
+           (title (if (string-empty-p (car parsed))
+                      (or (plist-get attr :title) "")
+                    (car parsed)))
+           (label (if (string-empty-p (cdr parsed))
+                      (or (plist-get attr :label) "")
+                    (cdr parsed))))
+      (cond
+       ;; Handle definition environment
+       ((string= type "definition")
+        (format "\\begin{definition}{%s}{%s}\n%s\\end{definition}"
+                title label (or contents "")))
+       ;; Handle theorem environment
+       ((string= type "theorem")
+        (format "\\begin{theorem}{%s}{%s}\n%s\\end{theorem}"
+                title label (or contents "")))
+       ;; Handle example environment (use "exmp" to avoid conflict with org's built-in example block)
+       ((string= type "exmp")
+        (format "\\begin{example}{%s}{%s}\n%s\\end{example}"
+                title label (or contents "")))
+       ;; Handle proof environment (no title/label needed)
+       ((string= type "proof")
+        (format "\\begin{proof}\n%s\\end{proof}" (or contents "")))
+       ;; Default: use original special block export
+       (t (funcall my/org-latex-special-block-original special-block contents info)))))
+
+  ;; Override the default special block export function
+  (advice-add 'org-latex-special-block :override #'my/org-latex-special-block))
 
 
 ;; Reveal.js Export (HTML Slides)
