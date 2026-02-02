@@ -115,7 +115,26 @@
                  (cape-capf-super
                   #'eglot-completion-at-point
                   #'yasnippet-capf))))
-  (add-hook 'eglot-managed-mode-hook #'my-eglot-capf-with-yasnippet))
+  (add-hook 'eglot-managed-mode-hook #'my-eglot-capf-with-yasnippet)
+
+  :config
+  ;; Patch yasnippet-capf to avoid errors with key-less snippets
+  (defun yasnippet-capf--completions-for-prefix (prefix tables)
+    (let ((templates (yas--all-templates tables))
+          (requirement (yas--require-template-specific-condition-p)))
+      (mapcar (lambda (template)
+                (let ((can-expand (yas--template-can-expand-p
+                                   (yas--template-condition template) requirement))
+                      (name (yas--template-name template))
+                      (name-or-key
+                       (funcall (intern-soft (format "yas--template-%s" yasnippet-capf-lookup-by)) template)))
+                  (when (and can-expand (stringp name-or-key))
+                    (propertize name-or-key
+                                'yas-annotation name
+                                'yas-template template
+                                'yas-prefix-offset (- (length name-or-key)
+                                                      (length prefix))))))
+              templates))))
 
 
 ;;----------------------------------------------------------------------------
