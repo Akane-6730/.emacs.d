@@ -13,7 +13,7 @@
 ;;----------------------------------------------------------------------------
 
 (use-package hl-line
-  :hook prog-mode)
+  :hook prog-mode LaTeX-mode)
 
 ;;----------------------------------------------------------------------------
 ;; Matching Parentheses Highlighting
