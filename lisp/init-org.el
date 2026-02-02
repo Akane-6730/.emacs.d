@@ -29,25 +29,25 @@
   :init (setq org-modules-loaded t)
   :load-path "~/.emacs.d/elpa/org-mode/lisp/"
   :hook ((org-mode . my-org-mode-setup-emphasis-keys)
-         (org-mode . org-indent-mode)
-         (org-mode . my/org-setup-prettify-symbols))
+         (org-mode . org-indent-mode))
   :config
   (setq org-directory "~/Documents/org/")
   (setq org-export-with-smart-quotes t) ;; Global smart quotes for all exports
   (setq org-hide-emphasis-markers t)
-  (setq org-highlight-latex-and-related '(native))
+  (setq org-highlight-latex-and-related '(native latex))
   (setq org-ellipsis " ") ; ⤵ ▾ ▼ ↴
-  (defun my/org-setup-prettify-symbols ()
-    "Configure prettify symbols for Org mode, allowing non-word boundaries."
-    (setq-local prettify-symbols-alist
-                '(("lambda"  . ?λ)
-                  ("[ ]" . ?)
-                  ("[-]" . ?)
-                  ("[X]" . ?)))
-    (setq-local prettify-symbols-compose-predicate
-                (lambda (start end _match) t)) ; Allow composition anywhere
-    (prettify-symbols-mode 1)))
-
+  (setq org-pretty-entities t)
+  (setq org-pretty-entities-include-sub-superscripts nil)
+  ;; Prettify checkbox symbols using display property
+  (font-lock-add-keywords
+   'org-mode
+   '(("^[ \t]*\\(?:[-+*]\\|[0-9]+[.)]\\)[ \t]+\\(\\[ \\]\\)"
+      1 '(face nil display " "))
+     ("^[ \t]*\\(?:[-+*]\\|[0-9]+[.)]\\)[ \t]+\\(\\[-\\]\\)"
+      1 '(face nil display " "))
+     ("^[ \t]*\\(?:[-+*]\\|[0-9]+[.)]\\)[ \t]+\\(\\[X\\]\\)"
+      1 '(face nil display " ")))
+   'append))
 
 
 ;; ----------------------------------------------------------------------------
@@ -57,9 +57,12 @@
 ;; Automatically show/hide emphasis markers
 (use-package org-appear
   :hook (org-mode . org-appear-mode)
-  :custom
-  (org-appear-autosubmarkers t)
-  (org-appear-autolinks t))
+  :config
+  (setq org-appear-autosubmarkers t)
+  (setq org-appear-autolinks t)
+  (setq org-appear-autoentities t)       ; Show original \alpha when cursor is on α
+  (setq org-appear-autokeywords t)       ; Show #+KEYWORD markers
+  (setq org-appear-inside-latex t))      ; Work inside LaTeX fragments
 
 ;; Better CJK table alignment
 (when (display-graphic-p)
@@ -88,7 +91,8 @@
   (setq org-superstar-item-bullet-alist
         '((43 . 8226) (42 . 8226) (45 . 8211)))
   :custom-face
-  (org-superstar-header-bullet ((t (:family "JetBrains Mono")))))
+  (org-superstar-header-bullet ((t (:family "JetBrains Mono"))))
+  (org-superstar-item ((t (:family "JetBrains Mono")))))
 
 
 ;; SVG Tag Mode
