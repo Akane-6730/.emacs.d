@@ -9,7 +9,7 @@
 ;;; Code:
 
 (use-package dashboard
-  ;; :init (dashboard-setup-startup-hook)
+  :init (dashboard-setup-startup-hook)
   :bind (("<f2>" . dashboard-open))
   :custom-face
   (dashboard-items-face    ((t (:weight normal))))
