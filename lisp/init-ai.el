@@ -10,7 +10,9 @@
 ;; Interact with ChatGPT or other LLMs
 (use-package gptel
   :functions gptel-make-openai
-  :bind ("C-c g" . gptel-menu)
+  :bind
+  ("C-c g" . gptel-menu)
+  ("C-c <RET>" . gptel-send)
   :config
   (setq gptel-default-mode 'org-mode)
   (setq gptel--known-backends nil) ; Clear default backends (ChatGPT)
@@ -31,25 +33,37 @@
 
 ;; GitHub Copilot for code completion
 (use-package copilot
-  :hook ((latex-mode markdown-mode org-mode) . copilot-mode)
+  :hook ((latex-mode markdown-mode) . copilot-mode)
+  :hook (org-mode . my/copilot-enable-for-org)
   :bind (:map copilot-mode-map
-              ("TAB" . my/copilot-tab)
-              ("C-<right>" . copilot-accept-completion-by-word))
+              ("C-e" . my/copilot-accept-or-end-of-line)
+              ("M-f" . my/copilot-accept-word-or-forward-word))
   :config
-  (defun my/copilot-tab ()
-    "Tab command that handles Copilot, Yasnippet, Corfu, and default Tab."
+  (defun my/copilot-enable-for-org ()
+    "Enable Copilot mode in Org mode, but not during agenda or capture."
+    (unless (or (eq this-command 'org-agenda) (eq this-command 'org-capture))
+      (when (eq major-mode 'org-mode)
+        (copilot-mode 1))))
+
+  (defun my/copilot-accept-or-end-of-line ()
+    "Accept Copilot completion or move to end of line (mwim)."
     (interactive)
     (if (and (bound-and-true-p copilot-mode)
              (boundp 'copilot--overlay)
              (overlayp copilot--overlay)
              (overlay-buffer copilot--overlay))
         (copilot-accept-completion)
-      (let* ((minor-mode-map-alist
-              (assq-delete-all 'copilot-mode (copy-sequence minor-mode-map-alist)))
-             (cmd (key-binding (this-command-keys))))
-        (if (and cmd (commandp cmd))
-            (call-interactively cmd)
-          (indent-for-tab-command)))))
+      (call-interactively #'move-end-of-line)))
+
+  (defun my/copilot-accept-word-or-forward-word ()
+    "Accept Copilot word or move forward word."
+    (interactive)
+    (if (and (bound-and-true-p copilot-mode)
+             (boundp 'copilot--overlay)
+             (overlayp copilot--overlay)
+             (overlay-buffer copilot--overlay))
+        (copilot-accept-completion-by-word)
+      (call-interactively #'forward-word)))
 
   (setq copilot--indent-warning-printed-p t
         copilot-indent-offset-warning-disable t)
@@ -62,9 +76,12 @@
   (advice-add 'copilot--get-source :around #'my-copilot-get-source-suppress-warning))
 
 ;; A native shell experience to interact with ACP agents
-(use-package agent-shell
-    :diminish agent-shell-ui-mode
-    :hook (agent-shell-mode . (lambda () (activate-input-method "rime"))))
+;; (use-package agent-shell
+;;   :diminish agent-shell-ui-mode
+;;   :hook (agent-shell-mode . (lambda () (activate-input-method "rime")))
+;;   :bind (:map agent-shell-mode-map
+;;               ("C-<return>" . agent-shell-submit)
+;;               ("RET" . nil)))
 
 
 (provide 'init-ai)
