@@ -60,3 +60,69 @@
 % Syntax highlighting using Pygments
 \usepackage{minted}
 \usemintedstyle{solarized-light}
+
+% =========================================
+% Theorem Environments (Beautiful Boxes)
+% =========================================
+\usepackage{amsthm}
+\usepackage[many]{tcolorbox}
+\tcbuselibrary{theorems,breakable,skins}
+
+% Base style for theorem boxes
+\tcbset{
+	lalustyle/.style={
+			breakable,
+			enhanced jigsaw,
+			sharp corners,
+			colframe=#1!50!black,      % Border: 50% base color + 50% black
+			colback=white,              % Content background: white
+			colbacktitle=#1!5,         % Title background: 5% base color (very light)
+			coltitle=black,             % Title text: black
+			fonttitle=\bfseries,        % Title font: bold
+			% Border settings (no left/right borders)
+			leftrule=0pt,
+			rightrule=0pt,
+			toprule=1pt,
+			titlerule=1pt,
+			bottomrule=1pt,
+			% Title padding
+			toptitle=1mm,
+			bottomtitle=1mm,
+			separator sign={\quad},
+			% Dashed lines for page breaks
+			overlay first={
+					\draw[#1!50!black, line width=1pt, dashed]
+					([yshift=-0.5pt]frame.south west) -- ([yshift=-0.5pt]frame.south east);
+				},
+			overlay middle={
+					\draw[#1!50!black, line width=1pt, dashed]
+					([yshift=0.5pt]frame.north west) -- ([yshift=0.5pt]frame.north east);
+					\draw[#1!50!black, line width=1pt, dashed]
+					([yshift=-0.5pt]frame.south west) -- ([yshift=-0.5pt]frame.south east);
+				},
+			overlay last={
+					\draw[#1!50!black, line width=1pt, dashed]
+					([yshift=0.5pt]frame.north west) -- ([yshift=0.5pt]frame.north east);
+				},
+		}
+}
+
+% Define theorem environments (Chinese)
+\newtcbtheorem[number within=section]{definition}{定义}{lalustyle={red}}{def}
+\newtcbtheorem[number within=section]{theorem}{定理}{lalustyle={violet}}{thm}
+\newtcbtheorem[number within=section]{example}{例}{lalustyle={blue}}{ex}
+
+% Proof/Solution box
+\NewTColorBox{tcblaluthmbox}{mmm}{
+	lalustyle={teal},
+	colframe=teal!80!black,
+	title=#1\IfBlankF{#2}{\quad#2},
+	#3,
+}
+
+% Renew proof environment (amsthm already defines it, so we use RenewDocumentEnvironment)
+\RenewDocumentEnvironment{proof}{O{}O{}}{
+\begin{tcblaluthmbox}{{\bfseries 证明}}{#1}{#2}
+	}{
+	\hspace*{\fill}$\square$\end{tcblaluthmbox}
+}
