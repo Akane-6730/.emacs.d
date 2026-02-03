@@ -324,7 +324,6 @@
   (setq column-number-mode t
         line-number-mode t
         line-move-visual nil
-        visual-line-mode t
         track-eol t                     ; Keep cursor at end of lines. Require line-move-visual is nil.
         set-mark-command-repeat-pop t)  ; Repeating C-SPC after popping mark pops it again
   (when (not (display-graphic-p))

@@ -96,6 +96,9 @@
  tab-width 4
  ;; Set the default width for wrapping text.
  fill-column 80
+ ;; Default to truncate lines (no wrapping) in most modes (e.g. programming).
+ ;; Only wrap in specific text modes (org/markdown) via visual-line-mode.
+ truncate-lines t
  ;; Default to text-mode for new, unrecognized files.
  major-mode 'text-mode)
 
