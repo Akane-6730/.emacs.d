@@ -263,7 +263,7 @@
               display-time-format "%H:%M"))
 
 (use-package doom-modeline
-  :hook (after-init . doom-modeline-mode)
+  :hook after-init
   :init
   (display-time-mode t)
   (display-battery-mode t)
@@ -272,6 +272,12 @@
   (setq doom-modeline-battery t)
   (setq doom-modeline-time-icon t)
   (setq doom-modeline-time-clock-size 1.0))
+
+(use-package hide-mode-line
+  :hook (((eat-mode
+           eshell-mode shell-mode
+           term-mode vterm-mode
+           pdf-annot-list-mode) . turn-on-hide-mode-line-mode)))
 
 ;;----------------------------------------------------------------------------
 ;; Layout
@@ -451,6 +457,17 @@
               vertico-posframe-parameters
               '((left-fringe  . 8)
                 (right-fringe . 8))))
+
+(use-package transient-posframe
+  :diminish
+  :defines posframe-border-width
+  :custom-face
+  (transient-posframe-border ((t (:inherit posframe-border :background unspecified))))
+  :hook after-init
+  :init (setq transient-mode-line-format nil
+              transient-posframe-border-width posframe-border-width
+              transient-posframe-parameters '((left-fringe . 8)
+                                              (right-fringe . 8))))
 
 (provide 'init-ui)
 ;;; init-ui.el ends here
