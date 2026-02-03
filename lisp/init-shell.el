@@ -9,12 +9,36 @@
 (use-package eshell
   :ensure nil
   :config
-  ;; Sensible defaults for a better user experience.
   (setq eshell-history-size 10000
-        eshell-hist-ignoredups t ; Don't save duplicate commands in history
+        eshell-hist-ignoredups t
         eshell-directory-name-completion-ignore-case t
-        eshell-list-files-after-cd t) ; Automatically list files after `cd`
-  :hook (eshell-mode . (lambda () (completion-preview-mode 1))))
+        eshell-list-files-after-cd t)
+
+  ;; Enable image support in `eshell/cat`
+  (defun adviced:eshell/cat (orig-fun &rest args)
+    "Like `eshell/cat' but with image support."
+    (if (seq-every-p (lambda (arg)
+                       (and (stringp arg)
+                            (file-exists-p arg)
+                            (image-supported-file-p arg)))
+                     args)
+        (with-temp-buffer
+          (insert "\n")
+          (dolist (path args)
+            (Let ((spec (create-image
+                         (expand-file-name path)
+                         (image-type-from-file-name path)
+                         nil :max-width 350
+                         :conversion (lambda (data) data))))
+              (image-flush spec)
+              (insert-image spec))
+            (insert "\n"))
+          (insert "\n")
+          (buffer-string))
+      (apply orig-fun args)))
+
+  (advice-add #'eshell/cat :around #'adviced:eshell/cat)
+  :hook (eshell-mode . completion-preview-mode))
 
 (use-package vterm
   :config (setq vterm-disable-bold t))
