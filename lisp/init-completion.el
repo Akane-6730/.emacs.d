@@ -14,14 +14,23 @@
 
 (use-package vertico
   :hook (after-init . vertico-mode)
-  :custom (vertico-count 10)
+  :custom (vertico-count 13)
   :bind (:map vertico-map
               ("RET" . vertico-directory-enter)
               ("DEL" . vertico-directory-delete-char)
               ("M-DEL" . vertico-directory-delete-word)))
 
 (use-package nerd-icons-completion
-  :hook (marginalia-mode . nerd-icons-completion-marginalia-setup))
+  :hook (marginalia-mode . nerd-icons-completion-marginalia-setup)
+  :config
+  ;; Fix "Selecting deleted buffer" error when switching buffers with consult-buffer
+  ;; This happens when a buffer (like *Org Export Process*) dies while the menu is open.
+  (defun my/nerd-icons-completion-safe-get-icon (orig-fun &rest args)
+    "Safe wrapper for `nerd-icons-completion-get-icon' that handles dead buffers."
+    (condition-case nil
+        (apply orig-fun args)
+      (error " ")))
+  (advice-add 'nerd-icons-completion-get-icon :around #'my/nerd-icons-completion-safe-get-icon))
 
 (use-package orderless
   :custom
@@ -39,12 +48,16 @@
 ;;----------------------------------------------------------------------------
 
 (use-package corfu
-  :hook (after-init . global-corfu-mode)
+  :hook
+  (after-init . global-corfu-mode)
+  (global-corfu-mode . corfu-popupinfo-mode)
   :custom
   (corfu-auto t)
   (corfu-auto-prefix 2)
   (corfu-auto-delay 0.05)
   (corfu-cycle t)
+  (corfu-popupinfo-delay '(0.4 . 0.2))
+  (global-corfu-modes '((not erc-mode circe-mode help-mode gud-mode vterm-mode) t))
   :custom-face
   (corfu-border ((t (:inherit region :background unspecified))))
   :bind (:map corfu-map
