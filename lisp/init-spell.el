@@ -53,8 +53,7 @@ correction keys, without affecting programming modes."
   :init
   ;; For each text-centric mode, enable `flyspell-mode` and then add back
   ;; the specific keybindings we want for those modes.
-  (dolist (hook '(text-mode-hook
-                  org-mode-hook
+  (dolist (hook '(org-mode-hook
                   markdown-mode-hook))
     (add-hook hook #'flyspell-mode)
     (add-hook hook #'my-spell--rebind-correction-keys-for-text)))
