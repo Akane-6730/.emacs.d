@@ -338,7 +338,7 @@
 ;; Display line numbers in prog-mode
 (use-package display-line-numbers
   :ensure nil
-  :hook (prog-mode . display-line-numbers-mode)
+  :hook (prog-mode LaTeX-mode)
   :config
   ;; This makes the line number column adjust its width automatically.
   (setq display-line-numbers-width-start t))

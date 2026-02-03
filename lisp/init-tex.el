@@ -80,7 +80,6 @@ Only expands snippets with condition returning symbol `auto'."
   :ensure auctex
   :init (setq prettify-symbols-unprettify-at-point t)
   :hook ((LaTeX-mode . prettify-symbols-mode)
-         (LaTeX-mode . display-line-numbers-mode)
          (LaTeX-mode . my/setup-latex-auto-snippets))
   :bind (:map LaTeX-mode-map
               ("C-S-e" . latex-math-from-calc))
