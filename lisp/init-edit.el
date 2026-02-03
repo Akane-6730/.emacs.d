@@ -178,7 +178,9 @@
   "Format buffer using Eglot if active, otherwise standard cleanup."
   (interactive)
   (if (and (bound-and-true-p eglot--managed-mode)
-           (fboundp 'eglot-format-buffer))
+           (fboundp 'eglot-format-buffer)
+           ;; Ensure server supports formatting to avoid error
+           (eglot-server-capable :documentFormattingProvider))
       (progn
         (message "Formatting with Eglot...")
         (eglot-format-buffer))
