@@ -76,6 +76,9 @@
     (interactive)
     (corfu-quit)
     (forward-line))
+  ;;Quit completion before saving
+  (add-hook 'before-save-hook #'corfu-quit)
+  (advice-add #'persistent-scratch-save :before #'corfu-quit)
   ;; In eshell, disable auto-completion to prevent triggering on every space.
   (add-hook 'eshell-mode-hook (lambda ()
                                 (setq-local corfu-auto nil)
