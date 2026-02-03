@@ -162,12 +162,24 @@
       (let* ((preferred-kana '("LXGW WenKai Mono GB Screen" "PingFang SC"))
              (font (my--first-available-font preferred-kana)))
         (when font
-          (set-fontset-font t 'kana (font-spec :family font))))))
+          (set-fontset-font t 'kana (font-spec :family font))))
+
+      ;; 4. Fix doom-modeline window number symbol size inconsistency
+      ;; Explicitly specify ranges to avoid ambiguity with 'symbol script fallback.
+      (when-let* ((symbol-font (my--first-available-font
+                                '("Apple Symbols" "Symbols Nerd Font Mono" "Symbola" "Symbol" "Segoe UI Symbol"))))
+        ;; Enclosed Alphanumerics ①②③ U+2460-U+24FF
+        (set-fontset-font t '(#x2460 . #x24FF) (font-spec :family symbol-font))
+        ;; Dingbats ❶❷❸ U+2776-U+2793 (subset of U+2700-U+27BF)
+        (set-fontset-font t '(#x2700 . #x27BF) (font-spec :family symbol-font))
+        ;; ;; Miscellaneous Symbols U+2600-U+26FF
+        ;; (set-fontset-font t '(#x2600 . #x26FF) (font-spec :family symbol-font))
+        )))
 
   (when (and window-system (not (daemonp)))
     (my/setup-fonts (selected-frame))))
 
-  ;; On macOS, use thinner font smoothing for a sharper look.
+;; On macOS, use thinner font smoothing for a sharper look.
 (when (eq system-type 'darwin)
   (setq ns-use-thin-smoothing t))
 
