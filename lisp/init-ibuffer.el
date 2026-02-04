@@ -10,30 +10,33 @@
 ;; Replaces the default `list-buffers` command with the superior `ibuffer`.
 (use-package ibuffer
   :ensure nil
-  :bind ("C-x C-b" . ibuffer)
+  :bind ("C-x C-b" . ibuffer))
+
+;; Group ibuffer's list by project
+(use-package ibuffer-project
+  :autoload (ibuffer-project-generate-filter-groups ibuffer-do-sort-by-project-file-relative)
+  :hook (ibuffer . (lambda ()
+                     "Group ibuffer's list by project."
+                     (setq ibuffer-filter-groups (ibuffer-project-generate-filter-groups))
+                       (ibuffer-do-sort-by-project-file-relative)))
+  :init (setq ibuffer-project-use-cache t)
   :config
-  ;; Do not show buffers whose names start with a space. These are typically
-  ;; internal or temporary buffers that we don't need to see.
-  (setq ibuffer-show-empty-filter-groups nil)
-  ;; This is the core configuration that makes ibuffer so powerful.
-  ;; It sets up predefined filters to group buffers by their type.
-  (setq ibuffer-saved-filter-groups
-        (quote (("default"
-                 ("Emacs" (or (mode . lisp-interaction-mode)
-                              (mode . emacs-lisp-mode)))
-                 ("Dired" (mode . dired-mode))
-                 ("Org"   (mode . org-mode))
-                 ("Shell"  (or (mode . shell-mode) (mode . eshell-mode)
-                               (mode . term-mode)))
-                 ("Magit" (name . "^magit:"))))))
-  ;; We add a hook to `ibuffer-mode` to automatically apply our saved filter
-  ;; groups every time we open ibuffer.
-  (add-hook 'ibuffer-mode-hook
-            (lambda ()
-              (ibuffer-switch-to-saved-filter-groups "default"))))
+  (with-no-warnings
+    (defun my-ibuffer-project-group-name (root type)
+      "Return group name for project ROOT and TYPE."
+      (if (and (stringp type) (> (length type) 0))
+          (format "%s %s" type root)
+        (format "%s" root)))
+
+    (progn
+      (advice-add #'ibuffer-project-group-name :override #'my-ibuffer-project-group-name)
+      (setq ibuffer-project-root-functions
+            `((ibuffer-project-project-root . ,(nerd-icons-octicon "nf-oct-repo" :face ibuffer-filter-group-name-face))
+              (file-remote-p . ,(nerd-icons-codicon "nf-cod-radio_tower" :face ibuffer-filter-group-name-face)))))))
+
 
 (use-package nerd-icons-ibuffer
-  :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
+  :hook ibuffer-mode)
 
 (provide 'init-ibuffer)
 ;;; init-ibuffer.el ends here
