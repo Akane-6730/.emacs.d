@@ -10,9 +10,9 @@
 ;;; Keybinding Hints
 ;;;----------------------------------------------------------------------------
 
-;; (use-package which-key
-;;   :ensure nil
-;;   :hook (after-init . which-key-mode))
+(use-package which-key
+  :ensure nil
+  :hook after-init)
 
 ;;;----------------------------------------------------------------------------
 ;;; Search Tool Enhancement
