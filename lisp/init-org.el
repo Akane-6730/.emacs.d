@@ -665,6 +665,17 @@ Assume point is at first MARK."
   (advice-add #'org-element--parse-generic-emphasis :override #'eli/org-element--parse-generic-emphasis))
 
 
+;; Presentation
+(use-package dslide
+  :after org
+  :diminish
+  :bind (:map org-mode-map
+              ("s-<f7>" . dslide-deck-start))
+  :custom
+  (dslide-breadcrumb-face '(:inherit (variable-pitch) :height 1.0 :weight bold))
+  (dslide-breadcrumb-separator (propertize " > " 'face 'fixed-pitch)))
+
+
 (provide 'init-org)
 
 ;;; init-org.el ends here
