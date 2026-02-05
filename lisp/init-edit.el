@@ -13,7 +13,7 @@
 ;; Automatically pair parentheses
 (use-package elec-pair
   :ensure nil
-  :hook (after-init . electric-pair-mode)
+  :hook ((prog-mode text-mode conf-mode) . electric-pair-local-mode)
   :config
   ;; Disable auto-pairing if the cursor is right before a non-whitespace character
   (setq electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit))
@@ -65,26 +65,21 @@
   :config
   (defun my/mwim-excluded-p ()
     (or (minibufferp)
-        (derived-mode-p 'comint-mode
-                        'term-mode
-                        'vterm-mode
-                        'eshell-mode)))
+        (derived-mode-p 'comint-mode 'term-mode 'vterm-mode 'eshell-mode)))
+
   (defun my/mwim-beginning ()
     (interactive)
-    (if (my/mwim-excluded-p)
-        (move-beginning-of-line 1)
-      (mwim-beginning)))
+    (if (my/mwim-excluded-p) (move-beginning-of-line 1) (mwim-beginning)))
+
   (defun my/mwim-end ()
     (interactive)
-    (if (my/mwim-excluded-p)
-        (move-end-of-line 1)
-      (mwim-end)))
+    (if (my/mwim-excluded-p) (move-end-of-line 1) (mwim-end)))
   :bind (([remap move-beginning-of-line] . my/mwim-beginning)
          ([remap move-end-of-line]       . my/mwim-end)))
 
 ;; Delete all whitespace up to the next non-whitespace character
 (use-package hungry-delete
-  :hook (after-init . global-hungry-delete-mode)
+  :hook ((prog-mode text-mode conf-mode) . hungry-delete-mode)
   :init (setq hungry-delete-chars-to-skip " \t\f\v"
               hungry-delete-except-modes
               '(help-mode minibuffer-mode minibuffer-inactive-mode calc-mode)))
@@ -93,7 +88,7 @@
 (use-package drag-stuff
   :diminish
   :autoload drag-stuff-define-keys
-  :hook (after-init . drag-stuff-global-mode)
+  :hook ((prog-mode text-mode conf-mode) . drag-stuff-mode)
   :config
   (add-to-list 'drag-stuff-except-modes 'org-mode)
   (drag-stuff-define-keys))
@@ -143,11 +138,19 @@
          ("M-g l" . avy-goto-line)
          ("M-g w" . avy-goto-word-1)
          ("M-g e" . avy-goto-word-0))
-  :hook (after-init . avy-setup-default)
   :config (setq avy-all-windows nil
                 avy-all-windows-alt t
                 avy-background t
                 avy-style 'pre))
+
+;; Goto last change
+(use-package goto-chg
+  :bind ("C-," . goto-last-change)
+  :config
+  (defun my-recenter-after-goto-last-change (&rest _)
+    "Recenter the screen after going to the last change."
+    (recenter))
+  (advice-add 'goto-last-change :after #'my-recenter-after-goto-last-change))
 
 ;; Multiple Cursors
 
