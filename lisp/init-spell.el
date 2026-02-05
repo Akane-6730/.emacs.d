@@ -44,8 +44,28 @@ correction keys, without affecting programming modes."
   :if (executable-find "aspell")
   :hook ((prog-mode . flyspell-prog-mode)
          ;; This hook runs in ALL flyspell modes and removes all conflicting keys.
-         (flyspell-mode . my-spell--unbind-all-conflicting-keys))
+         (flyspell-mode . my-spell--unbind-all-conflicting-keys)
+         (org-mode . org-skip-region-alist)
+         (markdown-mode . markdown-skip-region-alist))
   :config
+  ;; Don't spellcheck org blocks
+  (defun org-skip-region-alist ()
+    (make-local-variable 'ispell-skip-region-alist)
+    (dolist (pair '((org-property-drawer-re)
+                    ("~" "~") ("=" "=")
+                    ("^#\\+BEGIN_SRC" "^#\\+END_SRC")
+                    ("\\\\(" "\\\\)") ("\\[" "\\]")
+                    ("^\\\\begin{[^}]+}" "^\\\\end{[^}]+}")))
+      (add-to-list 'ispell-skip-region-alist pair)))
+
+  (defun markdown-skip-region-alist ()
+    (make-local-variable 'ispell-skip-region-alist)
+    (dolist (pair '(("`" "`")
+                    ("^```" "^```")
+                    ("{{" "}}")
+                    ("\\\\(" "\\\\)") ("\\[" "\\]")
+                    ("^\\\\begin{[^}]+}" "^\\\\end{[^}]+}")))
+      (add-to-list 'ispell-skip-region-alist pair)))
   ;; Use `aspell` as the backend and provide args for better suggestions.
   (setq ispell-program-name "aspell"
         ispell-extra-args '("--sug-mode=ultra" "--lang=en_US" "--run-together")
