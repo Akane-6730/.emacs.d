@@ -25,7 +25,7 @@
         (with-temp-buffer
           (insert "\n")
           (dolist (path args)
-            (Let ((spec (create-image
+            (let ((spec (create-image
                          (expand-file-name path)
                          (image-type-from-file-name path)
                          nil :max-width 350
@@ -38,10 +38,25 @@
       (apply orig-fun args)))
 
   (advice-add #'eshell/cat :around #'adviced:eshell/cat)
-  :hook (eshell-mode . completion-preview-mode))
+
+  (defun my-eshell-setup ()
+    "Configure eshell: Ghost text on, Corfu off."
+    ;; Enable Ghost Text (Completion Preview)
+    (setq-local completion-preview-minimum-symbol-length 1)
+    (completion-preview-mode 1)
+    ;; Disable Corfu Popup Menu
+    (corfu-mode -1))
+
+  :hook (eshell-mode . my-eshell-setup))
 
 (use-package vterm
   :config (setq vterm-disable-bold t))
+
+;; Bind C-e to accept completion-preview (ghost text) when active
+(use-package completion-preview
+  :ensure nil
+  :bind (:map completion-preview-active-mode-map
+              ("C-e" . completion-preview-insert)))
 
 (provide 'init-shell)
 ;;; init-shell.el ends here
