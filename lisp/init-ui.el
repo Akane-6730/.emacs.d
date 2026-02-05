@@ -203,6 +203,7 @@
   :config
   (setq doom-themes-enable-bold t)
   (setq doom-themes-enable-italic t)
+  (setq custom-theme-directory (expand-file-name "lisp/themes" user-emacs-directory))
   ;; Enable flashing mode-line on errors to avoid getting the yellow warning triangle on MacOS.
   (doom-themes-visual-bell-config)
   ;; Load the theme AFTER ensuring the package is loaded

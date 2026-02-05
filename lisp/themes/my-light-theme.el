@@ -141,7 +141,6 @@ Can be an integer to determine the exact padding."
    ((gnus-group-news-low          &override) :inherit nil :foreground base5 :weight 'normal)
    ((gnus-group-news-low-empty    &override) :inherit nil :foreground base5 :weight 'normal)
    ((font-lock-comment-face &override)
-    :slant 'italic
     :foreground base5
     :background (if my-light-brighter-comments
                     (doom-blend teal base0 0.07)

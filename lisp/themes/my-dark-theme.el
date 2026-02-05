@@ -187,18 +187,6 @@ Can be an integer to determine the exact padding."
    (term-color-yellow                           :foreground yellow)
    ;; Rime
    (rime-highlight-candidate-face               :foreground green)
-   ;; Tab bar
-   (tab-bar                                     :background bg)
-   (tab-bar-tab
-    :background bg
-    :foreground fg
-    :box nil
-    :underline `(:color ,blue :position -2))
-   (tab-bar-tab-inactive
-    :background bg
-    :foreground base6
-    :box nil
-    :underline nil)
 
    ;; Tab line
    (tab-line                                    :background base2)
@@ -217,6 +205,9 @@ Can be an integer to determine the exact padding."
     :foreground fg-alt
     :box nil
     :underline nil)
+   ;; (centaur-tabs-unselected-modified
+   ;;  :background base2
+   ;;  :foreground fg-alt)
    ;; Magit
    (magit-header-line
     :background base3
@@ -278,6 +269,12 @@ Can be an integer to determine the exact padding."
    (eglot-semantic-operator :foreground magenta)
    (eglot-semantic-property :foreground fg)
    (eglot-semantic-namespace :foreground fg)
+   ;; MacOS
+   (eglot-semantic-parameter-face :foreground orange)
+   (eglot-semantic-macro-face :foreground blue)
+   (eglot-semantic-operator-face :foreground magenta)
+   (eglot-semantic-property-face :foreground fg)
+   (eglot-semantic-namespace-face :foreground fg)
    )
   ;;;; Base theme variable overrides
   ;; ()
