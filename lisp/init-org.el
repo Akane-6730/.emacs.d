@@ -568,32 +568,29 @@ Otherwise, export as standard LaTeX PDF."
     "Apply emphasis faces to nested markers between BEG and END.
 OUTER-MARKER is the marker of the outer emphasis, to avoid matching it again.
 Supports one level of nesting for emphasis within emphasis."
-    (save-excursion
-      (save-match-data
-        (goto-char beg)
-        ;; 匹配: 开始标记 + 内容 + 相同结束标记
-        (while (re-search-forward "\\([~=*/_+]\\)\\([^~=*/_+]+\\)\\1" end t)
-          (let* ((inner-marker (match-string 1))
-                 (face-entry (assoc inner-marker org-emphasis-alist))
-                 (face (when face-entry (cadr face-entry)))
-                 (content-beg (match-beginning 2))
-                 (content-end (match-end 2))
-                 (open-marker-beg (match-beginning 1))
-                 (open-marker-end (match-end 1))
-                 (close-marker-beg (match-beginning 0))
-                 (close-marker-end (match-end 0)))
-            ;; 只处理与外层不同的标记，避免重复
-            (when (and face (not (string= inner-marker outer-marker)))
-              ;; 应用 face 到内容
-              (font-lock-prepend-text-property content-beg content-end 'face face)
-              ;; 隐藏内层标记（如果启用了隐藏）
-              (when org-hide-emphasis-markers
-                (add-text-properties open-marker-beg open-marker-end '(invisible t))
-                (add-text-properties (match-beginning 0)
-                                     (+ (match-beginning 0) (- (match-end 0) (match-end 2)))
-                                     '(invisible t))
-                ;; 闭合标记
-                (add-text-properties content-end (match-end 0) '(invisible t)))))))))
+    ;; 边界检查：确保 beg 和 end 有效且 beg < end
+    (when (and beg end (< beg end))
+      (save-excursion
+        (save-match-data
+          (goto-char beg)
+          ;; 匹配: 开始标记 + 内容 + 相同结束标记
+          (while (re-search-forward "\\([~=*/_+]\\)\\([^~=*/_+]+\\)\\1" end t)
+            (let* ((inner-marker (match-string 1))
+                   (face-entry (assoc inner-marker org-emphasis-alist))
+                   (face (when face-entry (cadr face-entry)))
+                   (content-beg (match-beginning 2))
+                   (content-end (match-end 2))
+                   (open-marker-beg (match-beginning 1))
+                   (open-marker-end (match-end 1)))
+              ;; 只处理与外层不同的标记，避免重复
+              (when (and face (not (string= inner-marker outer-marker)))
+                ;; 应用 face 到内容
+                (font-lock-prepend-text-property content-beg content-end 'face face)
+                ;; 隐藏内层标记（如果启用了隐藏）
+                (when org-hide-emphasis-markers
+                  (add-text-properties open-marker-beg open-marker-end '(invisible t))
+                  ;; 闭合标记
+                  (add-text-properties content-end (match-end 0) '(invisible t))))))))))
 
   (defun org-do-emphasis-faces (limit)
     "Run through the buffer and emphasize strings."
