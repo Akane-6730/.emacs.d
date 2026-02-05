@@ -21,6 +21,8 @@
 ;; Add our `lisp' directory to the `load-path'. This must be done first,
 ;; so Emacs knows where to find our custom modules.
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "lisp/lang" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "lisp/writing" user-emacs-directory))
 
 ;; A clever optimization for startup performance.
 ;; `file-name-handler-alist' can be slow as it's consulted for every file
