@@ -32,12 +32,13 @@
          (org-mode . org-indent-mode))
   :config
   (setq org-directory "~/Documents/org/")
-  (setq org-export-with-smart-quotes t) ;; Global smart quotes for all exports
+  (setq org-export-with-smart-quotes t) ; Global smart quotes for all exports
   (setq org-hide-emphasis-markers t)
   (setq org-highlight-latex-and-related '(native latex))
   (setq org-ellipsis " ") ; ⤵ ▾ ▼ ↴
   (setq org-pretty-entities t)
   (setq org-pretty-entities-include-sub-superscripts nil)
+  (setq org-imenu-depth 4)
   ;; Prettify checkbox symbols using display property
   (font-lock-add-keywords
    'org-mode
@@ -546,15 +547,15 @@ Otherwise, export as standard LaTeX PDF."
 ;;----------------------------------------------------------------------------
 
 (with-eval-after-load 'org
-  ;; [https://emacs-china.org/t/org-mode/22313/5]
+  ;; [https://emacs-china.org/t/org-mode/597/5]
   ;; 修正 org-mode 内渲染中文标记时，中文词左右无需空格
   (setq org-emphasis-regexp-components
-        '("-[:space:]('\"{[:nonascii:][:alpha:]"
-          "-[:space:].,:!?;'\")}\\[[:nonascii:][:alpha:]"
-          "[:space:]"
-          "."
-          1))
-  ;; Re-calculate Org emphasis regexps to apply the changes above
+      (list (concat " \t('\"{"            "[:nonascii:]")
+            (concat "- \t.,:!?;'\")}\\["  "[:nonascii:]")
+            " \t\r\n,\"'"
+            "."
+            1))
+  ;; ;; Re-calculate Org emphasis regexps to apply the changes above
   (when (fboundp 'org-set-emph-re)
     (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components))
 
@@ -568,52 +569,54 @@ Otherwise, export as standard LaTeX PDF."
         (while (re-search-forward quick-re limit t)
           (let* ((marker (match-string 2))
                  (verbatim? (member marker '("~" "="))))
-            (when (save-excursion
-                    (goto-char (match-beginning 0))
-                    (and
-                     ;; Do not match table hlines.
-                     (not (and (equal marker "+")
-                               (org-match-line
-                                "[ \t]*\\(|[-+]+|?\\|\\+[-+]+\\+\\)[ \t]*$")))
-                     ;; Do not match headline stars.  Do not consider
-                     ;; stars of a headline as closing marker for bold
-                     ;; markup either.
-                     (not (and (equal marker "*")
-                               (save-excursion
-                                 (forward-char)
-                                 (skip-chars-backward "*")
-                                 (looking-at-p org-outline-regexp-bol))))
-                     ;; Do not treat subscript as underline (require non-alphanum before _)
-                     (not (and (equal marker "_")
-                               (let ((pre-char (char-before (match-beginning 2))))
-                                 (and pre-char
-                                      (string-match-p "[a-zA-Z0-9]" (char-to-string pre-char))))))
-                     ;; Match full emphasis markup regexp.
-                     (looking-at (if verbatim? org-verbatim-re org-emph-re))
-                     ;; Do not span over paragraph boundaries.
-                     (not (string-match-p org-element-paragraph-separate
-                                          (match-string 2)))
-                     ;; Do not span over cells in table rows.
-                     (not (and (save-match-data (org-match-line "[ \t]*|"))
-                               (string-match-p "|" (match-string 4))))))
-              (pcase-let ((`(,_ ,face ,_) (assoc marker org-emphasis-alist))
-                          (m (if org-hide-emphasis-markers 4 2)))
-                (font-lock-prepend-text-property
-                 (match-beginning m) (match-end m) 'face face)
-                (when verbatim?
-                  (org-remove-flyspell-overlays-in
-                   (match-beginning 0) (match-end 0))
-                  (remove-text-properties (match-beginning 2) (match-end 2)
-                                          '(display t invisible t intangible t)))
-                (add-text-properties (match-beginning 2) (match-end 2)
-                                     '(font-lock-multiline t org-emphasis t))
-                (when (and org-hide-emphasis-markers
-                           (not (org-at-comment-p)))
-                  (add-text-properties (match-end 4) (match-beginning 5)
-                                       '(invisible t))
-                  (add-text-properties (match-beginning 3) (match-end 3)
-                                       '(invisible t)))
-                (throw :exit t))))))))
+            (if (save-excursion
+                  (goto-char (match-beginning 0))
+                  (and
+                   ;; Do not match table hlines.
+                   (not (and (equal marker "+")
+                             (org-match-line
+                              "[ \t]*\\(|[-+]+|?\\|\\+[-+]+\\+\\)[ \t]*$")))
+                   ;; Do not match headline stars.  Do not consider
+                   ;; stars of a headline as closing marker for bold
+                   ;; markup either.
+                   (not (and (equal marker "*")
+                             (save-excursion
+                               (forward-char)
+                               (skip-chars-backward "*")
+                               (looking-at-p org-outline-regexp-bol))))
+                   ;; Do not treat subscript as underline (require non-alphanum before _)
+                   (not (and (equal marker "_")
+                             (let ((pre-char (char-before (match-beginning 2))))
+                               (and pre-char
+                                    (string-match-p "[a-zA-Z0-9]" (char-to-string pre-char))))))
+                   ;; Match full emphasis markup regexp.
+                   (looking-at (if verbatim? org-verbatim-re org-emph-re))
+                   ;; Do not span over paragraph boundaries.
+                   (not (string-match-p org-element-paragraph-separate
+                                        (match-string 2)))
+                   ;; Do not span over cells in table rows.
+                   (not (and (save-match-data (org-match-line "[ \t]*|"))
+                             (string-match-p "|" (match-string 4))))))
+                (pcase-let ((`(,_ ,face ,_) (assoc marker org-emphasis-alist))
+                            (m (if org-hide-emphasis-markers 4 2)))
+                  (font-lock-prepend-text-property
+                   (match-beginning m) (match-end m) 'face face)
+                  (when verbatim?
+                    (org-remove-flyspell-overlays-in
+                     (match-beginning 0) (match-end 0))
+                    (remove-text-properties (match-beginning 2) (match-end 2)
+                                            '(display t invisible t intangible t)))
+                  (add-text-properties (match-beginning 2) (match-end 2)
+                                       '(font-lock-multiline t org-emphasis t))
+                  (when (and org-hide-emphasis-markers
+                             (not (org-at-comment-p)))
+                    (add-text-properties (match-end 4) (match-beginning 5)
+                                         '(invisible t))
+                    (add-text-properties (match-beginning 3) (match-end 3)
+                                         '(invisible t)))
+                  (throw :exit t))
+              ;; Validation failed, backtrack to search from just after the opening marker
+              (goto-char (1+ (match-beginning 2)))))))))
 
   ;; [https://emacs-china.org/t/org-emphasis-regexp-components-org/25600]
   ;; 使 org-mode 导出 Latex 时中文标记能够正确导出
