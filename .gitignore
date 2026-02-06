@@ -73,7 +73,8 @@ rime/
 rust-playground/
 server/
 session*
-site-lisp/
+site-lisp/*
+!site-lisp/org-mode/
 templates/
 thumbs/
 tmp*

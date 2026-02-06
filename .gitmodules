@@ -1,3 +1,8 @@
 [submodule "snippets"]
 	path = snippets
 	url = git@github.com:Akane-6730/yasnippets.git
+[submodule "site-lisp/org-mode"]
+	path = site-lisp/org-mode
+	url = https://git.tecosaur.net/tec/org-mode.git
+	branch = dev
+	shallow = true

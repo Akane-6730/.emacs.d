@@ -17,17 +17,14 @@
 ;; Custom Org setup directory
 (defvar org-setup-dir (expand-file-name "org/setup/" user-emacs-directory))
 
-(unless (package-installed-p 'org-mode)
-  (package-vc-install
-   '(org-mode :url "https://git.tecosaur.net/tec/org-mode.git"
-              :branch "dev")))
-
 ;;----------------------------------------------------------------------------
 ;; 1. Core Org Mode Configuration
 ;;----------------------------------------------------------------------------
 (use-package org
   :init (setq org-modules-loaded t)
-  :load-path "~/.emacs.d/elpa/org-mode/lisp/"
+  ;; Org-mode is managed as a git submodule in site-lisp/org-mode for async LaTeX preview
+  ;; To update: cd ~/.emacs.d/site-lisp/org-mode && git fetch origin dev && git checkout FETCH_HEAD && make
+  :load-path "~/.emacs.d/site-lisp/org-mode/lisp/"
   :hook ((org-mode . my-org-mode-setup-emphasis-keys)
          (org-mode . org-indent-mode))
   :config
@@ -550,11 +547,11 @@ Otherwise, export as standard LaTeX PDF."
   ;; [https://emacs-china.org/t/org-mode/597/5]
   ;; 修正 org-mode 内渲染中文标记时，中文词左右无需空格
   (setq org-emphasis-regexp-components
-      (list (concat " \t('\"{"            "[:nonascii:]")
-            (concat "- \t.,:!?;'\")}\\["  "[:nonascii:]")
-            " \t\r\n,\"'"
-            "."
-            1))
+        (list (concat " \t('\"{"            "[:nonascii:]")
+              (concat "- \t.,:!?;'\")}\\["  "[:nonascii:]")
+              " \t\r\n,\"'"
+              "."
+              1))
   ;; ;; Re-calculate Org emphasis regexps to apply the changes above
   (when (fboundp 'org-set-emph-re)
     (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components))
