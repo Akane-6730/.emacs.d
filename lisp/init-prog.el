@@ -14,11 +14,16 @@
 ;; Automatically install Tree-sitter grammars
 
 (use-package treesit-auto
-  :hook (after-init . global-treesit-auto-mode)
+  :hook prog-mode
   :config
   ;; When a new grammar is needed, always ask for confirmation before installing.
   (setq treesit-auto-install 'prompt)
-  (setq treesit-font-lock-level 4))
+  (setq treesit-font-lock-level 4)
+  ;; Disable markdown treesit-auto prompts
+  (setq treesit-auto-recipe-list
+        (cl-remove-if (lambda (recipe)
+                        (member (treesit-auto-recipe-lang recipe) '(markdown markdown-inline)))
+                      treesit-auto-recipe-list)))
 
 
 ;;----------------------------------------------------------------------------
@@ -30,7 +35,7 @@
 (use-package eldoc
   :ensure nil
   :diminish
-  :hook (prog-mode . eldoc-mode))
+  :hook prog-mode)
 
 (use-package eldoc-mouse
   :diminish
@@ -55,15 +60,12 @@
 
 
 ;; Go to definition and finding references
-
 (use-package xref
   :ensure nil
   :bind (("M-g ." . xref-find-definitions)
          ("M-g ," . xref-go-back))
   :init
-  ;; Use ripgrep for faster text-based searches within xref.
-  (when (executable-find "rg")
-    (setq xref-search-program 'ripgrep)))
+  (setq xref-search-program 'ripgrep))
 
 ;;----------------------------------------------------------------------------
 ;; Quick Code Execution
@@ -150,9 +152,7 @@
 
 (use-package editorconfig
   :diminish
-  :hook ((prog-mode . editorconfig-mode)
-         (conf-mode . editorconfig-mode)
-         (text-mode . editorconfig-mode)))
+  :hook ((prog-mode text-mode conf-mode) . editorconfig-mode))
 
 (use-package yaml-ts-mode)
 
