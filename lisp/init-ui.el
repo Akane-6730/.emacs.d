@@ -4,7 +4,7 @@
 ;;; Commentary:
 ;;
 ;; This file configures the visual aspects of Emacs, including the theme,
-;; fonts, modeline, line numbers, and icons.
+;; fonts, modeline, icons, layout, and various UI tweaks.
 ;;
 
 ;;; Code:
@@ -221,12 +221,9 @@
     (my/apply-theme (selected-frame))))
 
 
-;;;----------------------------------------------------------------------------
-;;; Robust Theme Loading
-;;;----------------------------------------------------------------------------
-;; This ensures that whenever a new theme is loaded, all previously enabled
-;; themes are completely disabled first. This prevents visual artifacts and
-;; "style residue" from the old theme.
+;;; --- Robust Theme Loading ---
+;; Ensure that whenever a new theme is loaded, all previously enabled
+;; themes are completely disabled first.
 
 (defun my-theme-load-wrapper (original-fn theme &rest args)
   "A wrapper for `load-theme' that disables old themes first."
@@ -252,6 +249,28 @@
 (global-set-key (kbd "<f7>") #'my-toggle-theme)
 
 
+;; --- Automatically sets the titlebar color on macOS to match the theme ---
+(when (and (eq system-type 'darwin) (display-graphic-p))
+  (defun my/ns-set-frame-titlebar (frame &rest _)
+    "Set transparent titlebar for FRAME to match theme's background mode."
+    (when (display-graphic-p frame)
+      (let ((mode (frame-parameter frame 'background-mode)))
+        (modify-frame-parameters
+         frame
+         `((ns-transparent-titlebar . t)
+           (ns-appearance . ,mode))))))
+
+  (defun my/ns-set-all-titlebars (&rest _)
+    "Apply titlebar settings to all existing frames."
+    (mapc #'my/ns-set-frame-titlebar (frame-list)))
+
+  (add-hook 'after-init-hook #'my/ns-set-all-titlebars)
+  (add-hook 'after-make-frame-functions #'my/ns-set-frame-titlebar)
+  (advice-add 'frame-set-background-mode :after #'my/ns-set-frame-titlebar)
+
+  (my/ns-set-frame-titlebar (selected-frame)))
+
+
 ;;----------------------------------------------------------------------------
 ;; Icons
 ;;----------------------------------------------------------------------------
@@ -260,8 +279,6 @@
   :commands nerd-icons-install-fonts
   :functions font-available-p
   :config
-  ;; Install nerd fonts automatically only in GUI
-  ;; For macOS, may install via "brew install font-symbols-only-nerd-font"
   (when (and (display-graphic-p)
              (not (font-available-p nerd-icons-font-family)))
     (nerd-icons-install-fonts t)))
@@ -297,7 +314,7 @@
 ;;----------------------------------------------------------------------------
 
 (use-package spacious-padding
-  :hook (after-init . spacious-padding-mode)
+  :hook (on-init-ui . spacious-padding-mode)
   :config
   (setq spacious-padding-widths
         '( :internal-border-width 10   ; Gap between the frame border and the windows
@@ -309,134 +326,36 @@
            :scroll-bar-width 0         ; Width reserved for scrollbars
            :fringe-width 8)))          ; Width of the lateral fringes (git gutters, etc.)
 
-;;----------------------------------------------------------------------------
-;; Misc
-;;----------------------------------------------------------------------------
-
-;;----------------------------------------------------------------------------
-;; Visual & UX
-;;----------------------------------------------------------------------------
-
-(use-package simple
-  :ensure nil
-  :hook ((after-init . size-indication-mode)
-         (text-mode . visual-line-mode))
+;; --- Centered Text Layout ---
+(use-package olivetti
+  :commands (olivetti-mode)
+  :hook ((org-mode markdown-mode Info-mode message-mode) . olivetti-mode)
   :config
-  (setq column-number-mode t
-        line-number-mode t
-        line-move-visual nil
-        track-eol t                     ; Keep cursor at end of lines. Require line-move-visual is nil.
-        set-mark-command-repeat-pop t)  ; Repeating C-SPC after popping mark pops it again
-  (when (not (display-graphic-p))
-    (xterm-mouse-mode 1))
-  ;; Prettify the process list
-  (with-no-warnings
-    (defun my-list-processes--prettify ()
-      "Prettify process list."
-      (when-let* ((entries tabulated-list-entries))
-        (setq tabulated-list-entries nil)
-        (dolist (p (process-list))
-          (when-let* ((val (cadr (assoc p entries)))
-                      (name (aref val 0))
-                      (pid (aref val 1))
-                      (status (aref val 2))
-                      (status (list status
-                                    'face
-                                    (if (memq status '(stop exit closed failed))
-                                        'error
-                                      'success)))
-                      (buf-label (aref val 3))
-                      (tty (list (aref val 4) 'face 'font-lock-doc-face))
-                      (thread (list (aref val 5) 'face 'font-lock-doc-face))
-                      (cmd (list (aref val 6) 'face 'completions-annotations)))
-            (push (list p (vector name pid status buf-label tty thread cmd))
-                  tabulated-list-entries)))))
-    (advice-add #'list-processes--refresh :after #'my-list-processes--prettify)))
+  (add-to-list 'window-persistent-parameters
+               '(spilt-window . t))
+  (advice-add 'window-toggle-side-windows
+              :before
+              'olivetti-reset-all-windows)
+  (advice-add 'olivetti-reset-window
+              :after
+              (lambda (window)
+                (set-window-parameter
+                 window
+                 'min-margins
+                 (cons 0 0)))))
 
-;; Display line numbers in prog-mode
-(use-package display-line-numbers
-  :ensure nil
-  :hook (prog-mode LaTeX-mode)
-  :config
-  ;; This makes the line number column adjust its width automatically.
-  (setq display-line-numbers-width-start t))
-
-(setq-default cursor-in-non-selected-windows nil)
-
-(add-hook 'window-setup-hook #'window-divider-mode)
-
-;; Automatically sets the titlebar color on macOS to match the theme
-(when (and (eq system-type 'darwin) (display-graphic-p))
-  (defun my/ns-set-frame-titlebar (frame &rest _)
-    "Set transparent titlebar for FRAME to match theme's background mode."
-    (when (display-graphic-p frame)
-      (let ((mode (frame-parameter frame 'background-mode)))
-        (modify-frame-parameters
-         frame
-         `((ns-transparent-titlebar . t)
-           (ns-appearance . ,mode))))))
-
-  (defun my/ns-set-all-titlebars (&rest _)
-    "Apply titlebar settings to all existing frames."
-    (mapc #'my/ns-set-frame-titlebar (frame-list)))
-
-  (add-hook 'after-init-hook #'my/ns-set-all-titlebars)
-  (add-hook 'after-make-frame-functions #'my/ns-set-frame-titlebar)
-  (advice-add 'frame-set-background-mode :after #'my/ns-set-frame-titlebar)
-
-  (my/ns-set-frame-titlebar (selected-frame)))
-
-;; set transparency
-;; (set-frame-parameter nil 'alpha 99)
-
-
-;; --- Scrolling Behavior ---
-
-(setq mouse-wheel-scroll-amount '(1 ((shift) . hscroll))
-      mouse-wheel-progressive-speed nil
-      scroll-conservatively 101
-      fast-but-imprecise-scrolling t
-      redisplay-skip-fontification-on-input t)
-
-(use-package pixel-scroll
-  :ensure nil
-  :bind (("C-v" . pixel-scroll-interpolate-down)
-         ("M-v" . pixel-scroll-interpolate-up))
-  :custom
-  (pixel-scroll-precision-interpolate-page t)
-  :init
-  (pixel-scroll-precision-mode 1))
-
-(use-package ultra-scroll
-  :bind (:map pixel-scroll-precision-mode-map
-              ("<wheel-up>" . ultra-scroll)
-              ("<wheel-down>" . ultra-scroll))
-  :config
-  (ultra-scroll-mode 1))
-
-
-;; --- GUI Behavior & Clean Startup ---
-;; Prevent Emacs from using native OS dialogs for files and prompts.
-(setq use-file-dialog nil
-      use-dialog-box nil
-      ;; Disable the splash screen and customize startup messages for a minimal launch.
-      inhibit-startup-screen t
-      inhibit-startup-echo-area-message user-login-name
-      inhibit-default-init t
-      initial-scratch-message nil)
 
 ;; --- Window Divider Appearance ---
 ;; Enable and configure visual dividers between split windows.
 (setq window-divider-default-places t
       window-divider-default-bottom-width 1 ; Solve the problem of the modeline being too wide
       window-divider-default-right-width 1)
+(add-hook 'window-setup-hook #'window-divider-mode)
 
-;; Display ugly ^L page breaks as tidy horizontal lines
-(use-package page-break-lines
-  :diminish
-  :hook (after-init . global-page-break-lines-mode)
-  :config (dolist (mode '(dashboard-mode emacs-news-mode))
-            (add-to-list 'page-break-lines-modes mode)))
+
+;; ----------------------------------------------------------------------------
+;; Posframe-based UI Elements
+;; ----------------------------------------------------------------------------
 
 (use-package posframe
   :hook (after-load-theme . posframe-delete-all)
@@ -473,13 +392,61 @@
 (use-package transient-posframe
   :diminish
   :defines posframe-border-width
-  :custom-face
-  (transient-posframe-border ((t (:inherit posframe-border :background unspecified))))
-  :hook after-init
+  :hook (on-first-input . transient-posframe-mode)
   :init (setq transient-mode-line-format nil
               transient-posframe-border-width posframe-border-width
               transient-posframe-parameters '((left-fringe . 8)
                                               (right-fringe . 8))))
+
+(use-package which-key-posframe
+  :diminish
+  :defines posframe-border-width
+  :hook which-key-mode
+  :config
+  (setq which-key-posframe-border-width posframe-border-width
+        which-key-posframe-parameters '((left-fringe . 8)
+                                        (right-fringe . 8))))
+
+;; ----------------------------------------------------------------------------
+;; Misc UI Tweaks
+;; ----------------------------------------------------------------------------
+
+;; Display ugly ^L page breaks as tidy horizontal lines
+(use-package page-break-lines
+  :diminish
+  :hook (on-first-input . global-page-break-lines-mode)
+  :config (dolist (mode '(dashboard-mode emacs-news-mode))
+            (add-to-list 'page-break-lines-modes mode)))
+
+(use-package simple
+  :ensure nil
+  :config
+  ;; Prettify the process list
+  (with-no-warnings
+    (defun my-list-processes--prettify ()
+      "Prettify process list."
+      (when-let* ((entries tabulated-list-entries))
+        (setq tabulated-list-entries nil)
+        (dolist (p (process-list))
+          (when-let* ((val (cadr (assoc p entries)))
+                      (name (aref val 0))
+                      (pid (aref val 1))
+                      (status (aref val 2))
+                      (status (list status
+                                    'face
+                                    (if (memq status '(stop exit closed failed))
+                                        'error
+                                      'success)))
+                      (buf-label (aref val 3))
+                      (tty (list (aref val 4) 'face 'font-lock-doc-face))
+                      (thread (list (aref val 5) 'face 'font-lock-doc-face))
+                      (cmd (list (aref val 6) 'face 'completions-annotations)))
+            (push (list p (vector name pid status buf-label tty thread cmd))
+                  tabulated-list-entries)))))
+    (advice-add #'list-processes--refresh :after #'my-list-processes--prettify)))
+
+;; set transparency
+;; (set-frame-parameter nil 'alpha 99)
 
 (provide 'init-ui)
 ;;; init-ui.el ends here

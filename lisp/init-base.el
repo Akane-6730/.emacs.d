@@ -2,9 +2,12 @@
 
 ;;; Commentary:
 ;;
-;; This file establishes the fundamental behavior of the editor. It includes
-;; personal information, system-specific tweaks (macOS/Linux), encoding,
-;; file history, and other essential defaults.
+;; This file configures the foundational editor experience for Emacs.
+;; It includes:
+;; - Personal information
+;; - Environment setup (PATH, Proxy)
+;; - Better Defaults
+;; - Scrolling optimizations (pixel-scroll, ultra-scroll)
 ;;
 ;;; Code:
 
@@ -12,28 +15,12 @@
 ;; Personal Information
 ;;----------------------------------------------------------------------------
 
-;; Set your personal details. These are used in file headers, email, etc.
 (setq user-full-name    "Akane"
       user-mail-address "710105188@qq.com")
 
 ;;----------------------------------------------------------------------------
-;; System & Performance
+;; Environment
 ;;----------------------------------------------------------------------------
-
-;; Use garbage collector magic hack to improve performance.
-(use-package gcmh
-  :ensure t
-  :diminish
-  :hook (emacs-startup . gcmh-mode)
-  :init (setq gcmh-idle-delay 'auto
-              gcmh-auto-idle-delay-factor 10
-              gcmh-high-cons-threshold #x1000000)) ; 16MB
-
-;; macOS Keyboard Configuration
-;; This makes the Command key act as Meta and Option key as Super.
-(when (eq system-type 'darwin)
-  (setq mac-command-modifier 'meta)
-  (setq mac-option-modifier  'super))
 
 ;; Manually load PATH from ~/.path for better performance.
 ;; NOTE: When PATH is changed, run the following command
@@ -46,13 +33,6 @@
         (setenv "PATH" path)
         (setq exec-path (append (parse-colon-path path) (list exec-directory))))
     (error (warn "%s" (error-message-string err)))))
-
-;; Async
-(use-package async
-  :functions (async-bytecomp-package-mode dired-async-mode)
-  :config
-  (async-bytecomp-package-mode 1)
-  (dired-async-mode 1))
 
 ;;----------------------------------------------------------------------------
 ;; Network / Proxy Settings
@@ -73,117 +53,117 @@
         ("https" . ,my-proxy-host)))
 
 ;;----------------------------------------------------------------------------
-;; Encoding
+;; Better Defaults
 ;;----------------------------------------------------------------------------
 
-;; Set UTF-8 as the default encoding everywhere. This is the modern standard
-;; and prevents a wide range of issues with international characters.
+;; Encoding
+(set-charset-priority 'unicode)
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
 (set-keyboard-coding-system 'utf-8-unix)
 (set-terminal-coding-system 'utf-8-unix)
 
-;;----------------------------------------------------------------------------
-;; Core Editor Behavior
-;;----------------------------------------------------------------------------
+;; Startup
+(setq inhibit-startup-screen t
+      inhibit-startup-echo-area-message user-login-name
+      inhibit-default-init t
+      initial-scratch-message nil)
 
-;; Use y/n for prompts instead of the full "yes" or "no". It's faster.
-(fset 'yes-or-no-p 'y-or-n-p)
+;; Prompts & Dialogs
+(setq use-short-answers t
+      use-file-dialog nil                 ; Don't use native file dialog
+      use-dialog-box nil)                 ; Don't use dialog boxes for prompts
 
-(setq-default
- ;; Indentation: Use spaces instead of tabs, with a width of 4 spaces.
- indent-tabs-mode nil
- tab-width 4
- ;; Set the default width for wrapping text.
- fill-column 80
- ;; Default to truncate lines (no wrapping) in most modes (e.g. programming).
- ;; Only wrap in specific text modes (org/markdown) via visual-line-mode.
- truncate-lines t
- ;; Default to text-mode for new, unrecognized files.
- major-mode 'text-mode)
+;; Indentation
+(setq-default indent-tabs-mode nil
+              tab-width 4)
 
-(setq
- make-backup-files nil
- auto-save-default nil
- delete-by-moving-to-trash t
- ;; When multiple buffers have the same name, show parts of the file path
- ;; to distinguish them, e.g., <.../project-a/file.txt> and <.../project-b/file.txt>.
- uniquify-buffer-name-style 'post-forward-angle-brackets
- ;; When you press C-g, show a visual "bell" (flash) instead of making a sound.
- visible-bell t
- ;; Kill the entire line, including the newline character when using `kill-line` (C-k).
- kill-whole-line t
- inhibit-compacting-font-caches t  ; Don’t compact font caches during GC
- adaptive-fill-regexp "[ t]+|[ t]*([0-9]+.|*+)[ t]*"
- adaptive-fill-first-line-regexp "^* *$"
- sentence-end "\\([。！？]\\|……\\|[.?!][]\"')}]*\\($\\|[ \t]\\)\\)[ \t\n]*"
- sentence-end-double-space nil
- word-wrap-by-category t)
+;; Text Wrapping & Fill
+(setq-default fill-column 80
+              truncate-lines t)           ; Truncate long lines instead of wrapping
 
-(remove-hook 'kill-buffer-query-functions #'process-kill-buffer-query-function)
+(setq word-wrap-by-category t             ; Better word wrap for CJK
+      adaptive-fill-regexp "[ t]+|[ t]*([0-9]+.|*+)[ t]*"
+      adaptive-fill-first-line-regexp "^* *$")
 
-;; Large file optimizations
-(setq-default bidi-display-reordering nil)
-(setq bidi-inhibit-bpa t
-      long-line-threshold 1000
-      large-hscroll-threshold 1000
-      syntax-wholeline-max 1000)
+;; Sentence & Paragraph
+(setq sentence-end "\\([。！？]\\|……\\|[.?!][]\"')}]*\\($\\|[ \t]\\)\\)[ \t\n]*"
+      sentence-end-double-space nil)      ; Don't require double space after period
 
-;;----------------------------------------------------------------------------
-;; History & Persistence
-;;----------------------------------------------------------------------------
+;; File & Backup
+(setq make-backup-files nil
+      auto-save-default nil
+      delete-by-moving-to-trash t)
 
-;; `savehist-mode` saves your minibuffer history
-(use-package savehist
-  :defer 0.01
-  :init (setq enable-recursive-minibuffers t ; Allow commands in minibuffers
-              history-length 1000
-              savehist-additional-variables '(mark-ring
-                                              global-mark-ring
-                                              search-ring
-                                              regexp-search-ring
-                                              extended-command-history)
-              savehist-autosave-interval 300)
-  :config (savehist-mode 1))
+;; Buffer Management
+(setq-default major-mode 'text-mode)
+(setq uniquify-buffer-name-style 'post-forward-angle-brackets) ; Distinguish buffers with same filename
+(remove-hook 'kill-buffer-query-functions #'process-kill-buffer-query-function) ; Don't prompt when killing buffer with running process
 
-(use-package saveplace
-  :defer 0.01
-  :config (save-place-mode 1))
+;; Flash screen instead of audible bell
+(setq visible-bell t)
 
-(use-package recentf
-  :defer 0.01
-  :bind (("C-x C-r" . recentf-open-files))
-  :init (setq recentf-max-saved-items 300
-              recentf-exclude
-              '("\\.?cache" ".cask" "url" "COMMIT_EDITMSG\\'" "bookmarks"
-                "\\.\\(?:gz\\|gif\\|svg\\|png\\|jpe?g\\|bmp\\|xpm\\)$"
-                "\\.?ido\\.last$" "\\.revive$" "/G?TAGS$" "/.elfeed/"
-                "^/tmp/" "^/var/folders/.+$" "^/ssh:" "/persp-confs/"
-                (lambda (file) (file-in-directory-p file package-user-dir))))
+;; Line Numbers (Modeline)
+(setq column-number-mode t
+      line-number-mode t)
+
+;; Cursor Display & Movement
+(setq-default cursor-in-non-selected-windows nil)  ; Hide cursor in inactive windows
+
+(setq line-move-visual nil                ; Move by logical lines, not visual lines
+      track-eol t)                        ; Keep cursor at EOL when moving vertically
+
+;; Basic Editing
+(setq kill-whole-line t)                  ; C-k kills entire line including newline
+(setq set-mark-command-repeat-pop t)      ; After C-u C-SPC, repeat C-SPC to keep popping
+
+;; Terminal Compatibility
+(unless (display-graphic-p)
+  (xterm-mouse-mode 1))
+
+;; Line Numbers
+(use-package display-line-numbers
+  :ensure nil
+  :hook (prog-mode LaTeX-mode)
   :config
-  (recentf-mode 1)
-  (push (expand-file-name recentf-save-file) recentf-exclude)
-  (add-to-list 'recentf-filename-handlers #'abbreviate-file-name))
+  (setq display-line-numbers-width-start t))
 
-;;----------------------------------------------------------------------------
-;; Input Method
-;;----------------------------------------------------------------------------
+;; Text Mode Hooks
+(use-package simple
+  :ensure nil
+  :hook ((on-first-file . size-indication-mode)   ; Show buffer size in modeline
+         (text-mode . visual-line-mode)))         ; Soft wrap in text modes
 
-(use-package rime
-  :custom
-  (default-input-method "rime")
-  (rime-show-candidate 'posframe)
-  (rime-disable-predicates
-   '(rime-predicate-after-alphabet-char-p ; Switch to English after alphabet characters
-     rime-predicate-prog-in-code-p        ; Force English in code (except comments/strings)
-     rime-predicate-space-after-cc-p      ; Support mixed English/Chinese (space after Chinese)
-     )))
+;; ---------------------------------------------------------------------------
+;; Scrolling
+;; ---------------------------------------------------------------------------
+
+(setq mouse-wheel-scroll-amount '(1 ((shift) . hscroll))
+      mouse-wheel-progressive-speed nil
+      scroll-conservatively 101
+      fast-but-imprecise-scrolling t
+      redisplay-skip-fontification-on-input t)
+
+(use-package pixel-scroll
+  :ensure nil
+  :hook (on-first-input . pixel-scroll-precision-mode)
+  :bind (("C-v" . pixel-scroll-interpolate-down)
+         ("M-v" . pixel-scroll-interpolate-up))
+  :config
+  (setq pixel-scroll-precision-interpolate-page t))
+
+(use-package ultra-scroll
+  :bind (:map pixel-scroll-precision-mode-map
+              ("<wheel-up>" . ultra-scroll)
+              ("<wheel-down>" . ultra-scroll))
+  :config
+  (ultra-scroll-mode 1))
+
 
 ;;----------------------------------------------------------------------------
 ;; Server
 ;;----------------------------------------------------------------------------
 
-;; Start the Emacs server so you can connect with emacsclient
 (use-package server
   :ensure nil
   :defer 0.5)

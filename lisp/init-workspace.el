@@ -10,9 +10,9 @@
 (use-package tabspaces
   :diminish
   :commands tabspaces-mode
-  :hook ((after-init . (lambda()
-                         (tabspaces-mode 1)
-                         (tab-bar-history-mode 1))))
+  :hook ((on-first-input . (lambda()
+                             (tabspaces-mode 1)
+                             (tab-bar-history-mode 1))))
   :custom
   (tab-bar-show nil)
   (tabspaces-use-filtered-buffers-as-default t)

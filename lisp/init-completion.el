@@ -13,7 +13,7 @@
 ;;----------------------------------------------------------------------------
 
 (use-package vertico
-  :hook (after-init . vertico-mode)
+  :hook (on-first-input . vertico-mode)
   :custom (vertico-count 13)
   :bind (:map vertico-map
               ("RET" . vertico-directory-enter)
@@ -35,8 +35,11 @@
 (use-package orderless
   :custom
   (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
   (completion-category-overrides '((file (styles . (partial-completion)))))
-  (orderless-component-separator #'orderless-escapable-split-on-space))
+  (orderless-component-separator #'orderless-escapable-split-on-space)
+  (completion-pcm-leading-wildcard t)
+  (orderless-matching-styles '(orderless-literal orderless-regexp)))
 
 ;; Adds rich, contextual annotations to completion candidates in the minibuffer.
 (use-package marginalia
@@ -46,11 +49,14 @@
 ;;----------------------------------------------------------------------------
 ;; In-Buffer Completion
 ;;----------------------------------------------------------------------------
-
 (use-package corfu
   :hook
-  (after-init . global-corfu-mode)
+  (on-first-input . global-corfu-mode)
   (global-corfu-mode . corfu-popupinfo-mode)
+  ;; Use 'orderless-flex' only when using corfu (in-buffer completion)
+  (corfu-mode . (lambda ()
+                  (setq-local orderless-matching-styles
+                              '(orderless-literal orderless-regexp orderless-flex))))
   :custom
   (corfu-auto t)
   (corfu-auto-prefix 2)
@@ -78,17 +84,7 @@
     (forward-line))
   ;;Quit completion before saving
   (add-hook 'before-save-hook #'corfu-quit)
-  (advice-add #'persistent-scratch-save :before #'corfu-quit)
-  ;; In eshell, disable auto-completion to prevent triggering on every space.
-  (add-hook 'eshell-mode-hook (lambda ()
-                                (setq-local corfu-auto nil)
-                                (corfu-mode))))
-
-(when (< emacs-major-version 31)
-  (use-package corfu-terminal
-    :unless window-system
-    :ensure t
-    :hook (global-corfu-mode . corfu-terminal-mode)))
+  (advice-add #'persistent-scratch-save :before #'corfu-quit))
 
 (use-package nerd-icons-corfu
   :autoload nerd-icons-corfu-formatter

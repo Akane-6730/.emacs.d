@@ -13,6 +13,11 @@
 (global-set-key (kbd "s-a") #'mark-whole-buffer)
 (global-set-key (kbd "s-c") #'kill-ring-save)
 
+;; macOS Keyboard Configuration
+(when (eq system-type 'darwin)
+  (setq mac-command-modifier 'meta)
+  (setq mac-option-modifier  'super))
+
 ;;---------------------------------------------------------------------
 ;; Text Scaling
 ;;---------------------------------------------------------------------
@@ -47,9 +52,9 @@
 ;;---------------------------------------------------------------------
 
 ;; Enable extended key combinations in TUI
-(when (not window-system)
+(unless window-system
   (use-package kkp
-    :defer 0.01
+    :hook (on-first-input . global-kkp-mode)
     :config (global-kkp-mode 1)))
 
 (provide 'init-kbd)
