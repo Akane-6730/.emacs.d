@@ -20,9 +20,15 @@
   (setq gptel-model 'gemini-3-pro-preview
         gptel-backend (gptel-make-gh-copilot "Copilot" :stream t))
   (gptel-make-gemini "Gemini"
-                        :key gptel-api-key
-                        :stream t
-                        :models '(gemini-2.5-pro gemini-2.5-flash)))
+    :key gptel-api-key
+    :stream t
+    :models '(gemini-2.5-pro gemini-2.5-flash))
+  (gptel-make-openai "KFC"
+    :host "kfc-api.sxxe.net"
+    :key gptel-api-key
+    :stream t
+    :models '(cursor2-claude-4.5-sonnet cursor2-claude-4.1-opus)))
+
 
 ;; Generate commit messages for magit
 (use-package gptel-magit
@@ -34,7 +40,7 @@
 ;; GitHub Copilot for code completion
 (use-package copilot
   :hook ((latex-mode markdown-mode) . copilot-mode)
-  :hook (org-mode . my/copilot-enable-for-org)
+  ;; :hook (org-mode . my/copilot-enable-for-org)
   :bind (:map copilot-mode-map
               ("C-e" . my/copilot-accept-or-end-of-line)
               ("M-f" . my/copilot-accept-word-or-forward-word))
