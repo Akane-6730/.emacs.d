@@ -40,14 +40,16 @@ Can be an integer to determine the exact padding."
 
   ;; name        default   256       16
   ((bg         '("#FFFFFF" "#FBF7EF" "white"        ))
-   (fg         '("#657377" "#657377" "black"        ))
+   (fg         '("#4d4d4c" "#3a3a3a" "black"))
+   ;; (fg         '("#657377" "#657377" "black"        ))
 
    ;; These are off-color variants of bg/fg, used primarily for `solaire-mode',
    ;; but can also be useful as a basis for subtle highlights (e.g. for hl-line
    ;; or region), especially when paired with the `doom-darken', `doom-lighten',
    ;; and `doom-blend' helper functions.
    (bg-alt     '("#f2f2f2" nil       nil     ))
-   (fg-alt     '("#5B7279" "#5B7279" "brightwhite"  ))
+   (fg-alt     (doom-darken fg 0.6))
+   ;; (fg-alt     '("#5B7279" "#5B7279" "brightwhite"  ))
 
    ;; These should represent a spectrum from bg to fg, where base0 is a starker
    ;; bg and base8 is a starker fg. For example, if bg is light grey and fg is
@@ -62,7 +64,8 @@ Can be an integer to determine the exact padding."
    (base7      '("#5B7279" "#5B7279" "brightblack"  ))
    (base8      '("#657377" "#657377" "brightblack"  ))
 
-   (grey       base4)
+   (grey       '("#8e908c" "#999999" "silver"))
+   ;; (grey       base4)
    (red        '("#E14775" "#E14775" "red"          ))
    (orange     '("#D56500" "#dd8844" "brightred"    ))
    (green      '("#819500" "#99bb66" "green"        ))
@@ -71,7 +74,8 @@ Can be an integer to determine the exact padding."
    (dark-blue  '("#3F88AD" "#2257A0" "blue"         ))
    (teal       '("#3e999f" "#339999" "brightblue"))
    (magenta    '("#DD459D" "#c678dd" "magenta"      ))
-   (violet     '("#7D80D1" "#a9a1e1" "brightmagenta"))
+   ;; (violet     '("#7D80D1" "#a9a1e1" "brightmagenta"))
+   (violet '("#8959a8" "#996699" "brightmagenta"))
    (dark-violet '("#8959a8" "#996699" "brightmagenta"))
    (cyan       '("#259D94" "#46D9FF" "brightcyan"   ))
    (dark-cyan  '("#4271ae" "#339999" "brightblue"))
@@ -90,8 +94,9 @@ Can be an integer to determine the exact padding."
    (builtin        dark-cyan)
    (comments       (if my-light-brighter-comments
                        (doom-lighten teal 0.25)
-                     base6))
-   (doc-comments   base5)
+                     grey))
+   ;; (doc-comments   base5)
+   (doc-comments   grey)
    (constants      violet)
    (functions      magenta)
    (keywords       green)
@@ -141,7 +146,7 @@ Can be an integer to determine the exact padding."
    ((gnus-group-news-low          &override) :inherit nil :foreground base5 :weight 'normal)
    ((gnus-group-news-low-empty    &override) :inherit nil :foreground base5 :weight 'normal)
    ((font-lock-comment-face &override)
-    :foreground base5
+    :foreground grey
     :background (if my-light-brighter-comments
                     (doom-blend teal base0 0.07)
                   'unspecified))
