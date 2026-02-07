@@ -51,5 +51,16 @@
 
 (setq inhibit-compacting-font-caches t)  ; Don’t compact font caches during GC
 
+;; macOS Performance: Use pipes instead of PTYs for external processes.
+;; This significantly speeds up process creation and data transfer on macOS.
+;; Reference: https://irreal.org/blog/?p=13567
+(when (eq system-type 'darwin)
+  (setq process-connection-type nil))
+
+;; Hanlde minified code
+(use-package so-long
+  :ensure nil
+  :hook (on-first-file . global-so-long-mode))
+
 (provide 'init-perf)
 ;;; init-perf.el ends here
