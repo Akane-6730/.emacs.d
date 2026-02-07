@@ -21,21 +21,23 @@
 ;; 1. Core Org Mode Configuration
 ;;----------------------------------------------------------------------------
 (use-package org
-  :init (setq org-modules-loaded t)
   ;; Org-mode is managed as a git submodule in site-lisp/org-mode for async LaTeX preview
   ;; To update: cd ~/.emacs.d/site-lisp/org-mode && git fetch origin dev && git checkout FETCH_HEAD && make
   :load-path "~/.emacs.d/site-lisp/org-mode/lisp/"
   :hook ((org-mode . my-org-mode-setup-emphasis-keys)
          (org-mode . org-indent-mode))
   :config
-  (setq org-directory "~/Documents/org/")
-  (setq org-export-with-smart-quotes t) ; Global smart quotes for all exports
-  (setq org-hide-emphasis-markers t)
-  (setq org-highlight-latex-and-related '(native latex))
-  (setq org-ellipsis " ") ; ⤵ ▾ ▼ ↴
-  (setq org-pretty-entities t)
-  (setq org-pretty-entities-include-sub-superscripts nil)
-  (setq org-imenu-depth 4)
+  (setq org-modules nil                 ; Faster loading
+        org-modules-loaded t
+        org-directory "~/Documents/org/"
+        org-tags-column -80
+        org-export-with-smart-quotes t  ; Global smart quotes for all exports
+        org-hide-emphasis-markers t
+        org-highlight-latex-and-related '(native latex)
+        org-ellipsis " "               ; ⤵ ▾ ▼ ↴
+        org-pretty-entities t
+        org-pretty-entities-include-sub-superscripts nil
+        org-imenu-depth 4)
   ;; Prettify checkbox symbols using display property
   (font-lock-add-keywords
    'org-mode
@@ -54,35 +56,36 @@
 
 ;; Automatically show/hide emphasis markers
 (use-package org-appear
-  :hook (org-mode . org-appear-mode)
+  :hook org-mode
   :config
-  (setq org-appear-autosubmarkers t)
-  (setq org-appear-autolinks t)
-  (setq org-appear-autoentities t)       ; Show original \alpha when cursor is on α
-  (setq org-appear-autokeywords t)       ; Show #+KEYWORD markers
-  (setq org-appear-inside-latex t))      ; Work inside LaTeX fragments
+  (setq org-appear-autosubmarkers t
+        org-appear-autolinks t
+        org-appear-autoentities t       ; Show original \alpha when cursor is on α
+        org-appear-autokeywords t       ; Show #+KEYWORD markers
+        org-appear-inside-latex t))     ; Work inside LaTeX fragments
 
 ;; Better CJK table alignment
 (when (display-graphic-p)
   (use-package valign
-    :hook (org-mode . valign-mode)))
+    :hook org-mode))
 
 ;; Asynchronous LaTeX preview
 (use-package org-latex-preview
   :ensure nil
   :init (setq org-startup-with-latex-preview t)
-  :hook (org-mode . org-latex-preview-mode)
+  :hook org-mode
   :config
+  (when (eq system-type 'darwin)
+    ;; For MacOS, specify the path to Ghostscript library for compatibility
+    (setenv "LIBGS" "/opt/homebrew/lib/libgs.dylib"))
   (setq org-latex-precompile nil)
   (setq org-latex-preview-process-precompile nil)
-  ;; Increase preview width
-  ;; (plist-put org-latex-preview-appearance-options :page-width 0.8)
   (setq org-latex-preview-mode-display-live t)
   (setq org-latex-preview-mode-update-delay 0.25))
 
 ;; Better headline bullets
 (use-package org-superstar
-  :hook (org-mode . org-superstar-mode)
+  :hook org-mode
   :config
   (setq org-hide-leading-stars t)
   (setq org-superstar-headline-bullets-list '(9673 9675 9679)) ;10047
@@ -141,7 +144,7 @@
     (setq svg-lib-style-default (svg-lib-style-compute-default)))
 
   (use-package svg-tag-mode
-    :hook (org-mode . svg-tag-mode)
+    :hook org-mode
     :config
     (setq svg-tag-action-at-point 'edit)
 
