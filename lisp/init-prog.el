@@ -14,7 +14,7 @@
 ;; Automatically install Tree-sitter grammars
 
 (use-package treesit-auto
-  :hook prog-mode
+  :hook (on-first-file . global-treesit-auto-mode)
   :config
   ;; When a new grammar is needed, always ask for confirmation before installing.
   (setq treesit-auto-install 'prompt)
