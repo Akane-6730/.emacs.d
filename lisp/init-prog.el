@@ -16,14 +16,18 @@
 (use-package treesit-auto
   :hook (on-first-file . global-treesit-auto-mode)
   :config
-  ;; When a new grammar is needed, always ask for confirmation before installing.
   (setq treesit-auto-install 'prompt)
   (setq treesit-font-lock-level 4)
-  ;; Disable markdown treesit-auto prompts
-  (setq treesit-auto-recipe-list
-        (cl-remove-if (lambda (recipe)
-                        (member (treesit-auto-recipe-lang recipe) '(markdown markdown-inline)))
-                      treesit-auto-recipe-list)))
+  ;; WORKAROUND: Emacs 31 bug - treesit-install-language-grammar prompts for
+  ;; directory even when called non-interactively from treesit-auto, causing
+  ;; the 'y' from y-or-n-p to leak into the directory prompt.
+  ;; Fix: Always pass the correct output directory explicitly.
+  (when (and (>= emacs-major-version 31) (eq system-type 'gnu/linux))
+    (advice-add 'treesit-install-language-grammar :around
+                (lambda (orig-fn lang &optional out-dir)
+                  (funcall orig-fn lang
+                           (or out-dir (locate-user-emacs-file "tree-sitter"))))
+                '((name . treesit-auto-fix-out-dir)))))
 
 
 ;;----------------------------------------------------------------------------
