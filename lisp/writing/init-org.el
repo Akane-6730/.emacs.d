@@ -389,8 +389,8 @@ it falls back to the default conservative behavior."
 ;; Beamer Export
 (use-package ox-beamer
   :ensure nil
-  :init
-  (with-eval-after-load 'ox (require 'ox-beamer))
+  :after org
+  :demand t
   :config
   ;; Allow using 'fragile' frames by default (useful for code blocks)
   (setq org-beamer-frame-default-options "fragile"))
@@ -466,8 +466,8 @@ holding contextual information."
 
 ;; Reveal.js Export (HTML Slides)
 (use-package org-re-reveal
-  :init
-  (with-eval-after-load 'ox (require 'org-re-reveal))
+  :after org
+  :demand t
   :config
   ;; Use a reliable CDN for Reveal.js (v4) to avoid local installation
   (setq org-re-reveal-root "https://cdn.jsdelivr.net/npm/reveal.js")
