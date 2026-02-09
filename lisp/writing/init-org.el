@@ -33,11 +33,12 @@
         org-tags-column -80
         org-export-with-smart-quotes t  ; Global smart quotes for all exports
         org-hide-emphasis-markers t
-        org-highlight-latex-and-related '(native latex)
+        org-highlight-latex-and-related '(native script entities)
         org-ellipsis " "               ; ⤵ ▾ ▼ ↴
         org-pretty-entities t
         org-pretty-entities-include-sub-superscripts nil
         org-imenu-depth 4)
+  (add-to-list 'org-src-block-faces '("latex" (:inherit (fixed-pitch default) :extend t)))
   ;; Prettify checkbox symbols using display property
   (font-lock-add-keywords
    'org-mode
