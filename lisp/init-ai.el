@@ -34,8 +34,43 @@
 (use-package gptel-magit
   :hook (magit-mode . gptel-magit-install)
   :config
-  (setq gptel-magit-model "gemini-3-flash-preview"
-        gptel-magit-backend (gptel-make-gh-copilot "copilot" :stream t)))
+  (setq gptel-magit-model "claude-haiku-4.5"
+        gptel-magit-backend (gptel-make-gh-copilot "copilot" :stream t))
+
+  ;; Better prompt: structured with bullet points
+  (setq gptel-magit-commit-prompt
+        "You are an expert at writing Git commits. Write a structured commit message.
+
+Structure:
+    <type>(<scope>): <subject>
+
+    - <detail item 1>
+    - <detail item 2>
+    [optional: more context if complex]
+
+Rules:
+1. Subject Line:
+   - Max 50 chars. Imperative mood. Capitalized. No period.
+   - Focus on the PRIMARY impact (the \"what\" and \"why\").
+
+2. Body:
+   - REQUIRED for non-trivial commits.
+   - Use a bulleted list (-) for specific changes.
+   - Be specific but concise. Group related changes.
+
+Priority:
+- FEAT/FIX are the most important.
+- Refactorings should be listed in the body, not hidden, but not cluttering the subject.
+
+Output ONLY the commit message.")
+
+  ;; Fix: Don't re-fill the message at all. Trust the LLM's formatting.
+  (defun my/gptel-magit--format-commit-message (message)
+    "Return message as-is, respecting LLM's formatting."
+    message)
+
+  (advice-add 'gptel-magit--format-commit-message
+              :override #'my/gptel-magit--format-commit-message))
 
 ;; GitHub Copilot for code completion
 (use-package copilot
