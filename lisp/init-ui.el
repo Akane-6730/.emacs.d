@@ -1,257 +1,76 @@
 ;;; init-ui.el --- User Interface and Appearance -*- lexical-binding: t; -*-
 
-
 ;;; Commentary:
+
+;; This module configures the visual aspects of Emacs, including:
+;; - Theme loading and switching
+;; - Modeline (doom-modeline)
+;; - Icons (nerd-icons)
+;; - Layout (spacious-padding, olivetti)
+;; - Posframe-based UI elements
 ;;
-;; This file configures the visual aspects of Emacs, including the theme,
-;; fonts, modeline, icons, layout, and various UI tweaks.
-;;
+;; Font configuration is handled separately by `init-fonts'.
 
 ;;; Code:
 
-;;----------------------------------------------------------------------------
-;; Fonts
-;;----------------------------------------------------------------------------
+(require 'init-fonts)
 
-(when (or window-system (daemonp))
-  (defun font-available-p (font-name)
-    "Check if font with FONT-NAME is available."
-    (find-font (font-spec :family font-name)))
+;;; ----------------------------------------------------------------------------
+;;; Theme
+;;; ----------------------------------------------------------------------------
 
-  (defun my--ensure-fontset (name)
-    "Ensure fontset NAME exists and return its fontset name string."
-    (let* ((fontset (concat "fontset-" name))
-           (xlfd (concat "-*-*-*-*-*-*-*-*-*-*-*-*-fontset-" name)))
-      (unless (member fontset (fontset-list))
-        (create-fontset-from-fontset-spec xlfd))
-      fontset))
-
-  (defun my--first-available-font (fonts)
-    "Return the first available font in FONTS."
-    (cl-find-if #'font-available-p fonts))
-
-  (defconst my--preferred-mono-fonts
-    (if (eq system-type 'darwin)
-        '("Monaco" "Maple Mono Normal NF CN" "Maple Mono NF CN" "Menlo" "Cascadia code" "Consolas" "SF Mono" "Courier New" "Monego")
-      '("Maple Mono Normal NF CN" "Maple Mono NF CN" "Monaco" "Menlo" "Cascadia code" "Consolas" "SF Mono" "Courier New" "Monego"))
-    "Preferred monospace fonts in order.")
-
-  (defun my--preferred-mono-font ()
-    "Return the first available preferred monospace font."
-    (my--first-available-font my--preferred-mono-fonts))
-
-  ;; Setup variable-pitch and fixed-pitch fonts
-  (defun my/setup-variable-pitch-fonts ()
-    "Setup variable-pitch fonts for generic reading modes (Org, Markdown, Info)."
-    (interactive)
-    (let ((fontset (my--ensure-fontset "variable")))
-      (set-fontset-font fontset 'latin (font-spec :family "Source Serif 4"))
-      (set-fontset-font fontset 'han (font-spec :family "Source Han Serif SC VF"))
-
-      (set-face-attribute 'variable-pitch nil
-                          :family "Source Serif 4"
-                          :weight 'regular
-                          :fontset fontset)
-
-      ;; Setup Chinese italics to use LXGW WenKai Mono
-      ;; Create an italic fontset for Chinese characters
-      (let ((italic-fontset (my--ensure-fontset "variableitalic")))
-        ;; Set Chinese italic font to LXGW WenKai Mono
-        (set-fontset-font italic-fontset 'han
-                          (font-spec :family "LXGW WenKai Mono GB Screen" :slant 'italic))
-        ;; Keep English italic font as is
-        (set-fontset-font italic-fontset 'latin
-                          (font-spec :family "Source Serif 4" :slant 'italic))
-        ;; Apply italic fontset to italic faces
-        (set-face-attribute 'italic nil :fontset italic-fontset))))
-
-  (defun my/setup-fixed-pitch-fonts ()
-    "Setup fixed-pitch face (Mono)."
-    (interactive)
-    (let ((fontset (my--ensure-fontset "fixed"))
-          (mono-font (my--preferred-mono-font)))
-      ;; Set Chinese font to Source Han Sans as requested
-      (set-fontset-font fontset 'han (font-spec :family "Source Han Sans SC"))
-
-      (when mono-font
-        (set-face-attribute 'fixed-pitch nil
-                            :family mono-font
-                            :weight 'regular
-                            :fontset fontset))
-
-      ;; Setup Chinese italics in fixed-pitch context
-      (let ((italic-fontset (my--ensure-fontset "fixeditalic")))
-        ;; Set Chinese italic font to LXGW WenKai Mono
-        (set-fontset-font italic-fontset 'han
-                          (font-spec :family "LXGW WenKai Mono GB Screen" :slant 'italic))
-        ;; English italic uses same mono font
-        (when mono-font
-          (set-fontset-font italic-fontset 'latin
-                            (font-spec :family mono-font :slant 'italic))))))
-
-  ;; Run basic setup once on init
-  (add-hook 'window-setup-hook #'my/setup-fixed-pitch-fonts)
-  ;; Defer variable pitch setup until needed
-  (add-hook 'org-mode-hook #'my/setup-variable-pitch-fonts)
-  (add-hook 'markdown-mode-hook #'my/setup-variable-pitch-fonts)
-
-  (defgroup my-mixed-font nil
-    "Configuration for custom mixed-font mode."
-    :group 'faces)
-
-  (defcustom my-mixed-font-fixed-faces
-    '(org-block org-code org-verbatim org-table org-table-row
-                org-formula org-link org-special-keyword org-meta-line
-                org-checkbox org-priority org-todo org-done org-ellipsis
-                org-tag org-date line-number org-document-info-keyword
-                org-hide font-lock-comment-face corfu-default
-                markdown-code-face markdown-pre-face markdown-table-face)
-    "List of faces that should use fixed-pitch font in `my-mixed-font-mode'."
-    :type '(repeat face)
-    :group 'my-mixed-font)
-
-  (defvar-local my-mixed-font--cookies nil
-    "List of cookies for remapped faces.")
-
-  (define-minor-mode my-mixed-font-mode
-    "Toggle mixed font mode (prose in variable-pitch, code in fixed-pitch)."
-    :init-value nil
-    :lighter " Mixed"
-    (if my-mixed-font-mode
-        (progn
-          ;; Enable variable-pitch-mode
-          (variable-pitch-mode 1)
-          ;; Remap fixed faces
-          (setq my-mixed-font--cookies nil)
-          (dolist (face my-mixed-font-fixed-faces)
-            (push (face-remap-add-relative face 'fixed-pitch)
-                  my-mixed-font--cookies))
-          ;; Force leading whitespace to be fixed-pitch for proper indentation
-          (font-lock-add-keywords nil '(("^[[:space:]]+" 0 'fixed-pitch)) 'append)
-          (if (fboundp 'font-lock-flush) (font-lock-flush) (font-lock-fontify-buffer)))
-      ;; Disable
-      (variable-pitch-mode -1)
-      (mapc #'face-remap-remove-relative my-mixed-font--cookies)
-      (setq my-mixed-font--cookies nil)
-      (font-lock-remove-keywords nil '(("^[[:space:]]+" 0 'fixed-pitch)))
-      (if (fboundp 'font-lock-flush) (font-lock-flush) (font-lock-fontify-buffer))))
-
-  (add-hook 'org-mode-hook #'my-mixed-font-mode)
-  (add-hook 'markdown-mode-hook #'my-mixed-font-mode)
-
-  (defun my/setup-fonts (frame)
-    "Setup fonts for FRAME."
-    (with-selected-frame frame
-      ;; 1. Setup English / Monospace font with fallback
-      (let* ((preferred-mono-fonts my--preferred-mono-fonts)
-             (installed-font (my--preferred-mono-font))
-             (mono-height (if (eq system-type 'darwin) 180 140)))
-        ;; Only set the font if one from our preferred list is found.
-        ;; Otherwise, do nothing and let Emacs use its system default.
-        (when installed-font
-          (set-face-attribute 'default frame :family installed-font :height mono-height)))
-
-      ;; 2. Setup Chinese / Han script font with fallback
-      (let* ((preferred-han-fonts '("LXGW WenKai Mono GB Screen" "PingFang SC" "Source Han Sans SC"))
-             (installed-font (my--first-available-font preferred-han-fonts)))
-        ;; Same logic for Chinese fonts.
-        (when installed-font
-          (set-fontset-font t 'han (font-spec :family installed-font))))
-
-      ;; 3. Setup Japanese / Kana script font to use the same fallback list
-      (let* ((preferred-kana '("LXGW WenKai Mono GB Screen" "PingFang SC"))
-             (font (my--first-available-font preferred-kana)))
-        (when font
-          (set-fontset-font t 'kana (font-spec :family font))))
-
-      ;; 4. Fix doom-modeline window number symbol size inconsistency
-      ;; Explicitly specify ranges to avoid ambiguity with 'symbol script fallback.
-      (when-let* ((symbol-font (my--first-available-font
-                                '("Apple Symbols" "Symbols Nerd Font Mono" "Symbola" "Symbol" "Segoe UI Symbol"))))
-        ;; Enclosed Alphanumerics ①②③ U+2460-U+24FF
-        (set-fontset-font t '(#x2460 . #x24FF) (font-spec :family symbol-font))
-        ;; Dingbats ❶❷❸ U+2776-U+2793 (subset of U+2700-U+27BF)
-        (set-fontset-font t '(#x2700 . #x27BF) (font-spec :family symbol-font))
-        ;; ;; Miscellaneous Symbols U+2600-U+26FF
-        ;; (set-fontset-font t '(#x2600 . #x26FF) (font-spec :family symbol-font))
-        )))
-
-  (when (and window-system (not (daemonp)))
-    (my/setup-fonts (selected-frame))))
-
-;; On macOS, use thinner font smoothing for a sharper look.
-(when (eq system-type 'darwin)
-  (setq ns-use-thin-smoothing t))
-
-
-;;----------------------------------------------------------------------------
-;; Theme
-;;----------------------------------------------------------------------------
-
-(defun my/setup-italic-faces ()
-  "Set specific faces to use italics on non-Darwin systems."
-  (unless (eq system-type 'darwin)
-    (set-face-attribute 'font-lock-preprocessor-face nil :slant 'italic)
-    (set-face-attribute 'font-lock-type-face nil :slant 'italic)
-    (set-face-attribute 'font-lock-comment-face nil :slant 'italic)
-    (set-face-attribute 'font-lock-keyword-face nil :slant 'italic)
-    (set-face-attribute 'font-lock-builtin-face nil :slant 'italic)))
-
-;; `doom-themes` is a package containing a collection of beautifully crafted themes.
+;; `doom-themes' is a package containing a collection of beautifully
+;; crafted themes.
 (use-package doom-themes
   :demand t
   :config
-  (setq doom-themes-enable-bold t)
-  (setq doom-themes-enable-italic t)
-  (setq custom-theme-directory (expand-file-name "lisp/themes" user-emacs-directory))
-  ;; Enable flashing mode-line on errors to avoid getting the yellow warning triangle on MacOS.
+  (setq doom-themes-enable-bold t
+        doom-themes-enable-italic t
+        custom-theme-directory (expand-file-name "lisp/themes" user-emacs-directory))
+
+  ;; Enable flashing mode-line on errors (avoids yellow warning triangle on macOS)
   (doom-themes-visual-bell-config)
-  ;; Load the theme AFTER ensuring the package is loaded
+
   (defun my/apply-theme (frame)
+    "Apply appropriate theme and fonts for FRAME."
     (with-selected-frame frame
       (if (display-graphic-p frame)
           (progn
             (load-theme 'my-light t)
-            (my/setup-fonts frame))
+            (my-fonts-setup-default frame))
         (load-theme 'my-dark t))
-      (my/setup-italic-faces)))
+      (my-fonts-setup-italic-faces)))
 
   (if (daemonp)
       (add-hook 'after-make-frame-functions #'my/apply-theme)
     (my/apply-theme (selected-frame))))
 
+;;; Robust Theme Loading
+;; Ensure old themes are disabled before loading new ones.
 
-;;; --- Robust Theme Loading ---
-;; Ensure that whenever a new theme is loaded, all previously enabled
-;; themes are completely disabled first.
-
-(defun my-theme-load-wrapper (original-fn theme &rest args)
-  "A wrapper for `load-theme' that disables old themes first."
-  ;; 1. Disable all currently enabled themes.
+(defun my--theme-load-wrapper (original-fn theme &rest args)
+  "Advice wrapper for `load-theme' that disables old themes first.
+Calls ORIGINAL-FN with THEME and ARGS after cleanup."
   (mapc #'disable-theme custom-enabled-themes)
-  ;; 2. Call the original `load-theme' function with its arguments.
   (apply original-fn theme args))
 
-;; Advise the core `load-theme' function to use our wrapper.
-(advice-add 'load-theme :around #'my-theme-load-wrapper)
-
+(advice-add 'load-theme :around #'my--theme-load-wrapper)
 
 (defun my-toggle-theme ()
-  "Toggle between `my-dark` and `my-light` themes."
+  "Toggle between `my-dark' and `my-light' themes."
   (interactive)
-
   (if (custom-theme-enabled-p 'my-dark)
       (load-theme 'my-light t)
     (load-theme 'my-dark t))
-
-  (my/setup-italic-faces))
+  (my-fonts-setup-italic-faces))
 
 (global-set-key (kbd "<f7>") #'my-toggle-theme)
 
+;;; macOS Titlebar
+;; Automatically set titlebar color to match theme's background mode.
 
-;; --- Automatically sets the titlebar color on macOS to match the theme ---
 (when (and (eq system-type 'darwin) (display-graphic-p))
-  (defun my/ns-set-frame-titlebar (frame &rest _)
+  (defun my--ns-set-frame-titlebar (frame &rest _)
     "Set transparent titlebar for FRAME to match theme's background mode."
     (when (display-graphic-p frame)
       (let ((mode (frame-parameter frame 'background-mode)))
@@ -260,37 +79,34 @@
          `((ns-transparent-titlebar . t)
            (ns-appearance . ,mode))))))
 
-  (defun my/ns-set-all-titlebars (&rest _)
+  (defun my--ns-set-all-titlebars (&rest _)
     "Apply titlebar settings to all existing frames."
-    (mapc #'my/ns-set-frame-titlebar (frame-list)))
+    (mapc #'my--ns-set-frame-titlebar (frame-list)))
 
-  (add-hook 'after-init-hook #'my/ns-set-all-titlebars)
-  (add-hook 'after-make-frame-functions #'my/ns-set-frame-titlebar)
-  (advice-add 'frame-set-background-mode :after #'my/ns-set-frame-titlebar)
+  (add-hook 'after-init-hook #'my--ns-set-all-titlebars)
+  (add-hook 'after-make-frame-functions #'my--ns-set-frame-titlebar)
+  (advice-add 'frame-set-background-mode :after #'my--ns-set-frame-titlebar)
+  (my--ns-set-frame-titlebar (selected-frame)))
 
-  (my/ns-set-frame-titlebar (selected-frame)))
-
-
-;;----------------------------------------------------------------------------
-;; Icons
-;;----------------------------------------------------------------------------
+;;; ----------------------------------------------------------------------------
+;;; Icons
+;;; ----------------------------------------------------------------------------
 
 (use-package nerd-icons
   :commands nerd-icons-install-fonts
-  :functions font-available-p
   :config
   (when (and (display-graphic-p)
-             (not (font-available-p nerd-icons-font-family)))
+             (not (my-fonts--available-p nerd-icons-font-family)))
     (nerd-icons-install-fonts t)))
 
-
-;;----------------------------------------------------------------------------
-;; Modeline
-;;----------------------------------------------------------------------------
+;;; ----------------------------------------------------------------------------
+;;; Modeline
+;;; ----------------------------------------------------------------------------
 
 (use-package time
-  :init (setq display-time-default-load-average nil
-              display-time-format "%H:%M"))
+  :init
+  (setq display-time-default-load-average nil
+        display-time-format "%H:%M"))
 
 (use-package doom-modeline
   :hook after-init
@@ -298,159 +114,145 @@
   (display-time-mode t)
   (display-battery-mode t)
   :config
-  (setq doom-modeline-height 18)
-  (setq doom-modeline-battery t)
-  (setq doom-modeline-time-icon t)
-  (setq doom-modeline-time-clock-size 1.0)
+  (setq doom-modeline-height 18
+        doom-modeline-battery t
+        doom-modeline-time-icon t
+        doom-modeline-time-clock-size 1.0)
   (unless (display-graphic-p)
     (setq doom-modeline-unicode-number nil)))
 
 (use-package hide-mode-line
-  :hook (((eat-mode
-           eshell-mode shell-mode
-           term-mode vterm-mode
-           pdf-annot-list-mode) . turn-on-hide-mode-line-mode)))
+  :hook ((eat-mode
+          eshell-mode shell-mode
+          term-mode vterm-mode
+          pdf-annot-list-mode) . turn-on-hide-mode-line-mode))
 
-;;----------------------------------------------------------------------------
-;; Layout
-;;----------------------------------------------------------------------------
+;;; ----------------------------------------------------------------------------
+;;; Layout
+;;; ----------------------------------------------------------------------------
 
 (when (display-graphic-p)
   (use-package spacious-padding
     :hook (on-init-ui . spacious-padding-mode)
     :config
     (setq spacious-padding-widths
-          '( :internal-border-width 10   ; Gap between the frame border and the windows
-             :header-line-width 0        ; Vertical padding for the header-line
-             :mode-line-width 0          ; Vertical padding for the mode-line
-             :custom-button-width 0      ; Padding for buttons (e.g. in Custom UI)
-             :tab-width 2                ; Horizontal padding for tab-bar tabs
-             :right-divider-width 15     ; Width of the divider between side-by-side windows
+          '(:internal-border-width 10
+                                   :header-line-width 0
+                                   :mode-line-width 0
+                                   :custom-button-width 0
+                                   :tab-width 2
+                                   :right-divider-width 15
+                                   :fringe-width 8)))
 
-             :fringe-width 8)))          ; Width of the lateral fringes (git gutters, etc.)
-
-  ;; --- Centered Text Layout ---
+  ;; Centered text layout for prose modes
   (use-package olivetti
-    :commands (olivetti-mode)
+    :commands olivetti-mode
     :hook ((org-mode markdown-mode Info-mode message-mode) . olivetti-mode)
     :config
-    (add-to-list 'window-persistent-parameters
-                 '(spilt-window . t))
-    (advice-add 'window-toggle-side-windows
-                :before
-                'olivetti-reset-all-windows)
-    (advice-add 'olivetti-reset-window
-                :after
+    (add-to-list 'window-persistent-parameters '(spilt-window . t))
+    (advice-add 'window-toggle-side-windows :before #'olivetti-reset-all-windows)
+    (advice-add 'olivetti-reset-window :after
                 (lambda (window)
-                  (set-window-parameter
-                   window
-                   'min-margins
-                   (cons 0 0))))))
+                  (set-window-parameter window 'min-margins (cons 0 0))))))
 
+;;; Window Divider Appearance
 
-;; --- Window Divider Appearance ---
-;; Enable and configure visual dividers between split windows.
 (setq window-divider-default-places t
-      window-divider-default-bottom-width 1 ; Solve the problem of the modeline being too wide
+      window-divider-default-bottom-width 1
       window-divider-default-right-width 1)
 (add-hook 'window-setup-hook #'window-divider-mode)
 
-
-;; ----------------------------------------------------------------------------
-;; Posframe-based UI Elements
-;; ----------------------------------------------------------------------------
+;;; ----------------------------------------------------------------------------
+;;; Posframe-based UI Elements
+;;; ----------------------------------------------------------------------------
 
 (use-package posframe
   :hook (after-load-theme . posframe-delete-all)
   :init
   (defface posframe-border
-    `((t (:inherit region)))
+    '((t (:inherit region)))
     "Face used by the `posframe' border."
     :group 'posframe)
   (defvar posframe-border-width 2
     "Default posframe border width.")
   :config
-  (with-no-warnings
-    (defun my-posframe--prettify-frame (&rest _)
-      (set-face-background 'fringe nil posframe--frame))
-    (advice-add #'posframe--create-posframe :after #'my-posframe--prettify-frame)
+  (defun my--posframe-prettify-frame (&rest _)
+    "Remove fringe background from posframe."
+    (set-face-background 'fringe nil posframe--frame))
+  (advice-add #'posframe--create-posframe :after #'my--posframe-prettify-frame)
 
-    (defun posframe-poshandler-frame-center-near-bottom (info)
-      (cons (/ (- (plist-get info :parent-frame-width)
-                  (plist-get info :posframe-width))
-               2)
-            (/ (+ (plist-get info :parent-frame-height)
-                  (* 2 (plist-get info :font-height)))
-               2)))))
+  (defun posframe-poshandler-frame-center-near-bottom (info)
+    "Position posframe at center, slightly below middle of frame.
+INFO is the posframe position info plist."
+    (cons (/ (- (plist-get info :parent-frame-width)
+                (plist-get info :posframe-width))
+             2)
+          (/ (+ (plist-get info :parent-frame-height)
+                (* 2 (plist-get info :font-height)))
+             2))))
 
 (when (display-graphic-p)
   (use-package vertico-posframe
-    :functions posframe-poshandler-frame-center-near-bottom
     :hook (vertico-mode . vertico-posframe-mode)
-    :init (setq vertico-posframe-poshandler
-                #'posframe-poshandler-frame-center-near-bottom
-                vertico-posframe-parameters
-                '((left-fringe  . 8)
-                  (right-fringe . 8))))
+    :init
+    (setq vertico-posframe-poshandler #'posframe-poshandler-frame-center-near-bottom
+          vertico-posframe-parameters '((left-fringe . 8)
+                                        (right-fringe . 8))))
 
   (use-package transient-posframe
     :diminish
-    :defines posframe-border-width
     :hook (on-first-input . transient-posframe-mode)
-    :init (setq transient-mode-line-format nil
-                transient-posframe-border-width posframe-border-width
-                transient-posframe-parameters '((left-fringe . 8)
-                                                (right-fringe . 8))))
+    :init
+    (setq transient-mode-line-format nil
+          transient-posframe-border-width posframe-border-width
+          transient-posframe-parameters '((left-fringe . 8)
+                                          (right-fringe . 8))))
 
   (use-package which-key-posframe
     :diminish
-    :defines posframe-border-width
     :hook which-key-mode
     :config
     (setq which-key-posframe-border-width posframe-border-width
           which-key-posframe-parameters '((left-fringe . 8)
                                           (right-fringe . 8)))))
 
-;; ----------------------------------------------------------------------------
-;; Misc UI Tweaks
-;; ----------------------------------------------------------------------------
+;;; ----------------------------------------------------------------------------
+;;; Misc UI Tweaks
+;;; ----------------------------------------------------------------------------
 
-;; Display ugly ^L page breaks as tidy horizontal lines
+;; Display ^L page breaks as horizontal lines
 (use-package page-break-lines
   :diminish
   :hook (on-first-input . global-page-break-lines-mode)
-  :config (dolist (mode '(dashboard-mode emacs-news-mode))
-            (add-to-list 'page-break-lines-modes mode)))
+  :config
+  (dolist (mode '(dashboard-mode emacs-news-mode))
+    (add-to-list 'page-break-lines-modes mode)))
 
+;; Prettify process list
 (use-package simple
   :ensure nil
   :config
-  ;; Prettify the process list
-  (with-no-warnings
-    (defun my-list-processes--prettify ()
-      "Prettify process list."
-      (when-let* ((entries tabulated-list-entries))
-        (setq tabulated-list-entries nil)
-        (dolist (p (process-list))
-          (when-let* ((val (cadr (assoc p entries)))
-                      (name (aref val 0))
-                      (pid (aref val 1))
-                      (status (aref val 2))
-                      (status (list status
-                                    'face
-                                    (if (memq status '(stop exit closed failed))
-                                        'error
-                                      'success)))
-                      (buf-label (aref val 3))
-                      (tty (list (aref val 4) 'face 'font-lock-doc-face))
-                      (thread (list (aref val 5) 'face 'font-lock-doc-face))
-                      (cmd (list (aref val 6) 'face 'completions-annotations)))
-            (push (list p (vector name pid status buf-label tty thread cmd))
-                  tabulated-list-entries)))))
-    (advice-add #'list-processes--refresh :after #'my-list-processes--prettify)))
-
-;; set transparency
-;; (set-frame-parameter nil 'alpha 99)
+  (defun my--list-processes-prettify ()
+    "Prettify the process list with colored status."
+    (when-let* ((entries tabulated-list-entries))
+      (setq tabulated-list-entries nil)
+      (dolist (p (process-list))
+        (when-let* ((val (cadr (assoc p entries)))
+                    (name (aref val 0))
+                    (pid (aref val 1))
+                    (status (aref val 2))
+                    (status (list status
+                                  'face
+                                  (if (memq status '(stop exit closed failed))
+                                      'error
+                                    'success)))
+                    (buf-label (aref val 3))
+                    (tty (list (aref val 4) 'face 'font-lock-doc-face))
+                    (thread (list (aref val 5) 'face 'font-lock-doc-face))
+                    (cmd (list (aref val 6) 'face 'completions-annotations)))
+          (push (list p (vector name pid status buf-label tty thread cmd))
+                tabulated-list-entries)))))
+  (advice-add #'list-processes--refresh :after #'my--list-processes-prettify))
 
 (provide 'init-ui)
 ;;; init-ui.el ends here
