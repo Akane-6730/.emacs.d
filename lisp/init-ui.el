@@ -301,7 +301,9 @@
   (setq doom-modeline-height 18)
   (setq doom-modeline-battery t)
   (setq doom-modeline-time-icon t)
-  (setq doom-modeline-time-clock-size 1.0))
+  (setq doom-modeline-time-clock-size 1.0)
+  (unless (display-graphic-p)
+    (setq doom-modeline-unicode-number nil)))
 
 (use-package hide-mode-line
   :hook (((eat-mode
@@ -313,36 +315,37 @@
 ;; Layout
 ;;----------------------------------------------------------------------------
 
-(use-package spacious-padding
-  :hook (on-init-ui . spacious-padding-mode)
-  :config
-  (setq spacious-padding-widths
-        '( :internal-border-width 10   ; Gap between the frame border and the windows
-           :header-line-width 0        ; Vertical padding for the header-line
-           :mode-line-width 0          ; Vertical padding for the mode-line
-           :custom-button-width 0      ; Padding for buttons (e.g. in Custom UI)
-           :tab-width 2                ; Horizontal padding for tab-bar tabs
-           :right-divider-width 15     ; Width of the divider between side-by-side windows
-           :scroll-bar-width 0         ; Width reserved for scrollbars
-           :fringe-width 8)))          ; Width of the lateral fringes (git gutters, etc.)
+(when (display-graphic-p)
+  (use-package spacious-padding
+    :hook (on-init-ui . spacious-padding-mode)
+    :config
+    (setq spacious-padding-widths
+          '( :internal-border-width 10   ; Gap between the frame border and the windows
+             :header-line-width 0        ; Vertical padding for the header-line
+             :mode-line-width 0          ; Vertical padding for the mode-line
+             :custom-button-width 0      ; Padding for buttons (e.g. in Custom UI)
+             :tab-width 2                ; Horizontal padding for tab-bar tabs
+             :right-divider-width 15     ; Width of the divider between side-by-side windows
 
-;; --- Centered Text Layout ---
-(use-package olivetti
-  :commands (olivetti-mode)
-  :hook ((org-mode markdown-mode Info-mode message-mode) . olivetti-mode)
-  :config
-  (add-to-list 'window-persistent-parameters
-               '(spilt-window . t))
-  (advice-add 'window-toggle-side-windows
-              :before
-              'olivetti-reset-all-windows)
-  (advice-add 'olivetti-reset-window
-              :after
-              (lambda (window)
-                (set-window-parameter
-                 window
-                 'min-margins
-                 (cons 0 0)))))
+             :fringe-width 8)))          ; Width of the lateral fringes (git gutters, etc.)
+
+  ;; --- Centered Text Layout ---
+  (use-package olivetti
+    :commands (olivetti-mode)
+    :hook ((org-mode markdown-mode Info-mode message-mode) . olivetti-mode)
+    :config
+    (add-to-list 'window-persistent-parameters
+                 '(spilt-window . t))
+    (advice-add 'window-toggle-side-windows
+                :before
+                'olivetti-reset-all-windows)
+    (advice-add 'olivetti-reset-window
+                :after
+                (lambda (window)
+                  (set-window-parameter
+                   window
+                   'min-margins
+                   (cons 0 0))))))
 
 
 ;; --- Window Divider Appearance ---
@@ -380,32 +383,33 @@
                   (* 2 (plist-get info :font-height)))
                2)))))
 
-(use-package vertico-posframe
-  :functions posframe-poshandler-frame-center-near-bottom
-  :hook (vertico-mode . vertico-posframe-mode)
-  :init (setq vertico-posframe-poshandler
-              #'posframe-poshandler-frame-center-near-bottom
-              vertico-posframe-parameters
-              '((left-fringe  . 8)
-                (right-fringe . 8))))
+(when (display-graphic-p)
+  (use-package vertico-posframe
+    :functions posframe-poshandler-frame-center-near-bottom
+    :hook (vertico-mode . vertico-posframe-mode)
+    :init (setq vertico-posframe-poshandler
+                #'posframe-poshandler-frame-center-near-bottom
+                vertico-posframe-parameters
+                '((left-fringe  . 8)
+                  (right-fringe . 8))))
 
-(use-package transient-posframe
-  :diminish
-  :defines posframe-border-width
-  :hook (on-first-input . transient-posframe-mode)
-  :init (setq transient-mode-line-format nil
-              transient-posframe-border-width posframe-border-width
-              transient-posframe-parameters '((left-fringe . 8)
-                                              (right-fringe . 8))))
+  (use-package transient-posframe
+    :diminish
+    :defines posframe-border-width
+    :hook (on-first-input . transient-posframe-mode)
+    :init (setq transient-mode-line-format nil
+                transient-posframe-border-width posframe-border-width
+                transient-posframe-parameters '((left-fringe . 8)
+                                                (right-fringe . 8))))
 
-(use-package which-key-posframe
-  :diminish
-  :defines posframe-border-width
-  :hook which-key-mode
-  :config
-  (setq which-key-posframe-border-width posframe-border-width
-        which-key-posframe-parameters '((left-fringe . 8)
-                                        (right-fringe . 8))))
+  (use-package which-key-posframe
+    :diminish
+    :defines posframe-border-width
+    :hook which-key-mode
+    :config
+    (setq which-key-posframe-border-width posframe-border-width
+          which-key-posframe-parameters '((left-fringe . 8)
+                                          (right-fringe . 8)))))
 
 ;; ----------------------------------------------------------------------------
 ;; Misc UI Tweaks
