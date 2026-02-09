@@ -235,8 +235,12 @@ Can be an integer to determine the exact padding."
    (dirvish-hl-line          :background base1)
    (dirvish-hl-line-inactive :background bg)
 
-   ;; Magit
-   (magit-header-line :background base2)
+    ;; Magit
+    (magit-header-line :background base2)
+
+    ;; Diff
+    (diff-refine-added   :background (doom-blend green bg 0.4) :inverse-video nil)
+    (diff-refine-removed :background (doom-blend red bg 0.4) :inverse-video nil)
 
    ;; Rainbow Delimiters
    (rainbow-delimiters-depth-1-face :foreground violet)

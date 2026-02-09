@@ -208,11 +208,15 @@ Can be an integer to determine the exact padding."
    ;; (centaur-tabs-unselected-modified
    ;;  :background base2
    ;;  :foreground fg-alt)
-   ;; Magit
-   (magit-header-line
-    :background base3
-    :foreground fg
-    :box nil)
+    ;; Magit
+    (magit-header-line
+     :background base3
+     :foreground fg
+     :box nil)
+
+    ;; Diff
+    (diff-refine-added   :background (doom-blend green bg 0.3) :inverse-video nil)
+    (diff-refine-removed :background (doom-blend red bg 0.3) :inverse-video nil)
    ;; Info
    (info-menu-star :foreground magenta)
    ;; Override the theme's default color for operators.
