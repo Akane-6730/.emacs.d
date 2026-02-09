@@ -93,19 +93,23 @@
   (setq org-superstar-item-bullet-alist
         '((43 . 8226) (42 . 8226) (45 . 8211)))
   :custom-face
-  (org-superstar-header-bullet ((t (:family "JetBrains Mono"))))
-  (org-superstar-item ((t (:family "JetBrains Mono")))))
+  (org-superstar-item          ((t (:family "Maple Mono Normal NF CN"))))
+  (org-superstar-header-bullet ((t (:family "Maple Mono Normal NF CN")))))
 
 
 ;; SVG Tag Mode
-(when window-system
-  ;; 1. Define Helper Functions FIRST to avoid void-function errors
-  (defconst date-re "[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}")
-  (defconst time-re "[0-9]\\{2\\}:[0-9]\\{2\\}")
-  (defconst day-re "[A-Za-z]\\{3\\}")
-  (defconst day-time-re (format "\\(%s\\)? ?\\(%s\\)?" day-re time-re))
+(use-package svg-tag-mode
+  :if (display-graphic-p)
+  :hook (org-mode . svg-tag-mode)
+  :config
+  (setq svg-tag-action-at-point 'edit)
+
+  ;; Date regex: org always generates <2026-02-09 Mon> or <2026-02-09 Mon 14:00>
+  (defconst my/svg-date-re "[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}")
+  (defconst my/svg-day-time-re "[A-Za-z]\\{3\\}\\(?: [0-9]\\{2\\}:[0-9]\\{2\\}\\)?")
 
   (defun my/svg-tag-mode-refresh (&rest _)
+    "Refresh svg-tag-mode in all org buffers after theme/scale changes."
     (require 'svg-lib)
     (setq svg-lib-style-default (svg-lib-style-compute-default))
     (clear-image-cache)
@@ -115,7 +119,7 @@
           (svg-tag-mode -1)
           (svg-tag-mode 1)))))
 
-  (defun svg-progress-percent (value)
+  (defun my/svg-progress-percent (value)
     (save-match-data
       (svg-image (svg-lib-concat
                   (svg-lib-progress-bar (/ (string-to-number value) 100.0)
@@ -123,115 +127,62 @@
                   (svg-lib-tag (concat value "%")
                                nil :stroke 0 :margin 0 :radius 3 :font-weight 'bold :font-family "Roboto Mono" :height 0.8)) :ascent 'center)))
 
-  (defun svg-progress-count (value)
+  (defun my/svg-progress-count (value)
     (save-match-data
       (let* ((seq (split-string value "/"))
-             (count (if (stringp (car seq))
-                        (float (string-to-number (car seq)))
-                      0))
-             (total (if (stringp (cadr seq))
-                        (float (string-to-number (cadr seq)))
-                      1000)))
+             (count (float (string-to-number (car seq))))
+             (total (float (string-to-number (cadr seq)))))
         (svg-image (svg-lib-concat
-                    (svg-lib-progress-bar (/ count total) nil
+                    (svg-lib-progress-bar (/ count (max total 1)) nil
                                           :margin 0 :stroke 2 :radius 3 :padding 2 :width 11 :height 0.8)
                     (svg-lib-tag value nil
                                  :stroke 0 :margin 0 :radius 3 :font-weight 'bold :font-family "Roboto Mono" :height 0.8)) :ascent 'center))))
 
-  ;; 2. Load Libraries
-  (use-package svg-lib
-    :config
-    ;; Ensure default styles are correct
-    (setq svg-lib-style-default (svg-lib-style-compute-default)))
-
-  (use-package svg-tag-mode
-    :hook org-mode
-    :config
-    (setq svg-tag-action-at-point 'edit)
-
-    (advice-add 'load-theme :after #'my/svg-tag-mode-refresh)
-    (advice-add 'consult-theme :after #'my/svg-tag-mode-refresh)
-    (advice-add 'text-scale-adjust :after #'my/svg-tag-mode-refresh)
-
-    ;; Define a custom face for headlines that is visible in both light and dark modes
-    (defface my/svg-headline-face
-      '((((background dark)) :foreground "#8b9798")  ; Lighter grey for dark mode
-        (((background light)) :foreground "#505050")) ; Darker grey for light mode
-      "Face for SVG headlines.")
-
-    (setq svg-tag-tags
-          `(
-            ;; 1. Org Tags (Pill shape)
-            ;; Matches :TAG: patterns
-            ("\\(:[A-Za-z0-9]+:\\)$" . ((lambda (tag) (svg-tag-make tag :beg 1 :end -1 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :height 0.8))))
-
-            ;; 2. Priorities
-            ("\\(\\[#[A-Z]\\]\\)" . ((lambda (tag) (svg-tag-make tag :beg 1 :end -1 :face 'org-priority :inverse nil :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :stroke 1.5 :height 0.8))))
-
-            ;; 3. Keywords (Rounded Box)
-            ("TODO" . ((lambda (tag) (svg-tag-make "TODO" :face 'org-todo :inverse t :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :height 0.8))))
-            ("DONE" . ((lambda (tag) (svg-tag-make "DONE" :face 'org-done :inverse nil :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :stroke 1.5 :height 0.8))))
-            ("NOTE" . ((lambda (tag) (svg-tag-make "NOTE" :face 'org-note :inverse nil :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :stroke 1.5 :height 0.8))))
-            ("COMMENT" . ((lambda (tag) (svg-tag-make "COMMENT" :face 'org-note :inverse nil :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :stroke 1.5 :height 0.8))))
-
-            ;; 4. Active Date (Split-Pill Style)
-            ;; Date only: <2023-01-01>
-            (,(format "\\(<%s>\\)" date-re) .
-             ((lambda (tag)
-                (svg-tag-make tag :beg 1 :end -1 :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :height 0.8))))
-
-            ;; Date + Time/Day: <2023-01-01 Fri 10:00>
-            ;; Left part (Date): Light/Outlined, cropped right
-            (,(format "\\(<%s \\)%s>" date-re day-time-re) .
-             ((lambda (tag)
-                (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :stroke 2 :height 0.8))))
-
-            ;; Right part (Day/Time): Dark/Inverse, cropped left
-            (,(format "<%s \\(%s>\\)" date-re day-time-re) .
-             ((lambda (tag)
-                (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :height 0.8))))
-
-            ;; 5. Inactive Date (Same split-pill style)
-            ;; Date only: [2023-01-01]
-            (,(format "\\(\\[%s\\]\\)" date-re) .
-             ((lambda (tag)
-                (svg-tag-make tag :beg 1 :end -1 :margin 0 :face 'org-date :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :height 0.8))))
-
-            ;; Date + Time/Day: [2023-01-01 Fri 10:00]
-            ;; Left part
-            (,(format "\\(\\[%s \\)%s\\]" date-re day-time-re) .
-             ((lambda (tag)
-                (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0 :face 'org-date :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :stroke 2 :height 0.8))))
-
-            ;; Right part
-            (,(format "\\[%s \\(%s\\]\\)" date-re day-time-re) .
-             ((lambda (tag)
-                (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0 :face 'org-date :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :height 0.8))))
-
-            ;; 6. Progress
-            ("\\(\\[[0-9]\\{1,3\\}%\\]\\)" . ((lambda (tag)
-                                                (svg-progress-percent (substring tag 1 -2)))))
-            ("\\(\\[[0-9]+/[0-9]+\\]\\)" . ((lambda (tag)
-                                              (svg-progress-count (substring tag 1 -1))))))))
-
-  ;; Add refresh hook
-  (add-hook 'org-mode-hook #'my/svg-tag-mode-refresh)
-
-
-  (defun org-agenda-show-svg ()
+  (defun my/org-agenda-show-svg ()
+    "Render SVG tags in org-agenda buffer."
     (let* ((case-fold-search nil)
-           (keywords (mapcar #'svg-tag--build-keywords svg-tag--active-tags))
-           (keyword (car keywords)))
-      (while keyword
+           (keywords (mapcar #'svg-tag--build-keywords svg-tag--active-tags)))
+      (dolist (keyword keywords)
         (save-excursion
           (while (re-search-forward (nth 0 keyword) nil t)
-            (overlay-put (make-overlay
-                          (match-beginning 0) (match-end 0))
-                         'display  (nth 3 (eval (nth 2 keyword)))) ))
-        (pop keywords)
-        (setq keyword (car keywords)))))
-  (add-hook 'org-agenda-finalize-hook #'org-agenda-show-svg)
-  )
+            (overlay-put (make-overlay (match-beginning 0) (match-end 0))
+                         'display (nth 3 (eval (nth 2 keyword)))))))))
+
+  (advice-add 'load-theme :after #'my/svg-tag-mode-refresh)
+  (advice-add 'consult-theme :after #'my/svg-tag-mode-refresh)
+  (advice-add 'text-scale-adjust :after #'my/svg-tag-mode-refresh)
+  (add-hook 'org-agenda-finalize-hook #'my/org-agenda-show-svg)
+
+  (setq svg-tag-tags
+        `(;; Org Tags (:tag:)
+          ("\\(:[A-Za-z0-9]+:\\)$" .
+           ((lambda (tag) (svg-tag-make tag :beg 1 :end -1 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :height 0.8))))
+
+          ;; Priorities ([#A])
+          ("\\(\\[#[A-Z]\\]\\)" .
+           ((lambda (tag) (svg-tag-make tag :beg 1 :end -1 :face 'org-priority :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :stroke 1.5 :height 0.8))))
+
+          ;; Keywords
+          ("TODO" . ((lambda (_) (svg-tag-make "TODO" :face 'org-todo :inverse t :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :height 0.8))))
+          ("DONE" . ((lambda (_) (svg-tag-make "DONE" :face 'org-done :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :stroke 1.5 :height 0.8))))
+          ("NOTE" . ((lambda (_) (svg-tag-make "NOTE" :face 'org-note :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :stroke 1.5 :height 0.8))))
+          ("COMMENT" . ((lambda (_) (svg-tag-make "COMMENT" :face 'org-note :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :stroke 1.5 :height 0.8))))
+
+          ;; Active Date: <YYYY-MM-DD Day> or <YYYY-MM-DD Day HH:MM>
+          (,(format "\\(<%s \\)%s>" my/svg-date-re my/svg-day-time-re) .
+           ((lambda (tag) (svg-tag-make tag :beg 1 :crop-right t :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :stroke 2 :height 0.8))))
+          (,(format "<%s \\(%s>\\)" my/svg-date-re my/svg-day-time-re) .
+           ((lambda (tag) (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0 :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :height 0.8))))
+
+          ;; Inactive Date: [YYYY-MM-DD Day] or [YYYY-MM-DD Day HH:MM]
+          (,(format "\\(\\[%s \\)%s\\]" my/svg-date-re my/svg-day-time-re) .
+           ((lambda (tag) (svg-tag-make tag :beg 1 :crop-right t :margin 0 :face 'org-date :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :stroke 2 :height 0.8))))
+          (,(format "\\[%s \\(%s\\]\\)" my/svg-date-re my/svg-day-time-re) .
+           ((lambda (tag) (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0 :face 'org-date :radius 4 :font-family "Roboto Mono" :font-weight 'bold :padding 1 :height 0.8))))
+
+          ;; Progress
+          ("\\(\\[[0-9]\\{1,3\\}%\\]\\)" . ((lambda (tag) (my/svg-progress-percent (substring tag 1 -2)))))
+          ("\\(\\[[0-9]+/[0-9]+\\]\\)" . ((lambda (tag) (my/svg-progress-count (substring tag 1 -1))))))))
 
 
 ;;----------------------------------------------------------------------------
