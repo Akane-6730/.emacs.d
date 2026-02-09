@@ -153,7 +153,7 @@ This configures:
 
 (defun my-fonts-setup-fixed-pitch ()
   "Setup the `fixed-pitch' face with appropriate fontset.
-This is called lazily via `on-init-ui' hook."
+This is called lazily when `my-mixed-font-mode' activates."
   (interactive)
   (unless my-fonts--fixed-pitch-initialized
     (let ((fontset (my-fonts--ensure-fontset "fixed"))
@@ -161,21 +161,20 @@ This is called lazily via `on-init-ui' hook."
           (italic-han (my-fonts--first-available my-fonts-italic-han-list)))
       ;; Han script for fixed-pitch context
       (set-fontset-font fontset 'han (font-spec :family "Source Han Sans SC"))
-
+      ;; Fixed-pitch face
       (when mono-font
         (set-face-attribute 'fixed-pitch nil
                             :family mono-font
                             :weight 'regular
                             :fontset fontset))
-
       ;; Italic fontset for fixed-pitch CJK
-      (when italic-han
-        (let ((italic-fontset (my-fonts--ensure-fontset "fixeditalic")))
-          (set-fontset-font italic-fontset 'han
-                            (font-spec :family italic-han :slant 'italic))
-          (when mono-font
-            (set-fontset-font italic-fontset 'latin
-                              (font-spec :family mono-font :slant 'italic))))))
+      (when-let* ((italic-fontset (and italic-han
+                                       (my-fonts--ensure-fontset "fixeditalic"))))
+        (set-fontset-font italic-fontset 'han
+                          (font-spec :family italic-han :slant 'italic))
+        (when mono-font
+          (set-fontset-font italic-fontset 'latin
+                            (font-spec :family mono-font :slant 'italic)))))
     (setq my-fonts--fixed-pitch-initialized t)))
 
 (defvar my-fonts--variable-pitch-initialized nil
@@ -186,33 +185,30 @@ Used to defer setup until first use of `my-mixed-font-mode'.")
   "Setup the `variable-pitch' face with serif fonts for prose.
 This function is called lazily on first activation of `my-mixed-font-mode'."
   (interactive)
-  (let* ((fontset (my-fonts--ensure-fontset "variable"))
-         (latin-font (my-fonts--first-available my-fonts-variable-latin-list))
-         (han-font (my-fonts--first-available my-fonts-variable-han-list))
-         (italic-han (my-fonts--first-available my-fonts-italic-han-list)))
+  (let ((fontset (my-fonts--ensure-fontset "variable"))
+        (latin-font (my-fonts--first-available my-fonts-variable-latin-list))
+        (han-font (my-fonts--first-available my-fonts-variable-han-list))
+        (italic-han (my-fonts--first-available my-fonts-italic-han-list)))
     ;; Latin serif
     (when latin-font
-      (set-fontset-font fontset 'latin (font-spec :family latin-font)))
-    ;; CJK serif
-    (when han-font
-      (set-fontset-font fontset 'han (font-spec :family han-font)))
-
-    (when latin-font
+      (set-fontset-font fontset 'latin (font-spec :family latin-font))
       (set-face-attribute 'variable-pitch nil
                           :family latin-font
                           :weight 'regular
                           :fontset fontset))
-
-    ;; Italic fontset for variable-pitch CJK
-    (when (or italic-han latin-font)
-      (let ((italic-fontset (my-fonts--ensure-fontset "variableitalic")))
-        (when italic-han
-          (set-fontset-font italic-fontset 'han
-                            (font-spec :family italic-han :slant 'italic)))
-        (when latin-font
-          (set-fontset-font italic-fontset 'latin
-                            (font-spec :family latin-font :slant 'italic)))
-        (set-face-attribute 'italic nil :fontset italic-fontset)))))
+    ;; CJK serif
+    (when han-font
+      (set-fontset-font fontset 'han (font-spec :family han-font)))
+    ;; Italic fontset for variable-pitch
+    (when-let* ((italic-fontset (and (or italic-han latin-font)
+                                     (my-fonts--ensure-fontset "variableitalic"))))
+      (when italic-han
+        (set-fontset-font italic-fontset 'han
+                          (font-spec :family italic-han :slant 'italic)))
+      (when latin-font
+        (set-fontset-font italic-fontset 'latin
+                          (font-spec :family latin-font :slant 'italic)))
+      (set-face-attribute 'italic nil :fontset italic-fontset))))
 
 ;;;; Mixed-Pitch Minor Mode
 ;;
@@ -250,35 +246,30 @@ When enabled:
 This mode is intended for prose-oriented buffers like Org and Markdown."
   :lighter " Mixed"
   :group 'my-fonts
-  (if my-mixed-font-mode
-      (progn
-        ;; Ensure fixed-pitch is set up first
-        (my-fonts-setup-fixed-pitch)
-
-        ;; Lazy initialization of variable-pitch fonts
-        (unless my-fonts--variable-pitch-initialized
-          (my-fonts-setup-variable-pitch)
-          (setq my-fonts--variable-pitch-initialized t))
-
-        ;; Enable variable-pitch as the base
-        (variable-pitch-mode 1)
-
-        ;; Remap specified faces to fixed-pitch
-        (setq my-mixed-font--cookies nil)
-        (dolist (face my-mixed-font-fixed-faces)
-          (push (face-remap-add-relative face 'fixed-pitch)
-                my-mixed-font--cookies))
-
-        ;; Keep leading whitespace fixed-pitch for proper indentation
-        (font-lock-add-keywords nil '(("^[[:space:]]+" 0 'fixed-pitch)) 'append)
-        (font-lock-flush))
-
+  (cond
+   (my-mixed-font-mode
+    ;; Ensure fonts are set up
+    (my-fonts-setup-fixed-pitch)
+    (unless my-fonts--variable-pitch-initialized
+      (my-fonts-setup-variable-pitch)
+      (setq my-fonts--variable-pitch-initialized t))
+    ;; Enable variable-pitch as the base
+    (variable-pitch-mode 1)
+    ;; Remap specified faces to fixed-pitch
+    (setq my-mixed-font--cookies
+          (mapcar (lambda (face)
+                    (face-remap-add-relative face 'fixed-pitch))
+                  my-mixed-font-fixed-faces))
+    ;; Keep leading whitespace fixed-pitch for proper indentation
+    (font-lock-add-keywords nil '(("^[[:space:]]+" 0 'fixed-pitch)) 'append)
+    (font-lock-flush))
+   (t
     ;; Disable: restore original state
     (variable-pitch-mode -1)
     (mapc #'face-remap-remove-relative my-mixed-font--cookies)
     (setq my-mixed-font--cookies nil)
     (font-lock-remove-keywords nil '(("^[[:space:]]+" 0 'fixed-pitch)))
-    (font-lock-flush)))
+    (font-lock-flush))))
 
 ;;;; Italic Faces (Non-macOS)
 
