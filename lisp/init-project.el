@@ -11,34 +11,21 @@
 (use-package project
   :init (setq project-switch-commands
               '((?f "Find file" project-find-file)
-                (?g "Find regexp" project-find-regexp)
                 (?d "Dired" project-dired)
+                (?g "Find regexp" project-find-regexp)
                 (?q "Query replace" project-query-replace-regexp)
-                (?v "magit" project-magit-status)
-                (?t "Vterm" my/project-vterm)
+                (?v "Magit" project-magit-status)
+                (?t "Term" eat-project)
                 (?e "Eshell" project-eshell)
-                (?! "Shell command" project-shell-command)
-                (?k "Kill buffers" project-kill-buffers)
-                (?b "Buffer" project-switch-to-buffer)))
+                ;; (?k "Kill buffers" project-kill-buffers)
+                ;; (?! "Shell command" project-shell-command)
+                ;; (?b "Buffer" project-switch-to-buffer)
+                ))
   :config
   (defun project-magit-status ()
     "Run magit-status in the current project's root."
     (interactive)
     (magit-status-setup-buffer (project-root (project-current t))))
-
-  (defun my/project-vterm ()
-    "Open or switch to a vterm buffer in the current project's root."
-    (interactive)
-    (let* ((project (project-current t))
-           (root (project-root project))
-           (default-directory root)
-           (buf-name (format "*vterm-%s*"
-                             (file-name-nondirectory
-                              (directory-file-name root))))
-           (buf (get-buffer buf-name)))
-      (if (and buf (buffer-live-p buf))
-          (pop-to-buffer buf)
-        (vterm buf-name))))
 
   (defun my/project-remove-project ()
     "Remove project from `project--list' using completion."
@@ -53,7 +40,7 @@
   :bind (("C-x p q" . project-query-replace-regexp) ; C-x p is `project-prefix-map'
          ("C-x p <delete>" . my/project-remove-project)
          ("C-x p DEL" . my/project-remove-project)
-         ("C-x p t" . my/project-vterm)))
+         ("C-x p t" . eat-project)))
 
 (provide 'init-project)
 

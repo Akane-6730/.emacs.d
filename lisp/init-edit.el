@@ -65,7 +65,7 @@
   :config
   (defun my/mwim-excluded-p ()
     (or (minibufferp)
-        (derived-mode-p 'comint-mode 'term-mode 'vterm-mode 'eshell-mode)))
+        (derived-mode-p 'comint-mode 'term-mode 'eat-mode 'eshell-mode)))
 
   (defun my/mwim-beginning ()
     (interactive)

@@ -49,8 +49,14 @@
 
   :hook (eshell-mode . my-eshell-setup))
 
-(use-package vterm
-  :config (setq vterm-disable-bold t))
+;; Better terminal emulator
+(use-package eat
+  :hook ((eshell-load . eat-eshell-mode)
+         (eshell-load . eat-eshell-visual-command-mode))
+  :config
+  (setq eat-kill-buffer-on-exit t)
+  (when (eq system-type 'darwin)
+    (setq eat-term-name "xterm-256color")))
 
 ;; Bind C-e to accept completion-preview (ghost text) when active
 (use-package completion-preview
