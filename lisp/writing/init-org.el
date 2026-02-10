@@ -33,8 +33,8 @@
         org-tags-column -80
         org-export-with-smart-quotes t  ; Global smart quotes for all exports
         org-hide-emphasis-markers t
-        org-highlight-latex-and-related '(native script entities)
-        org-ellipsis " "               ; ⤵ ▾ ▼ ↴
+        org-highlight-latex-and-related '(native script) ; for consistency
+        ;; org-ellipsis " "               ; ⤵ ▾ ▼ ↴
         org-pretty-entities t
         org-pretty-entities-include-sub-superscripts nil
         org-imenu-depth 4)
