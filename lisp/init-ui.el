@@ -117,9 +117,40 @@ Calls ORIGINAL-FN with THEME and ARGS after cleanup."
   (setq doom-modeline-height 18
         doom-modeline-battery t
         doom-modeline-time-icon t
-        doom-modeline-time-clock-size 1.0)
+        doom-modeline-time-clock-size 1.0
+        doom-modeline-enable-buffer-position nil
+        doom-modeline-buffer-encoding nil
+        doom-modeline-buffer-file-name-style 'relative-to-project
+        doom-modeline-buffer-modification-icon nil)
   (unless (display-graphic-p)
-    (setq doom-modeline-unicode-number nil)))
+    (setq doom-modeline-unicode-number nil))
+
+  ;; Custom segment: buffer name with major-mode icon (no lock)
+  (doom-modeline-def-segment my-buffer-name
+    "Display buffer name with mode icon, without state icons."
+    (concat
+     (doom-modeline-spc)
+     (doom-modeline--buffer-mode-icon)
+     (doom-modeline-spc)
+     (propertize (buffer-name) 'face 'doom-modeline-buffer-file)))
+
+  ;; Custom segment: show git branch in Magit buffers
+  (doom-modeline-def-segment my-magit-branch
+    "Display current git branch in Magit buffers."
+    (when (and (derived-mode-p 'magit-mode)
+               (fboundp 'magit-get-current-branch))
+      (when-let ((branch (magit-get-current-branch)))
+        (concat
+         (doom-modeline-spc)
+         (nerd-icons-octicon "nf-oct-git_branch" :face 'doom-modeline-info)
+         (doom-modeline-spc)
+         (propertize branch 'face 'doom-modeline-info)))))
+
+  ;; Magit modeline: no lock icon, branch on right side
+  (doom-modeline-def-modeline 'my-magit
+    '(bar modals matches my-buffer-name remote-host)
+    '(my-magit-branch misc-info major-mode process))
+  (add-to-list 'doom-modeline-mode-alist '(magit-mode . my-magit)))
 
 (use-package hide-mode-line
   :hook ((eat-mode
