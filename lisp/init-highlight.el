@@ -22,7 +22,7 @@
 ;; `show-paren-mode` is a built-in mode that highlights matching delimiters
 (use-package paren
   :ensure nil
-  :hook (after-init . show-paren-mode)
+  :hook ((prog-mode text-mode) . show-paren-mode)
   :config
   ;; These settings improve the highlighting behavior, making it more intuitive.
   (setq show-paren-when-point-inside-paren t
@@ -82,7 +82,24 @@
 (use-package highlight-doxygen
   :hook prog-mode
   :custom-face
-  (highlight-doxygen-comment ((t (:background unspecified)))))
+  (highlight-doxygen-comment ((t (:background unspecified))))
+  :config
+  ;; Fix doxygen regex to match identifiers with underscores in C/C++ modes.
+  (defun my/highlight-doxygen--patch-sw (tree)
+    "Replace \\sw+ with \\(?:\\sw\\|\\s_\\)+ in TREE recursively."
+    (cond
+     ((stringp tree)
+      (replace-regexp-in-string
+       (regexp-quote "\\sw+")
+       "\\(?:\\sw\\|\\s_\\)+"
+       tree t t))
+     ((consp tree)
+      (cons (my/highlight-doxygen--patch-sw (car tree))
+            (my/highlight-doxygen--patch-sw (cdr tree))))
+     (t tree)))
+  (define-advice highlight-doxygen-anchored-keywords-template
+      (:filter-return (keywords) fix-underscore)
+    (my/highlight-doxygen--patch-sw keywords)))
 
 (provide 'init-highlight)
 ;;; init-highlight.el ends here
