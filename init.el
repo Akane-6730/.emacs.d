@@ -57,6 +57,7 @@
 ;; -- Tools and UI enhancements --
 (require 'init-vcs)         ; Version control (Magit).
 (require 'init-ibuffer)
+(require 'init-project)
 (require 'init-dashboard)   ; Startup dashboard.
 (require 'init-dired)       ; File manager enhancements.
 (require 'init-shell)       ; Eshell configuration.
