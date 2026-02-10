@@ -8,15 +8,15 @@
 
 ;;; Code:
 
-;;;; Set package archives
-(setq package-archives '(("gnu"    . "https://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
-                         ("nongnu" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/nongnu/")
-                         ("melpa"  . "https://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")))
+;;;; Set package archives (USTC mirror)
+(setq package-archives '(("gnu"    . "https://mirrors.ustc.edu.cn/elpa/gnu/")
+                         ("nongnu" . "https://mirrors.ustc.edu.cn/elpa/nongnu/")
+                         ("melpa"  . "https://mirrors.ustc.edu.cn/elpa/melpa/")))
 
 ;; Initialize package system.
 (package-initialize)
 
-;; Ensure GPG keyring for GNU ELPA is up to date.
+;; First time setup: refresh package contents
 (let ((melpa-archive-exists (file-exists-p (expand-file-name "archives/melpa/archive-contents" package-user-dir))))
   (unless (and package-archive-contents melpa-archive-exists)
     (message "First time setup: refreshing package contents...")
