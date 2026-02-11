@@ -138,11 +138,18 @@
 ;; Scrolling
 ;; ---------------------------------------------------------------------------
 
-(setq mouse-wheel-scroll-amount '(1 ((shift) . hscroll))
-      mouse-wheel-progressive-speed nil
-      scroll-conservatively 101
-      fast-but-imprecise-scrolling t
-      redisplay-skip-fontification-on-input t)
+(setq fast-but-imprecise-scrolling t
+      redisplay-skip-fontification-on-input t
+      hscroll-step 1
+      hscroll-margin 2
+      scroll-step 1
+      scroll-margin 0
+      scroll-conservatively 100000
+      scroll-preserve-screen-position t
+      auto-window-vscroll nil
+      ;; mouse
+      mouse-wheel-scroll-amount-horizontal 1
+      mouse-wheel-progressive-speed nil)
 
 (use-package pixel-scroll
   :ensure nil
