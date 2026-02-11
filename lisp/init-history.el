@@ -12,14 +12,15 @@
 ;; Minibuffer history
 (use-package savehist
   :hook (on-first-input . savehist-mode)
-  :init (setq enable-recursive-minibuffers t ; Allow commands in minibuffers
-              history-length 1000
-              savehist-additional-variables '(mark-ring
-                                              global-mark-ring
-                                              search-ring
-                                              regexp-search-ring
-                                              extended-command-history)
-              savehist-autosave-interval 300))
+  :init (setq
+         ;; enable-recursive-minibuffers t ; Allow commands in minibuffers
+         history-length 1000
+         savehist-additional-variables '(mark-ring
+                                         global-mark-ring
+                                         search-ring
+                                         regexp-search-ring
+                                         extended-command-history)
+         savehist-autosave-interval 300))
 
 (use-package saveplace
   :hook (on-first-file . save-place-mode))
