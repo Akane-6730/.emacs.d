@@ -104,15 +104,19 @@ Calls ORIGINAL-FN with THEME and ARGS after cleanup."
 ;;; ----------------------------------------------------------------------------
 
 (use-package time
-  :init
+  :defer 0.5
+  :config
   (setq display-time-default-load-average nil
-        display-time-format "%H:%M"))
+        display-time-format "%H:%M")
+  (display-time-mode 1))
+
+(use-package battery
+  :defer 0.5
+  :config
+  (display-battery-mode 1))
 
 (use-package doom-modeline
   :hook after-init
-  :init
-  (display-time-mode t)
-  (display-battery-mode t)
   :config
   (setq doom-modeline-height 18
         doom-modeline-battery t
