@@ -153,9 +153,8 @@
   (setq pixel-scroll-precision-interpolate-page t))
 
 (use-package ultra-scroll
-  :bind (:map pixel-scroll-precision-mode-map
-              ("<wheel-up>" . ultra-scroll)
-              ("<wheel-down>" . ultra-scroll))
+  :after pixel-scroll
+  :demand t
   :config
   (ultra-scroll-mode 1))
 
