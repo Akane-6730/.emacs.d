@@ -40,13 +40,17 @@
         "Menlo"
         "Cascadia Code"
         "Consolas"
+        "Iosevka"
         "SF Mono"
         "Courier New")
-    '("Maple Mono Normal NF CN"
+    '("Monaco Nerd Font"
+      "Monaco Nerd Font Mono"
+      "Maple Mono Normal NF CN"
       "Maple Mono NF CN"
-      "Monaco"
-      "Menlo"
       "Cascadia Code"
+      "Monego"
+      "Iosevka"
+      "Menlo"
       "Consolas"
       "SF Mono"
       "Courier New"))
@@ -97,6 +101,21 @@
   :type 'integer
   :group 'my-fonts)
 
+;;;; Internal State
+
+(defvar my-fonts--current-mono nil
+  "The monospace font family currently in use.
+Set by `my-fonts-setup-default' during initialization.")
+
+(defconst my-fonts--no-italic-families '("Monaco Nerd Font Mono" "Monaco Nerd Font" "Monaco")
+  "Font families that should NOT use italic styles.
+These bitmap/pixel fonts look poor with synthetic italic.")
+
+(defun my-fonts-italic-p ()
+  "Return non-nil if the current mono font supports italic.
+Returns nil when the font is in `my-fonts--no-italic-families'."
+  (not (member my-fonts--current-mono my-fonts--no-italic-families)))
+
 ;;;; Internal Utilities
 
 (defun my-fonts--available-p (font-name)
@@ -128,6 +147,7 @@ This configures:
   (with-selected-frame frame
     ;; 1. Monospace (default face)
     (when-let* ((mono-font (my-fonts--first-available my-fonts-mono-list)))
+      (setq my-fonts--current-mono mono-font)
       (set-face-attribute 'default frame
                           :family mono-font
                           :height my-fonts-default-height))
@@ -271,19 +291,29 @@ This mode is intended for prose-oriented buffers like Org and Markdown."
     (font-lock-remove-keywords nil '(("^[[:space:]]+" 0 'fixed-pitch)))
     (font-lock-flush))))
 
-;;;; Italic Faces (Non-macOS)
+;;;; Italic Faces
+
+(defconst my-fonts--mono-italic-faces
+  '(font-lock-preprocessor-face
+    font-lock-type-face
+    font-lock-comment-face
+    font-lock-keyword-face
+    font-lock-builtin-face)
+  "Monospace code faces whose italic should be stripped for bitmap fonts.
+These are the faces that doom-themes may set to italic via
+`doom-themes-enable-italic'.  Variable-pitch / serif faces
+\(e.g. `org-quote', `markdown-blockquote-face') are intentionally
+NOT included so they always keep their italic regardless of the
+monospace font in use.")
 
 (defun my-fonts-setup-italic-faces ()
-  "Enable italic style for various programming faces.
-This is only applied on non-macOS systems where italic rendering
-may need explicit configuration."
-  (unless (eq system-type 'darwin)
-    (dolist (face '(font-lock-preprocessor-face
-                    font-lock-type-face
-                    font-lock-comment-face
-                    font-lock-keyword-face
-                    font-lock-builtin-face))
-      (set-face-attribute face nil :slant 'italic))))
+  "Adjust italic on monospace code faces based on the current font.
+When the mono font does NOT support italic (Monaco / Monego),
+remove `:slant italic' from code faces while leaving
+variable-pitch faces untouched."
+  (let ((slant (if (my-fonts-italic-p) 'italic 'normal)))
+    (dolist (face my-fonts--mono-italic-faces)
+      (set-face-attribute face nil :slant slant))))
 
 ;;;; Initialization
 

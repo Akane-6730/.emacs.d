@@ -24,9 +24,13 @@
 (use-package doom-themes
   :demand t
   :config
+  ;; Bold/italic always enabled at theme level.
+  ;; For Monaco/Monego, italic is selectively removed from monospace faces
+  ;; AFTER theme load by `my-fonts-setup-italic-faces' in init-fonts.el.
+  ;; This preserves italic on variable-pitch/serif faces (org-quote, etc.).
   (setq doom-themes-enable-bold t
-        doom-themes-enable-italic t
-        custom-theme-directory (expand-file-name "lisp/themes" user-emacs-directory))
+        doom-themes-enable-italic t)
+  (setq custom-theme-directory (expand-file-name "lisp/themes" user-emacs-directory))
 
   ;; Enable flashing mode-line on errors (avoids yellow warning triangle on macOS)
   (doom-themes-visual-bell-config)
@@ -36,8 +40,8 @@
     (with-selected-frame frame
       (if (display-graphic-p frame)
           (progn
-            (load-theme 'my-light t)
-            (my-fonts-setup-default frame))
+            (my-fonts-setup-default frame)
+            (load-theme 'my-light t))
         (load-theme 'my-dark t))
       (my-fonts-setup-italic-faces)))
 
