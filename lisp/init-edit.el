@@ -88,7 +88,7 @@
 (use-package drag-stuff
   :diminish
   :autoload drag-stuff-define-keys
-  :hook ((prog-mode text-mode conf-mode) . drag-stuff-mode)
+  :hook ((prog-mode text-mode conf-mode) . turn-on-drag-stuff-mode)
   :config
   (add-to-list 'drag-stuff-except-modes 'org-mode)
   (drag-stuff-define-keys))
