@@ -12,8 +12,9 @@
 ;; Performance Tweaks
 ;;----------------------------------------------------------------------------
 
-;; Defer Garbage Collection
-(setq gc-cons-threshold most-positive-fixnum)
+;; Defer Garbage Collection (not needed with IGC/MPS)
+(unless (featurep 'mps)
+  (setq gc-cons-threshold most-positive-fixnum))
 
 ;; Disable Automatic Package Initialization
 ;; We will manually initialize packages with `use-package` to have full control
