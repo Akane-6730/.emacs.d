@@ -113,8 +113,9 @@ These bitmap/pixel fonts look poor with synthetic italic.")
 
 (defun my-fonts-italic-p ()
   "Return non-nil if the current mono font supports italic.
-Returns nil when the font is in `my-fonts--no-italic-families'."
-  (not (member my-fonts--current-mono my-fonts--no-italic-families)))
+Returns nil when the font is unknown (TUI) or in `my-fonts--no-italic-families'."
+  (and my-fonts--current-mono
+       (not (member my-fonts--current-mono my-fonts--no-italic-families))))
 
 ;;;; Internal Utilities
 
