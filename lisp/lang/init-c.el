@@ -17,10 +17,68 @@
 (defvar my-c-debug-flags "-g" "Flags for including debug information.")
 
 
-
 ;;----------------------------------------------------------------------------
 ;; The Unified C/C++ Tree-sitter Setup Function
 ;;----------------------------------------------------------------------------
+
+(defun my-c-ts-font-lock-matcher (limit)
+  "Match operators, templates, and quotes for custom highlighting.
+Uses Tree-sitter to ensure context correctness (e.g. excluding 3.14, string content)."
+  (let (res)
+    (while (and (not res)
+                (re-search-forward "\\(?:\\.\\|->\\|::\\|\\[\\|\\]\\|;\\|<\\|>\\|[\"']\\)" limit t))
+      (let* ((beg (match-beginning 0))
+             (end (match-end 0))
+             (node (treesit-node-at beg))
+             (parent (treesit-node-parent node))
+             (type (treesit-node-type node))
+             (text (match-string 0)))
+        (when node
+          (cond
+           ;; A. Escape sequences (\") -> SKIP
+           ((equal type "escape_sequence")
+            nil)
+
+           ;; B. Quotes (" ') -> Highlight only if delimiters
+           ((member text '("\"" "'"))
+            (when (or
+                   ;; Standalone delimiter node
+                   (= (- (treesit-node-end node) (treesit-node-start node)) 1)
+                   ;; Boundary of literal
+                   (and (member type '("string_literal" "char_literal" "system_lib_string"))
+                        (or (= beg (treesit-node-start node))
+                            (= beg (1- (treesit-node-end node))))))
+              (setq res t)))
+
+           ;; C. Angle brackets (< >) -> Highlight if Template or Include
+           ((member text '("<" ">"))
+            (when (or
+                   ;; Template context
+                   (member (treesit-node-type parent)
+                           '("template_parameter_list" "template_argument_list"))
+                   ;; Include context (<time.h>)
+                   (member type '("system_lib_string")))
+              (setq res t)))
+
+           ;; D. Other operators (. -> :: ; [] etc) -> Highlight if operator
+           (t
+            (when (and
+                   ;; Not in string/comment content
+                   (not (member type '("string_content" "comment")))
+                   ;; Geometry match (excludes 3.14)
+                   (= (- (treesit-node-end node) (treesit-node-start node))
+                      (- end beg)))
+              (setq res t)))))))
+    res))
+
+(defun my-c-match-symbol-in-code (regex limit)
+  "Search for REGEX up to LIMIT, ensuring match is not in string or comment."
+  (let (res)
+    (while (and (not res)
+                (re-search-forward regex limit t))
+      (unless (nth 8 (syntax-ppss))
+        (setq res t)))
+    res))
 
 (defun my-c-ts-mode-setup ()
   "Apply all custom settings for C/C++ Tree-sitter modes."
@@ -50,12 +108,18 @@
   (define-key (current-local-map) (kbd "<f12>") #'compile)
 
   ;; 4. Custom Highlighting
-  ;; Override specific operators (.;->;::[]) to be grey
-  ;; Override 'this' to be orange
   (font-lock-add-keywords
    nil
-   '(("\\(?:\\.\\|->\\|::\\|\\[\\|\\]\\)" 0 'font-lock-delimiter-face t)
-     ("\\<this\\>" 0 'eglot-semantic-parameter t))))
+   `((my-c-ts-font-lock-matcher 0 'font-lock-delimiter-face t)
+     ("^\\s-*\\(#\\)" 1 'font-lock-delimiter-face t)
+
+     ;; Keywords: template, typename -> Blue
+     (,(lambda (lim) (my-c-match-symbol-in-code "\\<\\(template\\|typename\\)\\>" lim))
+      0 'font-lock-type-face t)
+
+     ;; Keyword: this -> Orange
+     (,(lambda (lim) (my-c-match-symbol-in-code "\\<this\\>" lim))
+      0 'eglot-semantic-parameter t))))
 
 ;;----------------------------------------------------------------------------
 ;; Hooking into Tree-sitter Modes
