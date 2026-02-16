@@ -78,7 +78,10 @@ Output ONLY the commit message.")
   ;; :hook (org-mode . my/copilot-enable-for-org)
   :bind (:map copilot-mode-map
               ("C-e" . my/copilot-accept-or-end-of-line)
-              ("M-f" . my/copilot-accept-word-or-forward-word))
+              ("M-f" . my/copilot-accept-word-or-forward-word)
+              :map copilot-completion-map
+              ("TAB" . copilot-accept-completion)
+              ("<tab>" . copilot-accept-completion))
   :config
   (defun my/copilot-enable-for-org ()
     "Enable Copilot mode in Org mode, but not during agenda or capture."
