@@ -37,8 +37,12 @@
 ;;----------------------------------------------------------------------------
 
 (setq frame-inhibit-implied-resize t)
-(setq-default inhibit-redisplay t
-              inhibit-message t)
+
+(defvar my/first-startup-p
+  (not (file-directory-p (expand-file-name "elpa/archives" user-emacs-directory))))
+(setq-default inhibit-redisplay (not my/first-startup-p)
+              inhibit-message (not my/first-startup-p))
+
 (add-hook 'window-setup-hook
           (lambda ()
             (setq-default inhibit-redisplay nil
@@ -79,5 +83,10 @@
 ;; Since Emacs 29, `use-package` is built-in. This enables its Imenu support,
 ;; which is useful for navigating our package configurations.
 (setq use-package-enable-imenu-support t)
+
+;; Route Customize writes to `custom.el` as early as possible.
+;; This prevents startup-time package operations from appending
+;; `custom-set-variables` blocks to `init.el`.
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 
 ;;; early-init.el ends here
