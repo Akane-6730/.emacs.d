@@ -59,6 +59,14 @@
 % Syntax highlighting using Pygments
 \usepackage{minted}
 \usemintedstyle{solarized-light}
+% Minted style for gray boxed code blocks
+\definecolor{CodeBg}{RGB}{245,245,245}
+\setminted{
+	framesep=2mm,
+	bgcolor=CodeBg,
+	breaklines=true,
+	autogobble=true
+}
 
 % =========================================
 % Theorem Environments (Beautiful Boxes)
