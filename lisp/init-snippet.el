@@ -34,13 +34,8 @@
   (add-hook 'text-mode-hook #'my/setup-merged-yasnippet-capf)
 
   ;; To integrate `yasnippet-capf' with `eglot' completion
-  ;; https://github.com/minad/corfu/wiki#making-a-cape-super-capf-for-eglot
   (defun my-eglot-capf-with-yasnippet ()
-    (setq-local completion-at-point-functions
-                (list
-                 (cape-capf-super
-                  #'eglot-completion-at-point
-                  #'yasnippet-capf))))
+    (add-hook 'completion-at-point-functions #'yasnippet-capf t t))
   (add-hook 'eglot-managed-mode-hook #'my-eglot-capf-with-yasnippet)
 
   :config
