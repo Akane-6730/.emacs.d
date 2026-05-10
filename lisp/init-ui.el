@@ -52,11 +52,15 @@
 ;;; Robust Theme Loading
 ;; Ensure old themes are disabled before loading new ones.
 
+(defvar after-load-theme-hook nil
+  "Hook run after a Custom theme has been loaded.")
+
 (defun my--theme-load-wrapper (original-fn theme &rest args)
   "Advice wrapper for `load-theme' that disables old themes first.
 Calls ORIGINAL-FN with THEME and ARGS after cleanup."
   (mapc #'disable-theme custom-enabled-themes)
-  (apply original-fn theme args))
+  (prog1 (apply original-fn theme args)
+    (run-hooks 'after-load-theme-hook)))
 
 (advice-add 'load-theme :around #'my--theme-load-wrapper)
 

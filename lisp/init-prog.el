@@ -45,9 +45,8 @@
   :diminish
   :bind (:map eldoc-mouse-mode-map
               ("C-h ." . eldoc-mouse-pop-doc-at-cursor))
-  :hook ((eglot-managed-mode emacs-lisp-mode)
-         (after-load-theme . eldoc-mouse-set-appearance))
-  :init
+  :hook (eglot-managed-mode emacs-lisp-mode)
+  :config
   (defun eldoc-mouse-set-appearance ()
     "Set appearance of eldoc-mouse."
     (let ((border-color (if (facep 'posframe-border)
@@ -58,8 +57,10 @@
               (drag-internal-border . t)
               (timeout . nil)
               (foreground-color . ,(face-foreground 'tooltip nil t))
-              (background-color . ,(face-background 'tooltip nil t)))
-            eldoc-mouse-posframe-border-color border-color)))
+              (background-color . ,(face-background 'tooltip nil t))))
+      (set-face-background 'eldoc-mouse-border border-color)
+      (posframe-delete eldoc-mouse-posframe-buffer-name)))
+  (add-hook 'after-load-theme-hook #'eldoc-mouse-set-appearance)
   (eldoc-mouse-set-appearance))
 
 
