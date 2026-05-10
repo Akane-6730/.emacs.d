@@ -159,6 +159,21 @@
   :diminish
   :hook ((prog-mode text-mode conf-mode) . editorconfig-mode))
 
+
+;;----------------------------------------------------------------------------
+;; Visual Enhancements
+;;----------------------------------------------------------------------------
+
+;; Prettify Symbols (e.g., display “lambda” as “λ”)
+(use-package prog-mode
+  :ensure nil
+  :hook (prog-mode . prettify-symbols-mode))
+
+
+;;--------------------------------------------------------------------------
+;; Language-specific Modes
+;;--------------------------------------------------------------------------
+
 (use-package yaml-ts-mode)
 
 (provide 'init-prog)
