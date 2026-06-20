@@ -14,7 +14,7 @@
   :ensure nil ; This is a built-in package.
   ;; Enable Flymake automatically for all programming modes.
   :hook (prog-mode . flymake-mode)
-  :bind (("C-c f" . consult-flymake))
+  :bind (("C-c f" . flymake-show-buffer-diagnostics))
   :config
   ;; By default, Flymake uses a fringe indicator (a symbol in the left margin)
   ;; to show errors, which is clean and unobtrusive.
