@@ -224,6 +224,16 @@ Calls ORIGINAL-FN with THEME and ARGS after cleanup."
     (set-face-background 'fringe nil posframe--frame))
   (advice-add #'posframe--create-posframe :after #'my--posframe-prettify-frame)
 
+  (defun posframe-poshandler-frame-center (info)
+    "Position posframe at the true center of the frame.
+INFO is the posframe position info plist."
+    (cons (/ (- (plist-get info :parent-frame-width)
+                (plist-get info :posframe-width))
+             2)
+          (/ (- (plist-get info :parent-frame-height)
+                (plist-get info :posframe-height))
+             2)))
+
   (defun posframe-poshandler-frame-center-near-bottom (info)
     "Position posframe at center, slightly below middle of frame.
 INFO is the posframe position info plist."
@@ -232,13 +242,19 @@ INFO is the posframe position info plist."
              2)
           (/ (+ (plist-get info :parent-frame-height)
                 (* 2 (plist-get info :font-height)))
-             2))))
+             2)))
+
+  (defun my--vertico-posframe-set-near-bottom-for-consult-line ()
+    "Use near-bottom posframe position when entering minibuffer from `consult-line'."
+    (when (eq this-command 'consult-line)
+      (setq-local vertico-posframe-poshandler #'posframe-poshandler-frame-center-near-bottom)))
+  (add-hook 'minibuffer-setup-hook #'my--vertico-posframe-set-near-bottom-for-consult-line))
 
 (when (display-graphic-p)
   (use-package vertico-posframe
     :hook (vertico-mode . vertico-posframe-mode)
     :init
-    (setq vertico-posframe-poshandler #'posframe-poshandler-frame-center-near-bottom
+    (setq vertico-posframe-poshandler #'posframe-poshandler-frame-center
           vertico-posframe-parameters '((left-fringe . 8)
                                         (right-fringe . 8))))
 
