@@ -31,8 +31,7 @@
         '("operator" "namespace" "type" "enum" "interface" "struct" "typeParameter" "parameter" "variable"
           "property" "enumMember" "event" "function" "method"  "keyword"  "string" "number" "decorator")) ; "class" "operator" "modifier"
   (setq eglot-semantic-token-modifiers
-        '("deprecated" "abstract" "async"
-          "modification" "documentation"))) ; "declaration" "definition" "defaultLibrary" "readonly" "static"
+        '("deprecated" "async" "modification" "documentation"))) ; "declaration" "definition" "defaultLibrary" "readonly" "static" "abstract"
 
 ;;----------------------------------------------------------------------------
 ;; Integration with our Completion System
