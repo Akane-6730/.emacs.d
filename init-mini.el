@@ -33,7 +33,7 @@
               indent-tabs-mode nil)
 
 ;; UI
-;; (load-theme 'tango t)
+(load-theme 'modus-vivendi t)
 
 (unless (eq window-system 'ns)
   (menu-bar-mode -1))
