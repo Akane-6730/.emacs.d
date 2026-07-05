@@ -48,14 +48,14 @@
 (global-set-key (kbd "C-_") #'my/global-text-scale-decrease)
 
 ;;---------------------------------------------------------------------
-;; Kitty Keyboard Protocol (TUI only)
+;; Kitty Keyboard Protocol
 ;;---------------------------------------------------------------------
 
 ;; Enable extended key combinations in TUI
-(unless window-system
-  (use-package kkp
-    :hook (on-first-input . global-kkp-mode)
-    :config (global-kkp-mode 1)))
+(use-package kkp
+  :if (not (display-graphic-p))
+  :hook (on-first-buffer . global-kkp-mode)
+  :config (global-kkp-mode 1))
 
 (provide 'init-kbd)
 ;;; init-kbd.el ends here
