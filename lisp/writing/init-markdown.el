@@ -14,9 +14,10 @@
   (markdown-hide-markup t)
   (markdown-enable-wiki-links t)
   (markdown-enable-highlighting-syntax t)
+  :custom-face
+  (markdown-list-face ((t (:family "Maple Mono Normal NF CN"))))
   :config
-  (setq markdown-list-item-bullets '("•" "►")))
-
+  (setq markdown-list-item-bullets '("•" "–")))
 
 (provide 'init-markdown)
 ;;; init-markdown.el ends here
