@@ -10,6 +10,8 @@
 ;; Core Dired Behavior
 (use-package dired
   :ensure nil
+  :bind (:map dired-mode-map
+              ("C-s" . dired-isearch-filenames))
   :config
   (setq dired-dwim-target t)
   (setq dired-listing-switches "-Alh --group-directories-first")
@@ -35,124 +37,156 @@
   :ensure nil
   :hook (dired-mode . dired-omit-mode)
   :config
-  (setq dired-omit-files
-        (concat dired-omit-files "\\|^\\.[^.]\\|^go\\|^eln-cache$\\|^auto-save-list$\\|^transient$\\|^tree-sitter$\\|^dirvish$\\|^elpa$\\|^history\\|^places\\|^recentf\\|^screenshots\\|^eshell\\|^rime\\|^package\\.json$\\|^package-lock\\.json$\\|^node_modules$\\|^_minted-\\|^agent")))
+  (concat dired-omit-files
+          "\\|^.DS_Store$\\|^.projectile$\\|^.git*\\|^.svn$\\|^.vscode$\\|\\.js\\.meta$\\|\\.meta$\\|\\.elc$\\|^.emacs.*"))
 
-(use-package dirvish
-  :init (with-eval-after-load 'dired (dirvish-override-dired-mode))
+;; Colorful dired
+(use-package diredfl
+  :hook dired-mode)
+
+(use-package nerd-icons-dired
+  :hook dired-mode)
+
+(use-package speedbar
+  :ensure nil
+  :bind (("M-0" . my/speedbar-window-toggle)
+         :map speedbar-mode-map
+         ("q"   . my/speedbar-window-quit)
+         ("TAB" . speedbar-toggle-line-expansion)
+         ("d"   . speedbar-item-delete)
+         ("c"   . speedbar-item-copy)
+         ("r"   . speedbar-item-rename)
+         ("C-s" . isearch-forward)
+         ;; Cancel the global `[remap isearch-forward] -> consult-line' in this
+         ;; map so C-s falls through to a real isearch.
+         ([remap isearch-forward] . isearch-forward))
+  :hook (speedbar-mode . my/speedbar-inherit-dired-faces)
   :config
-  (setq dirvish-side-width 25)
-  (setq dirvish-header-line-height 21)
-  (setq dirvish-path-separators (list "   " "   " "  "))
-  (setq dirvish-subtree-state-style 'nerd)
-  (setq dirvish-attributes '(subtree-state nerd-icons git-msg file-time file-size))
-  (setq dirvish-side-attributes '(nerd-icons subtree-state))
-  (setq dirvish-side-mode-line-format '(:left (sort omit symlink)))
-  (setq dirvish-quick-access-entries
-   '(("e" "~/.emacs.d/" "Emacs user directory")
-     ("c" "~/Documents/code/" "Code")
-     ("d" "~/Documents/" "Documents")
-     ("h" "~/" "Home")
-     ("o" "~/Documents/org/" "Org")))
+  (setq speedbar-window-default-width 30)
+  (setq speedbar-use-images t)
 
-  (setq dirvish-large-directory-threshold 20000)
-  (setq dired-mouse-drag-files t)
-  (setq mouse-drag-and-drop-region-cross-program t)
-
-  (defun my/dirvish-mouse-find-file (event)
-    "Middle click behavior: select window/point and find file."
-    (interactive "e")
-    (let* ((win (posn-window (event-start event)))
-           (pos (posn-point (event-start event))))
-      (select-window win)
-      (goto-char pos)
-      (dired-find-file)))
-
-  (defun my/dirvish--switch-to-path (path)
-    "Switch to PATH in the current Dirvish window, handling dedicated status."
-    (let ((win (selected-window)))
-      (set-window-dedicated-p win nil)
-      (set-window-buffer win (dired-noselect path))
-      (set-window-dedicated-p win t)))
-
-  (defun my/dirvish-project-root ()
-    "Switch to a project root in the current Dirvish window."
+  ;; `speedbar-window' opens a side window via `display-buffer-in-side-window'
+  ;; and then explicitly `select-window's back to the caller, so the generic
+  ;; split-window advice in init-window doesn't apply. Wrap it so M-0 focuses
+  ;; the speedbar on open, and toggles closed when it's already visible.
+  (defun my/speedbar-window-toggle ()
+    "Toggle the speedbar side window; select it when opening."
     (interactive)
-    (let ((project-dir (project-prompt-project-dir)))
-      (my/dirvish--switch-to-path project-dir)))
+    (let ((was-live (and (fboundp 'speedbar-window--live-p)
+                         (speedbar-window--live-p))))
+      (speedbar-window)
+      (when (and (not was-live)
+                 (boundp 'speedbar--window)
+                 (window-live-p speedbar--window))
+        (select-window speedbar--window))))
 
-  (defun my/dirvish-next-project ()
-    "Switch to the next project."
+  (defun my/speedbar-window-quit ()
+    "Close the speedbar side window."
     (interactive)
-    (let* ((projects (project-known-project-roots))
-           (norm-projects (mapcar (lambda (p) (file-name-as-directory (expand-file-name p))) projects))
-           (current (file-name-as-directory (expand-file-name default-directory)))
-           (current-index (cl-position current norm-projects :test #'equal))
-           (next-index (if current-index
-                           (mod (1+ current-index) (length projects))
-                         0))
-           (next (nth next-index projects)))
-      (my/dirvish--switch-to-path next)))
+    (when (and (fboundp 'speedbar-window--live-p)
+               (speedbar-window--live-p))
+      (speedbar-window)))
 
-  (defun my/dirvish-prev-project ()
-    "Switch to the previous project."
-    (interactive)
-    (let* ((projects (project-known-project-roots))
-           (norm-projects (mapcar (lambda (p) (file-name-as-directory (expand-file-name p))) projects))
-           (current (file-name-as-directory (expand-file-name default-directory)))
-           (current-index (cl-position current norm-projects :test #'equal))
-           (prev-index (if current-index
-                           (mod (1- current-index) (length projects))
-                         0))
-           (prev (nth prev-index projects)))
-      (my/dirvish--switch-to-path prev)))
+  ;; Buffer-local face remap onto the *built-in* dired faces. Diredfl is
+  ;; meant to inherit/extend dired, not the other way around — so we anchor
+  ;; on dired here and let the user's theme decide how dired-* look.
+  (defun my/speedbar-inherit-dired-faces ()
+    (face-remap-add-relative 'speedbar-directory-face 'dired-directory)
+    (face-remap-add-relative 'speedbar-selected-face  'dired-marked))
 
-  (defun dired-goto-dir-or-file (path)
-    "Open PATH in Dired.
-   If PATH is a directory, open it in the current window.
-   If PATH is a file, open its parent directory, move point to the file, and open it."
-    (interactive "fGoto (dir or file): ")
-    (let* ((expanded (expand-file-name path))
-           (dir (if (file-directory-p expanded)
-                    expanded
-                  (file-name-directory expanded))))
-      (my/dirvish--switch-to-path dir)
-      (when (file-exists-p expanded)
-        (with-selected-window (selected-window)
-          (dired-goto-file expanded)
-          (unless (file-directory-p expanded)
-            (dired-find-file))))))
-  :bind
-  (("M-o"  . dirvish-side)
-   ("<f8>" . dirvish-side)
-   ("M-0"  . dirvish-side)
-   :map dirvish-mode-map
-   ("<mouse-1>" . 'dirvish-subtree-toggle-or-open)
-   ("<mouse-2>" . 'my/dirvish-mouse-find-file)
-   ("<mouse-3>" . 'dired-up-directory)
-   ("j" . dired-goto-dir-or-file)
-   ("b" . dired-up-directory)
-   ("C-j" . dired-up-directory)
-   ("?" . dirvish-dispatch)         ; [?] a helpful cheatsheet
-   ("TAB" . dirvish-subtree-toggle)
-   ("<backtab>" . dirvish-subtree-remove)
-   ("o" . dirvish-quick-access)     ; [o]pen `dirvish-quick-access-entries'
-   ("a" . dirvish-setup-menu)       ; [a]ttributes settings:`t' toggles mtime, `f' toggles fullframe, etc.
-   ("s" . dirvish-quicksort)        ; [s]ort file list
-   ("P" . my/dirvish-project-root)  ; [P]roject switching
-   ("M-n" . my/dirvish-next-project)
-   ("M-p" . my/dirvish-prev-project)
-   ("r" . dirvish-history-jump)     ; [r]ecent visited
-   ("l" . dirvish-ls-switches-menu) ; [l]s command flags
-   ("v" . dirvish-vc-menu)          ; [v]ersion control commands
-   ("M-f" . dirvish-history-go-forward)
-   ("M-b" . dirvish-history-go-backward)
-   ("M-e" . dirvish-emerge-menu)
-   ("*" . dirvish-mark-menu)
-   ("y" . dirvish-yank-menu)
-   ("N" . dirvish-narrow)
-   ("^" . dirvish-history-last)
-   ("q"   . dirvish-quit)))
+  ;; Stock `speedbar-insert-image-button-maybe' delegates to ezimage and only
+  ;; understands image-symbol values. Override to also accept strings (used
+  ;; directly as `display') and function symbols (called with the file path).
+  (defun speedbar-insert-image-button-maybe (start length &optional label)
+    (when speedbar-use-images
+      (let* ((text (buffer-substring start (+ length start)))
+             (item (assoc text speedbar-expand-image-button-alist)))
+        (setq label (cond (label (expand-file-name label))
+                          (t (ignore-errors (speedbar-line-file)))))
+        (when item
+          (let* ((replacement (cdr item))
+                 (display
+                  (cond
+                   ((stringp replacement) replacement)
+                   ((and label (symbolp replacement) (fboundp replacement))
+                    (funcall replacement label))
+                   ((and (symbolp replacement) (boundp replacement)
+                         (consp (symbol-value replacement)))
+                    (symbol-value replacement)))))
+            (when display
+              ;; Clear the underlying `speedbar-button-face' on the button text
+              ;; so the icon string's own face (from nerd-icons) isn't merged
+              ;; with it — otherwise weight/height/etc. bleed through and the
+              ;; icon color looks off compared with nerd-icons-dired.
+              (add-text-properties start (+ start (length text))
+                                   (list 'display display
+                                         'face nil
+                                         'rear-nonsticky (list 'display 'face)))))))))
+
+  ;; `speedbar-make-button' is called for the [+]/<+>/etc. expander before
+  ;; the file-name text has been inserted on the line, so `speedbar-line-file'
+  ;; cannot resolve the file at that moment. The fork patches this by
+  ;; threading a LABEL through; replicate that here.
+  (defun speedbar-make-button (start end face mouse function &optional token label)
+    "Override stock to forward an optional LABEL to image-button insertion."
+    (unless (eq face t)
+      (put-text-property start end 'face face))
+    (add-text-properties
+     start end `(mouse-face ,mouse invisible nil
+                            speedbar-text ,(buffer-substring-no-properties start end)))
+    (when speedbar-use-tool-tips-flag
+      (put-text-property start end 'help-echo #'dframe-help-echo))
+    (when function (put-text-property start end 'speedbar-function function))
+    (when token (put-text-property start end 'speedbar-token token))
+    (when (<= (- end start) 3)
+      (speedbar-insert-image-button-maybe start (- end start) label)))
+
+  ;; Inject `tag-button' as the label when `speedbar-make-tag-line' calls
+  ;; `speedbar-make-button'.
+  (defun my/speedbar-make-tag-line-pass-label (orig &rest args)
+    (let* ((tag-button (nth 4 args))
+           (orig-mkbtn (symbol-function 'speedbar-make-button)))
+      (cl-letf (((symbol-function 'speedbar-make-button)
+                 (lambda (s e f m fn &optional tok _label)
+                   (funcall orig-mkbtn s e f m fn tok tag-button))))
+        (apply orig args))))
+  (advice-add 'speedbar-make-tag-line :around
+              #'my/speedbar-make-tag-line-pass-label)
+
+  ;; Directory icons: nerd-icons returns a generic folder glyph with a
+  ;; hard-coded foreground. Override it to `dired-directory' so the icon
+  ;; tracks the same color as the directory text — one theme knob controls
+  ;; both. File icons are left untouched so nerd-icons' per-extension
+  ;; colors keep working.
+  (defun my/speedbar-icon-for-dir (file)
+    (let ((s (copy-sequence (nerd-icons-icon-for-dir file))))
+      (add-face-text-property 0 (length s) '(:inherit dired-directory) nil s)
+      s))
+
+  (setq speedbar-expand-image-button-alist
+        `(("<+>" . my/speedbar-icon-for-dir)
+          ("<->" . my/speedbar-icon-for-dir)
+          ("< >" . my/speedbar-icon-for-dir)
+          ("[+]" . nerd-icons-icon-for-file)
+          ("[-]" . nerd-icons-icon-for-file)
+          ("[?]" . nerd-icons-icon-for-file)
+          ("[ ]" . nerd-icons-icon-for-file)
+          ("{+}" . ,(nerd-icons-faicon "nf-fa-tags"))
+          ("{-}" . ,(nerd-icons-faicon "nf-fa-tags"))
+          ("<M>" . ,(nerd-icons-codicon "nf-cod-mail"))
+          ("<d>" . ,(nerd-icons-codicon "nf-cod-book"))
+          ("<i>" . ,(nerd-icons-codicon "nf-cod-info"))
+          (" =>" . ,(nerd-icons-faicon "nf-fa-tag"))
+          (" +>" . ,(nerd-icons-faicon "nf-fa-tag"))
+          (" ->" . ,(nerd-icons-faicon "nf-fa-tag"))
+          (">"   . ,(nerd-icons-faicon "nf-fa-tag"))
+          ("@"   . ,(nerd-icons-faicon "nf-fa-tag"))
+          ("  @" . ,(nerd-icons-faicon "nf-fa-tag"))
+          ("*"   . ,(nerd-icons-devicon "nf-dev-git_branch"))
+          ("#"   . ,(nerd-icons-codicon "nf-cod-file_binary"))
+          ("!"   . ,(nerd-icons-mdicon "nf-md-update"))
+          ("//"  . ,(format "%s " (nerd-icons-mdicon "nf-md-label_outline")))
+          ("%"   . ,(nerd-icons-codicon "nf-cod-lock")))))
 
 (provide 'init-dired)
 ;;; init-dired.el ends here
