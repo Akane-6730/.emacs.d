@@ -18,7 +18,8 @@
   :bind (:map flyspell-mode-map
          ("C-;" . nil) ("C-," . nil) ("C-." . nil))
   :hook ((prog-mode . my-spell--flyspell-prog-maybe)
-         ((markdown-mode org-mode) . my-spell--flyspell-maybe))
+         ((markdown-mode org-mode) . my-spell--flyspell-maybe)
+         ((c-mode c++-mode c-ts-mode c++-ts-mode objc-mode) . my-flyspell-c-mode-setup))
   :custom
   (ispell-program-name "aspell")
   (ispell-extra-args '("--sug-mode=ultra" "--lang=en_US" "--run-together"))
@@ -36,6 +37,13 @@
     "Enable `flyspell-prog-mode' unless buffer is too large."
     (unless (> (buffer-size) my-spell-buffer-size-limit)
       (flyspell-prog-mode)))
+
+  (defun my-flyspell-c-mode-setup ()
+    "Skip preprocessor directives (#include, #define, #ifdef, …) in C/C++ modes"
+    (setq-local flyspell-generic-check-word-predicate
+                (lambda ()
+                  (and (not (save-excursion (beginning-of-line) (looking-at-p "[ \t]*#")))
+                       (flyspell-generic-progmode-verify)))))
 
   ;; Helper to setup skip regions
   (defun my-spell--add-skip-regions (regions)
