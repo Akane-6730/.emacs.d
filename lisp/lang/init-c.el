@@ -15,6 +15,10 @@
 (defvar my-c-std-version "" "The C standard to use (e.g., `c99`, `c11`).")
 (defvar my-cpp-std-version "" "The C++ standard to use (e.g., `c++14`, `c++17`).")
 (defvar my-c-debug-flags "-g" "Flags for including debug information.")
+(defconst my-c-type-keywords-regex "\\<\\(template\\|typename\\|namespace\\)\\>"
+  "Regex for C/C++ keywords styled as type-face.")
+(defvar-local my-c-font-lock-keywords-added nil
+  "Non-nil when custom C/C++ font-lock keywords are already installed.")
 
 
 ;;----------------------------------------------------------------------------
@@ -86,7 +90,7 @@ Uses Tree-sitter to ensure context correctness (e.g. excluding 3.14, string cont
   ;; This single variable controls indentation for both c-ts-mode and
   ;; c++-ts-mode, as the latter inherits from the former.
   (setq-local c-ts-mode-indent-style 'k&r)
-  (setq-local c-ts-mode-indent-offset 4)
+  (setq-local c-ts-indent-offset 4)
   (setq-default c-basic-offset 4)
 
   ;; 2. Setup Smart Compile Command
@@ -108,18 +112,20 @@ Uses Tree-sitter to ensure context correctness (e.g. excluding 3.14, string cont
   (define-key (current-local-map) (kbd "<f12>") #'compile)
 
   ;; 4. Custom Highlighting
-  (font-lock-add-keywords
-   nil
-   `((my-c-ts-font-lock-matcher 0 'font-lock-delimiter-face t)
-     ("^\\s-*\\(#\\)" 1 'font-lock-delimiter-face t)
+  (unless my-c-font-lock-keywords-added
+    (font-lock-add-keywords
+     nil
+     `((my-c-ts-font-lock-matcher 0 'font-lock-delimiter-face t)
+       ("^\\s-*\\(#\\)" 1 'font-lock-delimiter-face t)
 
-     ;; Keywords: template, typename -> Blue
-     (,(lambda (lim) (my-c-match-symbol-in-code "\\<\\(template\\|typename\\)\\>" lim))
-      0 'font-lock-type-face t)
+       ;; Keywords: template, typename, namespace -> Blue
+       (,(lambda (lim) (my-c-match-symbol-in-code my-c-type-keywords-regex lim))
+        0 'font-lock-type-face t)
 
-     ;; Keyword: this -> Orange
-     (,(lambda (lim) (my-c-match-symbol-in-code "\\<this\\>" lim))
-      0 'eglot-semantic-parameter t))))
+       ;; Keyword: this -> Orange
+       (,(lambda (lim) (my-c-match-symbol-in-code "\\<this\\>" lim))
+        0 'eglot-semantic-parameter t)))
+    (setq-local my-c-font-lock-keywords-added t)))
 
 ;;----------------------------------------------------------------------------
 ;; Hooking into Tree-sitter Modes
