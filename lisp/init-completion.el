@@ -34,9 +34,9 @@
 
 (use-package orderless
   :custom
-  (completion-styles '(orderless basic))
+  (completion-styles '(orderless basic flex))
   (completion-category-defaults nil)
-  (completion-category-overrides '((file (styles . (partial-completion)))))
+  (completion-category-overrides '((file (styles partial-completion))))
   (orderless-component-separator #'orderless-escapable-split-on-space)
   (completion-pcm-leading-wildcard t)
   (orderless-matching-styles '(orderless-literal orderless-regexp)))
@@ -53,10 +53,6 @@
   :hook
   (on-first-input . global-corfu-mode)
   (global-corfu-mode . corfu-popupinfo-mode)
-  ;; Use 'orderless-flex' only when using corfu (in-buffer completion)
-  (corfu-mode . (lambda ()
-                  (setq-local orderless-matching-styles
-                              '(orderless-literal orderless-regexp orderless-flex))))
   :custom
   (corfu-auto t)
   (corfu-auto-prefix 2)
@@ -112,9 +108,6 @@
   (advice-add 'eglot-completion-at-point :around #'cape-wrap-nonexclusive)
   (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-nonexclusive))
 
-
-
-
 ;;----------------------------------------------------------------------------
 ;; Enhanced Commands & Search
 ;;----------------------------------------------------------------------------
@@ -142,7 +135,7 @@
          ("M-s L" . consult-line-multi)
          ;; C-c prefix bindings (user-level commands)
          ("C-."   . consult-imenu))
-  ("C-c h" . consult-history)
+  ;; ("C-c h" . consult-history)
   ("C-c k" . consult-kmacro)
   ("C-c r" . consult-ripgrep)                ;; Alternative for ripgrep
   ("C-c T" . consult-theme)

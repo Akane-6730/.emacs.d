@@ -15,28 +15,45 @@
   :after yasnippet)
 
 (use-package yasnippet-capf
+  :after cape
   :commands yasnippet-capf
-  :functions cape-capf-super eglot-completion-at-point my-eglot-capf-with-yasnippet
   :init
-  ;; Smartly merge yasnippet-capf with the first existing capf in the list.
-  ;; This ensures snippets are available alongside other completions (e.g. Org, Elisp).
-  (defun my/setup-merged-yasnippet-capf ()
-    (let ((head (car (remove t completion-at-point-functions))))
-      (when head
-        (setq-local completion-at-point-functions
-                    (cons (cape-capf-super
-                           head
-                           #'yasnippet-capf)
-                          (cdr (remove t completion-at-point-functions)))))))
+  (defvar-local my/eglot+yas-capf nil
+    "Buffer-local super Capf merging Eglot and Yasnippet.")
 
-  (add-hook 'prog-mode-hook #'my/setup-merged-yasnippet-capf)
-  (add-hook 'conf-mode-hook #'my/setup-merged-yasnippet-capf)
-  (add-hook 'text-mode-hook #'my/setup-merged-yasnippet-capf)
-
-  ;; To integrate `yasnippet-capf' with `eglot' completion
-  (defun my-eglot-capf-with-yasnippet ()
+  (defun my/yasnippet-capf-setup ()
+    "Enable `yasnippet-capf' in the current buffer."
     (add-hook 'completion-at-point-functions #'yasnippet-capf t t))
-  (add-hook 'eglot-managed-mode-hook #'my-eglot-capf-with-yasnippet)
+
+  ;; Non-LSP buffers: snippets sit alongside the mode Capf.
+  (add-hook 'prog-mode-hook #'my/yasnippet-capf-setup)
+  (add-hook 'conf-mode-hook #'my/yasnippet-capf-setup)
+  (add-hook 'text-mode-hook #'my/yasnippet-capf-setup)
+
+  ;; LSP buffers: merge Eglot + Yasnippet into one candidate list so Corfu
+  ;; shows both.  Appending yasnippet alone is not enough — a successful
+  ;; exclusive Eglot response would hide snippets.
+  (defun my/eglot-capf-setup ()
+    "Install or tear down the Eglot+Yasnippet super Capf."
+    (if (eglot-managed-p)
+        (progn
+          (setq my/eglot+yas-capf
+                (cape-capf-super #'eglot-completion-at-point
+                                 #'yasnippet-capf))
+          (setq-local completion-at-point-functions
+                      (cons my/eglot+yas-capf
+                            (cl-set-difference
+                             completion-at-point-functions
+                             (list #'eglot-completion-at-point
+                                   #'yasnippet-capf)
+                             :test #'eq))))
+      ;; Eglot just left: drop the super Capf, restore plain yasnippet.
+      (when my/eglot+yas-capf
+        (remove-hook 'completion-at-point-functions my/eglot+yas-capf 'local)
+        (setq my/eglot+yas-capf nil))
+      (my/yasnippet-capf-setup)))
+
+  (add-hook 'eglot-managed-mode-hook #'my/eglot-capf-setup)
 
   :config
   ;; Patch yasnippet-capf to avoid errors with key-less snippets
