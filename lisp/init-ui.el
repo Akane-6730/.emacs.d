@@ -111,18 +111,6 @@ Calls ORIGINAL-FN with THEME and ARGS after cleanup."
 ;;; Modeline
 ;;; ----------------------------------------------------------------------------
 
-(use-package time
-  :defer 0.5
-  :config
-  (setq display-time-default-load-average nil
-        display-time-format "%H:%M")
-  (display-time-mode 1))
-
-(use-package battery
-  :defer 0.5
-  :config
-  (display-battery-mode 1))
-
 (use-package doom-modeline
   :hook after-init
   :config
@@ -165,10 +153,10 @@ Calls ORIGINAL-FN with THEME and ARGS after cleanup."
   (add-to-list 'doom-modeline-mode-alist '(magit-mode . my-magit)))
 
 (use-package hide-mode-line
-  :hook ((eat-mode
-          eshell-mode shell-mode
-          term-mode vterm-mode
-          pdf-annot-list-mode) . turn-on-hide-mode-line-mode))
+  :hook ((eshell-mode shell-mode term-mode ghostel-mode
+                      inferior-python-mode
+                      flymake-diagnostics-buffer-mode
+                      pdf-annot-list-mode) . turn-on-hide-mode-line-mode))
 
 ;;; ----------------------------------------------------------------------------
 ;;; Layout
@@ -232,31 +220,35 @@ INFO is the posframe position info plist."
              2)
           (/ (- (plist-get info :parent-frame-height)
                 (plist-get info :posframe-height))
-             2)))
-
-  (defun posframe-poshandler-frame-center-near-bottom (info)
-    "Position posframe at center, slightly below middle of frame.
-INFO is the posframe position info plist."
-    (cons (/ (- (plist-get info :parent-frame-width)
-                (plist-get info :posframe-width))
-             2)
-          (/ (+ (plist-get info :parent-frame-height)
-                (* 2 (plist-get info :font-height)))
-             2)))
-
-  (defun my--vertico-posframe-set-near-bottom-for-consult-line ()
-    "Use near-bottom posframe position when entering minibuffer from `consult-line'."
-    (when (eq this-command 'consult-line)
-      (setq-local vertico-posframe-poshandler #'posframe-poshandler-frame-center-near-bottom)))
-  (add-hook 'minibuffer-setup-hook #'my--vertico-posframe-set-near-bottom-for-consult-line))
+             2))))
 
 (when (display-graphic-p)
+  ;; Do NOT enable `vertico-posframe-mode' globally — multiform toggles it
+  ;; per command. Preview-heavy search stays in the minibuffer; the rest
+  ;; uses a centered posframe.
   (use-package vertico-posframe
-    :hook (vertico-mode . vertico-posframe-mode)
+    :after vertico
+    :hook (vertico-mode . vertico-multiform-mode)
     :init
     (setq vertico-posframe-poshandler #'posframe-poshandler-frame-center
+          vertico-posframe-size-function
+          (lambda (_buffer)
+            (let ((width (round (* (frame-width) (/ 2.0 3))))
+                  (height (+ 1 vertico-count)))
+              (list :width width :height height
+                    :min-width width :min-height height)))
           vertico-posframe-parameters '((left-fringe . 8)
-                                        (right-fringe . 8))))
+                                        (right-fringe . 8))
+          vertico-multiform-commands
+          '(;; Live-preview search: keep default vertical minibuffer.
+            (consult-line) (consult-line-multi)
+            (consult-ripgrep) (consult-grep) (consult-git-grep)
+            (consult-outline)
+            (consult-imenu) (consult-imenu-multi)
+            (consult-flymake)
+            (consult-eglot-symbols)
+            ;; Everything else: centered posframe.
+            (t posframe))))
 
   (use-package transient-posframe
     :diminish
@@ -284,7 +276,7 @@ INFO is the posframe position info plist."
   :diminish
   :hook (on-first-input . global-page-break-lines-mode)
   :config
-  (dolist (mode '(dashboard-mode emacs-news-mode))
+  (dolist (mode '(dashboard-mode emacs-news-mode prog-mode))
     (add-to-list 'page-break-lines-modes mode)))
 
 ;; Prettify process list
