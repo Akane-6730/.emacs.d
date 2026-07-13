@@ -7,17 +7,17 @@
 
 ;;; Code:
 
-(use-package markdown-mode
-  :mode ("README\\.md\\'" . gfm-mode)
-  :custom
-  (markdown-hide-urls t)
-  (markdown-hide-markup t)
-  (markdown-enable-wiki-links t)
-  (markdown-enable-highlighting-syntax t)
-  :custom-face
-  (markdown-list-face ((t (:family "Maple Mono Normal NF CN"))))
+(use-package markdown-ts-mode
+  :ensure nil
   :config
-  (setq markdown-list-item-bullets '("•" "–")))
+  (setq markdown-ts-unordered-list-marker
+        '(("• " . "- ") ("– " . "• ")))
+  :custom-face
+  (markdown-ts-list-marker ((t (:family "Maple Mono Normal NF CN")))))
+
+;; npm install -g git+https://gitlab.com/matsievskiysv/math-preview
+(use-package math-preview
+  :hook (markdown-ts-view-mode . math-preview-all))
 
 (provide 'init-markdown)
 ;;; init-markdown.el ends here
