@@ -11,15 +11,24 @@
 ;;; Code:
 
 (use-package flymake
-  :ensure nil ; This is a built-in package.
-  ;; Enable Flymake automatically for all programming modes.
+  :ensure nil
   :hook (prog-mode . flymake-mode)
   :bind (("C-c f" . flymake-show-buffer-diagnostics))
+  :custom
+  (flymake-indicator-type 'margins)
+  (flymake-margin-indicators-string
+   '((error "»" compilation-error)
+     (warning "»" compilation-warning)
+     (note "»" compilation-info)))
   :config
-  ;; By default, Flymake uses a fringe indicator (a symbol in the left margin)
-  ;; to show errors, which is clean and unobtrusive.
-  (setq flymake-fringe-indicator-position 'right-fringe)
-  (add-to-list 'display-buffer-alist '("Flymake Diagnostics" nil (post-command-select-window .t))))
+  (setq flymake-no-changes-timeout nil)
+  (setq flymake-show-diagnostics-at-end-of-line 'short)
+  (add-hook 'flymake-mode-hook
+            (lambda ()
+              (remove-hook 'eldoc-documentation-functions
+                           #'flymake-eldoc-function t)))
+  (add-to-list 'display-buffer-alist
+               '("Flymake Diagnostics" nil (post-command-select-window . t))))
 
 
 (provide 'init-check)

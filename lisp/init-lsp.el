@@ -20,12 +20,15 @@
 (use-package eglot
   :ensure nil
   :hook (prog-mode . my-eglot-conditional-ensure)
+  :custom-face
+  (eglot-inlay-hint-face ((t :height 0.7 :inherit shadow)))
   :bind (:map eglot-mode-map
               ("C-;" . eglot-rename))
   :config
   (setq eglot-autoshutdown t)
   (setq read-process-output-max (* 1024 1024)) ; 1MB
   (setq eglot-events-buffer-config '(:size 0 :format full))
+  (setq eglot-send-changes-idle-time 0.1)
   ;; Emacs 31 specific: restrict semantic tokens to avoid excessive highlighting
   (setq eglot-semantic-token-types
         '("operator" "namespace" "type" "enum" "interface" "struct" "typeParameter" "parameter" "variable"
