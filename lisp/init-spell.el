@@ -23,6 +23,9 @@
   :custom
   (ispell-program-name "aspell")
   (ispell-extra-args '("--sug-mode=ultra" "--lang=en_US" "--run-together"))
+  ;; Keep personal words under ~/.emacs.d, `M-$' then `i' appends here.
+  (ispell-personal-dictionary (expand-file-name "aspell.en_US.pws" user-emacs-directory))
+  (ispell-silently-savep t)
   (flyspell-issue-message-flag nil)
   :config
   (defvar my-spell-buffer-size-limit (* 512 1024)
