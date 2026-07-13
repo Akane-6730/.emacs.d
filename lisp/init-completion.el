@@ -36,7 +36,9 @@
   :custom
   (completion-styles '(orderless basic flex))
   (completion-category-defaults nil)
-  (completion-category-overrides '((file (styles partial-completion))))
+  (completion-category-overrides
+   '((file (styles partial-completion))
+     (eglot-capf (styles eglot--dumb-flex))))
   (orderless-component-separator #'orderless-escapable-split-on-space)
   (completion-pcm-leading-wildcard t)
   (orderless-matching-styles '(orderless-literal orderless-regexp)))
@@ -56,7 +58,7 @@
   :custom
   (corfu-auto t)
   (corfu-auto-prefix 2)
-  (corfu-auto-delay 0.05)
+  (corfu-auto-delay 0.1)
   (corfu-cycle t)
   (corfu-popupinfo-delay '(0.4 . 0.2))
   (global-corfu-modes '((not erc-mode circe-mode help-mode gud-mode vterm-mode) t))
@@ -91,21 +93,15 @@
 ;; Provides various "Completion At Point Extensions" (backends) for Corfu.
 (use-package cape
   :commands (cape-file cape-elisp-block cape-keyword)
-  :autoload (cape-wrap-noninterruptible cape-wrap-nonexclusive cape-wrap-buster)
-  :autoload (cape-wrap-silent cape-wrap-purify)
+  :autoload (cape-wrap-buster cape-wrap-nonexclusive)
   :init
-  ;; (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   (add-to-list 'completion-at-point-functions #'cape-file)
   (add-to-list 'completion-at-point-functions #'cape-elisp-block)
   (add-to-list 'completion-at-point-functions #'cape-keyword)
-  ;; (add-to-list 'completion-at-point-functions #'cape-abbrev)
-
-  ;; Make these capfs composable.
-  (advice-add 'lsp-completion-at-point :around #'cape-wrap-noninterruptible)
-  (advice-add 'lsp-completion-at-point :around #'cape-wrap-nonexclusive)
-  (advice-add 'comint-completion-at-point :around #'cape-wrap-nonexclusive)
+  ;; Eglot: refresh every keystroke; nonexclusive so later Capfs can still run.
   (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
   (advice-add 'eglot-completion-at-point :around #'cape-wrap-nonexclusive)
+  (advice-add 'comint-completion-at-point :around #'cape-wrap-nonexclusive)
   (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-nonexclusive))
 
 ;;----------------------------------------------------------------------------
