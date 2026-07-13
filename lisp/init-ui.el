@@ -247,6 +247,7 @@ INFO is the posframe position info plist."
             (consult-imenu) (consult-imenu-multi)
             (consult-flymake)
             (consult-eglot-symbols)
+            ("\\`xref-find-")
             ;; Everything else: centered posframe.
             (t posframe))))
 
