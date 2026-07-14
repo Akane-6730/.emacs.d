@@ -10,7 +10,12 @@
 
 (use-package magit
   :bind (("C-x g" . magit-status))
+  :hook (magit-mode . my/magit-use-wide-left-fringe)
   :config
+  (defun my/magit-use-wide-left-fringe ()
+    "Give Magit's section bitmaps enough room in the left fringe."
+    (setq-local left-fringe-width 8))
+
   ;; This setting makes diffs more granular and easier to read by showing
   ;; changes within each hunk at the word or character level.
   (setq magit-diff-refine-hunk t)
