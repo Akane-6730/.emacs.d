@@ -90,7 +90,8 @@
   :autoload drag-stuff-define-keys
   :hook ((prog-mode text-mode conf-mode) . turn-on-drag-stuff-mode)
   :config
-  (add-to-list 'drag-stuff-except-modes 'org-mode)
+  (dolist (mode '(org-mode markdown-ts-mode))
+    (add-to-list 'drag-stuff-except-modes mode))
   (drag-stuff-define-keys))
 
 ;;----------------------------------------------------------------------------
@@ -126,6 +127,7 @@
                 fundamental-mode-hook
                 flymake-diagnostics-buffer-mode-hook
                 view-mode-hook
+                doc-view-mode-hook
                 compilation-mode-hook
                 benchmark-init/tabulated-mode-hook))
   (add-hook hook #'my-jk-navigation-mode))
