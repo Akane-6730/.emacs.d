@@ -32,13 +32,16 @@
   :hook ((prog-mode . global-diff-hl-mode)
          (prog-mode . global-diff-hl-show-hunk-mouse-mode)
          (magit-post-refresh . diff-hl-magit-post-refresh)
-         (dired-mode . diff-hl-dired-mode))
+         (dired-mode . diff-hl-dired-mode)
+         (diff-hl-dired-mode . my/diff-hl-dired-use-margin))
   :custom-face
   (diff-hl-margin-change ((t (:inherit diff-indicator-changed :background unspecified))))
   (diff-hl-margin-insert ((t (:inherit diff-indicator-added   :background unspecified))))
   (diff-hl-margin-delete ((t (:inherit diff-indicator-removed :background unspecified))))
   :config
-  ;; Highlight on-the-fly
+  (defun my/diff-hl-dired-use-margin ()
+    "Use character margin indicators only in diff-hl Dired buffers."
+    (diff-hl-margin-local-mode (if diff-hl-dired-mode 1 -1)))
   (setq diff-hl-update-async t)
   (diff-hl-flydiff-mode 1))
 

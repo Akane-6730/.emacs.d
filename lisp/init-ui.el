@@ -173,7 +173,8 @@ Calls ORIGINAL-FN with THEME and ARGS after cleanup."
                                    :custom-button-width 0
                                    :tab-width 2
                                    :right-divider-width 15
-                                   :fringe-width 8)))
+                                   :fringe-width 8
+                                   :left-fringe-width 4)))
 
   ;; Centered text layout for prose modes
   (use-package olivetti
