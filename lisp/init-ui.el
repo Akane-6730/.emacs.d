@@ -1,85 +1,92 @@
 ;;; init-ui.el --- User Interface and Appearance -*- lexical-binding: t; -*-
 
 ;;; Commentary:
-
-;; This module configures the visual aspects of Emacs, including:
-;; - Theme loading and switching
-;; - Modeline (doom-modeline)
-;; - Icons (nerd-icons)
-;; - Layout (spacious-padding, olivetti)
-;; - Posframe-based UI elements
-;;
-;; Font configuration is handled separately by `init-fonts'.
+;; Theme, fonts, modeline, icons, layout, and posframe UI.
 
 ;;; Code:
 
-(require 'init-fonts)
 
-;;; ----------------------------------------------------------------------------
+;; Font
+(when (or (display-graphic-p) (daemonp))
+  (use-package typographic
+    :vc (:url "https://github.com/Akane-6730/typographic")
+    :demand t
+    :hook ((org-mode . typographic-serif-mode)
+           (markdown-ts-mode . typographic-sans-mode)
+           (markdown-ts-view-mode . typographic-sans-mode))
+    :custom
+    (typographic-serif-latin "Source Serif 4")
+    (typographic-serif-cjk "Source Han Serif SC VF")
+    (typographic-sans-latin "Noto Sans")
+    (typographic-sans-cjk "Source Han Sans SC")
+    :config
+    (defvar monaco-font (if (eq system-type 'darwin) "Monaco" "Monaco Nerd Font"))
+    (set-face-attribute 'default nil :family monaco-font
+                        :height (if (eq system-type 'darwin) 180 140))
+    (set-face-attribute 'fixed-pitch nil :family monaco-font)
+    (set-fontset-font t 'han "LXGW WenKai Mono GB Screen")
+    (set-fontset-font t 'kana "LXGW WenKai Mono GB Screen")
+    (setq typographic-no-italic-font monaco-font
+          typographic-no-bold-font monaco-font)
+    (when (eq system-type 'darwin)
+      (setq ns-use-thin-smoothing t))))
+
 ;;; Theme
-;;; ----------------------------------------------------------------------------
 
-;; `doom-themes' is a package containing a collection of beautifully
-;; crafted themes.
+;; Built-in theme machinery (`load-theme', `custom-enabled-themes', ...).
+(use-package custom
+  :ensure nil
+  :demand t
+  :init
+  (setq custom-theme-directory
+        (expand-file-name "lisp/themes" user-emacs-directory))
+  :bind ("<f7>" . my-toggle-theme)
+  :config
+  (defvar after-load-theme-hook nil
+    "Hook run after a Custom theme has been loaded.")
+
+  (defun my--theme-load-wrapper (original-fn theme &rest args)
+    "Around advice for `load-theme': disable old themes first."
+    (mapc #'disable-theme custom-enabled-themes)
+    (prog1 (apply original-fn theme args)
+      (run-hooks 'after-load-theme-hook)))
+  (advice-add 'load-theme :around #'my--theme-load-wrapper)
+
+  (defun my-toggle-theme ()
+    "Toggle between `my-dark' and `my-light'."
+    (interactive)
+    (if (custom-theme-enabled-p 'my-dark)
+        (load-theme 'my-light t)
+      (load-theme 'my-dark t))))
+
 (use-package doom-themes
   :demand t
+  :custom
+  (doom-themes-enable-bold t)
+  (doom-themes-enable-italic t)
   :config
-  ;; Bold/italic always enabled at theme level.
-  ;; For Monaco/Monego, italic is selectively removed from monospace faces
-  ;; AFTER theme load by `my-fonts-setup-italic-faces' in init-fonts.el.
-  ;; This preserves italic on variable-pitch/serif faces (org-quote, etc.).
-  (setq doom-themes-enable-bold t
-        doom-themes-enable-italic t)
-  (setq custom-theme-directory (expand-file-name "lisp/themes" user-emacs-directory))
-
-  ;; Enable flashing mode-line on errors (avoids yellow warning triangle on macOS)
   (doom-themes-visual-bell-config)
 
   (defun my/apply-theme (frame)
-    "Apply appropriate theme and fonts for FRAME."
+    "Apply theme for FRAME (light GUI / dark TTY)."
     (with-selected-frame frame
       (if (display-graphic-p frame)
-          (progn
-            (my-fonts-setup-default frame)
-            (load-theme 'my-light t))
-        (load-theme 'my-dark t))
-      (my-fonts-setup-italic-faces)))
+          (load-theme 'my-light t)
+        (load-theme 'my-dark t))))
 
   (if (daemonp)
       (add-hook 'after-make-frame-functions #'my/apply-theme)
     (my/apply-theme (selected-frame))))
 
-;;; Robust Theme Loading
-;; Ensure old themes are disabled before loading new ones.
-
-(defvar after-load-theme-hook nil
-  "Hook run after a Custom theme has been loaded.")
-
-(defun my--theme-load-wrapper (original-fn theme &rest args)
-  "Advice wrapper for `load-theme' that disables old themes first.
-Calls ORIGINAL-FN with THEME and ARGS after cleanup."
-  (mapc #'disable-theme custom-enabled-themes)
-  (prog1 (apply original-fn theme args)
-    (run-hooks 'after-load-theme-hook)))
-
-(advice-add 'load-theme :around #'my--theme-load-wrapper)
-
-(defun my-toggle-theme ()
-  "Toggle between `my-dark' and `my-light' themes."
-  (interactive)
-  (if (custom-theme-enabled-p 'my-dark)
-      (load-theme 'my-light t)
-    (load-theme 'my-dark t))
-  (my-fonts-setup-italic-faces))
-
-(global-set-key (kbd "<f7>") #'my-toggle-theme)
-
-;;; macOS Titlebar
-;; Automatically set titlebar color to match theme's background mode.
-
-(when (and (eq system-type 'darwin) (display-graphic-p))
+;; Sync macOS titlebar with theme background mode.
+(use-package frame
+  :ensure nil
+  :if (eq system-type 'darwin)
+  :hook ((after-init . my--ns-set-all-titlebars)
+         (after-make-frame-functions . my--ns-set-frame-titlebar))
+  :config
   (defun my--ns-set-frame-titlebar (frame &rest _)
-    "Set transparent titlebar for FRAME to match theme's background mode."
+    "Match FRAME titlebar to theme background mode."
     (when (display-graphic-p frame)
       (let ((mode (frame-parameter frame 'background-mode)))
         (modify-frame-parameters
@@ -88,28 +95,23 @@ Calls ORIGINAL-FN with THEME and ARGS after cleanup."
            (ns-appearance . ,mode))))))
 
   (defun my--ns-set-all-titlebars (&rest _)
-    "Apply titlebar settings to all existing frames."
+    "Apply titlebar settings to all frames."
     (mapc #'my--ns-set-frame-titlebar (frame-list)))
 
-  (add-hook 'after-init-hook #'my--ns-set-all-titlebars)
-  (add-hook 'after-make-frame-functions #'my--ns-set-frame-titlebar)
   (advice-add 'frame-set-background-mode :after #'my--ns-set-frame-titlebar)
-  (my--ns-set-frame-titlebar (selected-frame)))
+  (when (display-graphic-p)
+    (my--ns-set-frame-titlebar (selected-frame))))
 
-;;; ----------------------------------------------------------------------------
 ;;; Icons
-;;; ----------------------------------------------------------------------------
 
 (use-package nerd-icons
   :commands nerd-icons-install-fonts
   :config
   (when (and (display-graphic-p)
-             (not (my-fonts--available-p nerd-icons-font-family)))
+             (not (typographic-available-p nerd-icons-font-family)))
     (nerd-icons-install-fonts t)))
 
-;;; ----------------------------------------------------------------------------
 ;;; Modeline
-;;; ----------------------------------------------------------------------------
 
 (use-package doom-modeline
   :hook after-init
@@ -125,18 +127,16 @@ Calls ORIGINAL-FN with THEME and ARGS after cleanup."
   (unless (display-graphic-p)
     (setq doom-modeline-unicode-number nil))
 
-  ;; Custom segment: buffer name with major-mode icon (no lock)
   (doom-modeline-def-segment my-buffer-name
-    "Display buffer name with mode icon, without state icons."
+    "Buffer name with mode icon, no state icons."
     (concat
      (doom-modeline-spc)
      (doom-modeline--buffer-mode-icon)
      (doom-modeline-spc)
      (propertize (buffer-name) 'face 'doom-modeline-buffer-file)))
 
-  ;; Custom segment: show git branch in Magit buffers
   (doom-modeline-def-segment my-magit-branch
-    "Display current git branch in Magit buffers."
+    "Git branch in Magit buffers."
     (when (and (derived-mode-p 'magit-mode)
                (fboundp 'magit-get-current-branch))
       (when-let ((branch (magit-get-current-branch)))
@@ -146,7 +146,6 @@ Calls ORIGINAL-FN with THEME and ARGS after cleanup."
          (doom-modeline-spc)
          (propertize branch 'face 'doom-modeline-info)))))
 
-  ;; Magit modeline: no lock icon, branch on right side
   (doom-modeline-def-modeline 'my-magit
     '(bar modals matches my-buffer-name remote-host)
     '(my-magit-branch misc-info major-mode process))
@@ -158,9 +157,7 @@ Calls ORIGINAL-FN with THEME and ARGS after cleanup."
                       flymake-diagnostics-buffer-mode
                       pdf-annot-list-mode) . turn-on-hide-mode-line-mode))
 
-;;; ----------------------------------------------------------------------------
 ;;; Layout
-;;; ----------------------------------------------------------------------------
 
 (when (display-graphic-p)
   (use-package spacious-padding
@@ -176,10 +173,9 @@ Calls ORIGINAL-FN with THEME and ARGS after cleanup."
                                    :fringe-width 8
                                    :left-fringe-width 4)))
 
-  ;; Centered text layout for prose modes
   (use-package olivetti
     :commands olivetti-mode
-    :hook ((org-mode markdown-mode Info-mode message-mode) . olivetti-mode)
+    :hook ((org-mode markdown-ts-view-mode Info-mode message-mode) . olivetti-mode)
     :config
     (add-to-list 'window-persistent-parameters '(spilt-window . t))
     (advice-add 'window-toggle-side-windows :before #'olivetti-reset-all-windows)
@@ -187,16 +183,12 @@ Calls ORIGINAL-FN with THEME and ARGS after cleanup."
                 (lambda (window)
                   (set-window-parameter window 'min-margins (cons 0 0))))))
 
-;;; Window Divider Appearance
-
 (setq window-divider-default-places t
       window-divider-default-bottom-width 1
       window-divider-default-right-width 1)
 (add-hook 'window-setup-hook #'window-divider-mode)
 
-;;; ----------------------------------------------------------------------------
-;;; Posframe-based UI Elements
-;;; ----------------------------------------------------------------------------
+;;; Posframe
 
 (use-package posframe
   :hook (after-load-theme . posframe-delete-all)
@@ -214,8 +206,7 @@ Calls ORIGINAL-FN with THEME and ARGS after cleanup."
   (advice-add #'posframe--create-posframe :after #'my--posframe-prettify-frame)
 
   (defun posframe-poshandler-frame-center (info)
-    "Position posframe at the true center of the frame.
-INFO is the posframe position info plist."
+    "Center posframe in the parent frame."
     (cons (/ (- (plist-get info :parent-frame-width)
                 (plist-get info :posframe-width))
              2)
@@ -224,9 +215,7 @@ INFO is the posframe position info plist."
              2))))
 
 (when (display-graphic-p)
-  ;; Do NOT enable `vertico-posframe-mode' globally — multiform toggles it
-  ;; per command. Preview-heavy search stays in the minibuffer; the rest
-  ;; uses a centered posframe.
+  ;; Multiform: preview-heavy search stays in minibuffer; rest uses posframe.
   (use-package vertico-posframe
     :after vertico
     :hook (vertico-mode . vertico-multiform-mode)
@@ -241,15 +230,13 @@ INFO is the posframe position info plist."
           vertico-posframe-parameters '((left-fringe . 8)
                                         (right-fringe . 8))
           vertico-multiform-commands
-          '(;; Live-preview search: keep default vertical minibuffer.
-            (consult-line) (consult-line-multi)
+          '((consult-line) (consult-line-multi)
             (consult-ripgrep) (consult-grep) (consult-git-grep)
             (consult-outline)
             (consult-imenu) (consult-imenu-multi)
             (consult-flymake)
             (consult-eglot-symbols)
             ("\\`xref-find-")
-            ;; Everything else: centered posframe.
             (t posframe))))
 
   (use-package transient-posframe
@@ -269,11 +256,8 @@ INFO is the posframe position info plist."
           which-key-posframe-parameters '((left-fringe . 8)
                                           (right-fringe . 8)))))
 
-;;; ----------------------------------------------------------------------------
-;;; Misc UI Tweaks
-;;; ----------------------------------------------------------------------------
+;;; Misc
 
-;; Display ^L page breaks as horizontal lines
 (use-package page-break-lines
   :diminish
   :hook (on-first-input . global-page-break-lines-mode)
@@ -281,12 +265,11 @@ INFO is the posframe position info plist."
   (dolist (mode '(dashboard-mode emacs-news-mode prog-mode))
     (add-to-list 'page-break-lines-modes mode)))
 
-;; Prettify process list
 (use-package simple
   :ensure nil
   :config
   (defun my--list-processes-prettify ()
-    "Prettify the process list with colored status."
+    "Colorize status in the process list."
     (when-let* ((entries tabulated-list-entries))
       (setq tabulated-list-entries nil)
       (dolist (p (process-list))
