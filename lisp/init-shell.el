@@ -50,13 +50,27 @@
   :hook (eshell-mode . my-eshell-setup))
 
 ;; Better terminal emulator
-(use-package eat
-  :hook ((eshell-load . eat-eshell-mode)
-         (eshell-load . eat-eshell-visual-command-mode))
+(use-package ghostel
+  :hook ((eshell-load . ghostel-eshell-visual-command-mode)
+         (ghostel-mode . ghostel-ime-mode))
+  :bind (("C-c t" . ghostel)
+         ("C-c C-t" . ghostel-project))
   :config
-  (setq eat-kill-buffer-on-exit t)
-  (when (eq system-type 'darwin)
-    (setq eat-term-name "xterm-256color")))
+  (defun my-ghostel-strip-bold (&rest _)
+    "Remove :weight bold from face text properties in ghostel buffers."
+    (when (derived-mode-p 'ghostel-mode)
+      (let ((inhibit-read-only t))
+        (with-silent-modifications
+          (save-excursion
+            (goto-char (point-min))
+            (while (not (eobp))
+              (let ((face (get-text-property (point) 'face))
+                    (next (next-single-property-change (point) 'face nil (point-max))))
+                (when (and (listp face) (eq (plist-get face :weight) 'bold))
+                  (put-text-property (point) next 'face
+                                     (plist-put (copy-sequence face) :weight 'normal)))
+                (goto-char next))))))))
+  (advice-add 'ghostel--redraw-now :after #'my-ghostel-strip-bold))
 
 ;; Bind C-e to accept completion-preview (ghost text) when active
 (use-package completion-preview
