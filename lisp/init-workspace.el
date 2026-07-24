@@ -9,10 +9,15 @@
 
 (use-package tabspaces
   :diminish
-  :commands tabspaces-mode
-  :hook ((on-first-input . (lambda()
-                             (tabspaces-mode 1)
-                             (tab-bar-history-mode 1))))
+  :bind ("C-c b" . tabspaces-switch-or-create-workspace)
+  :hook (on-first-input . my/tabspaces-enable)
+  :init
+  (defun my/tabspaces-enable ()
+    "Enable tabspaces; rename initial tab to `tabspaces-default-tab'."
+    (tabspaces-mode 1)
+    (tab-bar-history-mode 1)
+    (unless (member tabspaces-default-tab (tabspaces--list-tabspaces))
+      (tab-bar-rename-tab tabspaces-default-tab)))
   :custom
   (tab-bar-show nil)
   (tabspaces-use-filtered-buffers-as-default t)
@@ -21,33 +26,32 @@
   (tabspaces-include-buffers '("*scratch*" "*Messages*"))
   (tabspaces-exclude-buffers '("*eat*" "*vterm*" "*shell*" "*eshell*" "*dashboard*" "*Ibuffer*"))
   (tab-bar-new-tab-choice "*scratch*")
-  ;; sessions - disabled for faster startup/shutdown
+  (tabspaces-initialize-project-with-todo nil)
   (tabspaces-session nil)
   (tabspaces-session-auto-restore nil)
   :config
-  ;; Filter Buffers for Consult-Buffer
-  (with-eval-after-load 'consult
-    ;; hide full buffer list (still available with "b" prefix)
-    (consult-customize consult-source-buffer :hidden t :default nil)
-    ;; set consult-workspace buffer list
-    (defvar consult--source-workspace
-      (list :name     "Workspace Buffers"
-            :narrow   ?w
-            :history  'buffer-name-history
-            :category 'buffer
-            :state    #'consult--buffer-state
-            :default  t
-            :items    (lambda ()
-                        (let* ((dominated '("*scratch*" "*Messages*"))
-                               (buffers (consult--buffer-query
-                                         :predicate #'tabspaces--local-buffer-p
-                                         :sort 'visibility
-                                         :as #'buffer-name)))
-                          ;; Move dominated buffers to the end
-                          (append (seq-remove (lambda (b) (member b dominated)) buffers)
-                                  (seq-filter (lambda (b) (member b dominated)) buffers)))))
-      "Workspace buffer list for consult-buffer.")
-    (add-to-list 'consult-buffer-sources 'consult--source-workspace)))
+  (setq consult-buffer-list-function #'consult--frame-buffer-list)
+
+  (defvar my/tabspaces--auto-switch-inhibit nil)
+
+  (defun my/tabspaces-auto-switch-workspace ()
+    "On find-file, switch/create the project workspace (else Default)."
+    (when (and tabspaces-mode (not my/tabspaces--auto-switch-inhibit)
+               buffer-file-name (not (minibufferp)))
+      (let* ((my/tabspaces--auto-switch-inhibit t)
+             (buf (current-buffer))
+             (root (when-let ((p (project-current)))
+                     (expand-file-name (project-root p))))
+             (name (if root
+                       (or (cdr (assoc root tabspaces-project-tab-map))
+                           (tabspaces-generate-descriptive-tab-name
+                            root (tabspaces--list-tabspaces)))
+                     tabspaces-default-tab)))
+        (unless (string= name (tabspaces--current-tab-name))
+          (tabspaces-switch-or-create-workspace name)
+          (switch-to-buffer buf)))))
+
+  (add-hook 'find-file-hook #'my/tabspaces-auto-switch-workspace))
 
 (provide 'init-workspace)
 ;;; init-workspace.el ends here
